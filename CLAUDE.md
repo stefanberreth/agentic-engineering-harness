@@ -219,6 +219,46 @@ back to the harness for a revised approach.]
 
 ---
 
+## Assessment Working Principles
+
+When assessing a new target project, the harness operates as a **reviewer by nature**. The assessment is not just a checklist exercise -- it's a deep audit. These principles apply to every assessment:
+
+### Thoroughness
+
+- **Read everything.** Don't skim. Read all instruction files (`CLAUDE.md`, `.claude/`, `agents.md`, README), all configuration files, and all documentation indexes. For source code, read the directory structure completely and sample key files.
+- **Cross-reference.** Check whether what instruction files SAY matches what the filesystem SHOWS. Document every contradiction.
+- **Count things.** How many spec files? How many test files? How many fix instructions? Volume matters -- it signals documentation sprawl or audit debt.
+
+### Inconsistency Detection
+
+- **Produce a ranked inconsistency report** for every assessment. Use severity levels: CRITICAL (causes Claude session confusion), HIGH (creates ambiguity), MEDIUM (structural debt), LOW (cosmetic).
+- **Check for duplicates.** Multiple instruction files covering the same topic is a top-priority finding.
+- **Check naming conventions.** Are file names, directory names, and in-file references internally consistent? Mixed casing, mixed separators (hyphens vs underscores), stale path references -- all go in the report.
+- **Check for staleness.** Look for date references, version numbers, and references to files/directories that no longer exist. Stale documentation is worse than missing documentation.
+
+### Deriving Policies
+
+- When assessment reveals existing conventions that are well-established in the target project, **encode them as explicit policies** in the transformation deliverables rather than replacing them with generic templates.
+- When assessment reveals inconsistencies, **document the inconsistency AND propose a resolution**, but always defer the final decision to the human.
+- When assessment reveals mature practices (e.g. a working audit methodology, a config-driven architecture), **preserve and build on them** rather than imposing the harness's generic patterns.
+
+### Assessment Outputs
+
+Every assessment produces these files in `targets/<project>/`:
+
+| File | Content |
+|---|---|
+| `profile.md` | Project identity, tech stack, prompt delivery policy, key structural features |
+| `assessment.md` | Completed checklist (7 categories) with status and notes per item |
+| `inconsistencies.md` | Ranked report of all findings with severity, description, and recommendation |
+| `transformation-plan.md` | Phased, ordered plan with task descriptions, priorities, and effort estimate |
+| `tasks.md` | Checklist view of all transformation tasks |
+| `decisions.md` | Decisions made during assessment + pending decisions needing human input |
+| `open-questions.md` | Unresolved questions that need human input before work can proceed |
+| `journal.md` | Session log of what was read, found, and produced |
+
+---
+
 ## Working Rules
 
 - **Never write application code.** This project produces markdown, configuration, process documentation, and prompt engineering artifacts only.
