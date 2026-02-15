@@ -10,84 +10,244 @@ This project is a **meta-engineering harness**. It does not implement software. 
 - **Project templates** (`templates/project/`) -- scaffold files (`CLAUDE.md`, `agents.md`, governance checklists) to be adapted for target projects.
 - **Governance criteria** (`templates/governance/`) -- assessment checklists and quality rubrics for evaluating and evolving the agentic configuration of a target project.
 - **Reference documentation** (`docs/`) -- source material, transcripts and curated resources.
+- **Target project workspaces** (`targets/`) -- per-project directories holding all planning, assessment, transformation artifacts and generated prompts. See below.
+
+---
+
+## CRITICAL RULE: Target Project Isolation
+
+**Claude Code running in this harness project must NEVER directly modify files in any target project directory.**
+
+This is not a suggestion. It is a hard boundary. The reasons are:
+
+1. **Context separation.** This harness and a target project are different scopes with different permissions, conventions and objectives. Mixing them creates confusion and risk.
+2. **Auditability.** Every change to a target project should be made by a Claude Code instance running *inside* that project, where it reads that project's `CLAUDE.md`, follows that project's conventions, and operates within that project's permission model.
+3. **Reproducibility.** The prompts generated here are artifacts that can be reviewed, edited, versioned and re-run. Direct file writes are fire-and-forget.
+
+### What this harness DOES produce
+
+- **Assessment documents** -- analysis of a target project's current state
+- **Transformation plans** -- phased, prioritised plans for what to create/change
+- **Generated prompts** -- complete, ready-to-paste prompts that a human takes to a Claude Code session running *inside the target project* to execute changes there
+- **Adapted templates** -- project-specific versions of persona prompts, `CLAUDE.md`, etc., written as files *in this harness* under `targets/<project>/deliverables/`, for the human to copy or for a prompt to instruct the target-side Claude to create
+
+### What this harness NEVER does
+
+- Write, edit, or delete files under a target project's directory tree
+- Run build, test, or git commands inside a target project
+- Make commits or push changes in a target project's repository
+
+When producing deliverables, always write them to `targets/<project>/deliverables/` and generate an accompanying prompt in `targets/<project>/prompts/` that tells the target-side Claude Code instance how to apply them.
+
+---
+
+## Target Project Workspace Structure
+
+Each target project gets a workspace under `targets/`:
+
+```
+targets/
+├── index.md                          # Registry of all target projects and their status
+└── <project-slug>/
+    ├── profile.md                    # Project identity: path, stack, repo, owner, key context
+    ├── assessment.md                 # Completed assessment checklist with findings
+    ├── transformation-plan.md        # Phased plan for the transformation
+    ├── tasks.md                      # Task tracking for THIS transformation (not the target's dev tasks)
+    ├── decisions.md                  # Key decisions made during transformation, with rationale
+    ├── open-questions.md             # Unresolved questions requiring human input or investigation
+    ├── prompts/                      # Ready-to-paste prompts for execution in the TARGET project
+    │   ├── 001-create-claude-md.md
+    │   ├── 002-create-analyst-prompt.md
+    │   └── ...
+    ├── deliverables/                 # Generated files intended for the target project
+    │   ├── CLAUDE.md                 # Adapted CLAUDE.md for this specific target
+    │   ├── analyst.md                # Adapted analyst persona for this target
+    │   └── ...
+    └── journal.md                    # Chronological log of transformation sessions
+```
+
+### File purposes
+
+| File | Purpose | Updated by |
+|---|---|---|
+| `profile.md` | Stable identity and context for the target project. Read first on any session. | Created once, updated rarely. |
+| `assessment.md` | Snapshot of the project's agentic readiness. Based on `templates/governance/assessment-checklist.md`. | Created during assessment phase. Re-run when the target evolves. |
+| `transformation-plan.md` | The phased plan: what to create, in what order, with what priority. | Created after assessment. Revised as work progresses. |
+| `tasks.md` | Granular task tracking for the transformation itself (not the target project's development tasks). | Updated every session. |
+| `decisions.md` | Records choices made and why (e.g. "use pytest not unittest because the project already has pytest fixtures"). | Append-only during sessions. |
+| `open-questions.md` | Questions that need human input, further investigation, or a decision before proceeding. | Updated every session. Cleared as questions are resolved. |
+| `prompts/` | Numbered, ordered, ready-to-paste prompt files. Each prompt is self-contained: it tells a Claude Code instance inside the target project exactly what to do. | Created as transformation plan is executed. |
+| `deliverables/` | Fully adapted files (persona prompts, `CLAUDE.md`, etc.) ready to be placed into the target project. | Created alongside prompts. |
+| `journal.md` | Chronological session log: what was done, what was learned, what's next. | Appended at end of each session. |
+
+### The targets/index.md registry
+
+This file is the **entry point for orientation**. It lists every target project with:
+- Project slug and display name
+- Filesystem path
+- Current transformation phase (assessment / planning / implementing / reviewing / maintaining)
+- One-line status summary
+- Date of last activity
+
+A fresh Claude session should read `CLAUDE.md` (this file) and then `targets/index.md` to understand the full landscape.
+
+---
+
+## Transformation Phases
+
+Each target project moves through these phases:
+
+### 1. Assessment
+- Read the target project's structure, README, existing config
+- Complete the assessment checklist (`templates/governance/assessment-checklist.md`)
+- Write findings to `targets/<project>/assessment.md`
+- Identify the priority actions
+
+### 2. Planning
+- Produce `targets/<project>/transformation-plan.md` with phased, ordered tasks
+- Identify project-specific adaptations needed for templates
+- Document decisions and open questions
+- Get human approval on the plan
+
+### 3. Implementing
+- For each task in the transformation plan:
+  - Adapt the relevant template to the target project
+  - Write the adapted file to `targets/<project>/deliverables/`
+  - Write a corresponding prompt to `targets/<project>/prompts/`
+  - Update `targets/<project>/tasks.md`
+- The human takes each prompt to a Claude Code session in the target project and executes it
+
+### 4. Reviewing
+- After the target project has its agentic config in place, review it using `templates/governance/review-criteria.md`
+- Document findings, suggest improvements
+- Feed lessons back into the harness templates
+
+### 5. Maintaining
+- Periodic re-assessment as the target project evolves
+- Update persona prompts and config as the target's stack or workflow changes
+- The target project's own retrospectives may trigger harness-side updates
+
+---
+
+## Prompt File Format
+
+Every file in `targets/<project>/prompts/` should follow this structure:
+
+```markdown
+# Prompt [NNN]: [Short Title]
+
+**Target project:** [name]
+**Target directory:** [absolute path]
+**Prerequisite prompts:** [list of prompt numbers that must be executed first, or "none"]
+**Phase:** [assessment / planning / implementing / reviewing]
+
+## Context for the operator
+
+[Brief explanation of what this prompt does and why, for the human
+who will paste it into the target project's Claude Code session.]
+
+## Prompt
+
+[The actual text to paste into Claude Code. This should be self-contained:
+it should not assume the target-side Claude has any context from this
+harness project. It should reference only files that exist or will exist
+in the target project.]
+
+## Expected outcome
+
+[What files should be created/modified, what the human should verify.]
+
+## If something goes wrong
+
+[Fallback instructions: what to check, how to retry, when to come
+back to the harness for a revised approach.]
+```
+
+---
 
 ## How This Project Is Used
 
-1. Check out this repository **alongside** an existing software development project.
-2. Start Claude Code **in this project** first.
-3. Claude will work with the user to identify the target project, assess its current state, and produce a transformation plan.
-4. The deliverables are configuration files, persona prompts, governance docs and process instructions -- **copied or adapted into the target project**.
-5. This project itself evolves: templates get refined, governance criteria get sharpened, new patterns get documented.
+1. Start Claude Code **in this project directory**.
+2. Claude reads this file and `targets/index.md` to orient.
+3. The user either:
+   a. **Picks an existing target** to continue working on, or
+   b. **Nominates a new target** to begin assessment.
+4. All planning, analysis and deliverable generation happens HERE.
+5. The user takes generated prompts to Claude Code sessions IN the target project.
+6. Results and lessons feed back into this harness.
+
+---
 
 ## Working Rules
 
 - **Never write application code.** This project produces markdown, configuration, process documentation, and prompt engineering artifacts only.
-- **Always ask which target project** the user wants to transform before generating any artifacts.
-- **Assess before prescribing.** Read the target project's existing structure, README, CI config, test setup, and any existing `CLAUDE.md` or `.claude/` directory before proposing changes.
-- **Favour incremental transformation.** Don't propose a 50-file overhaul. Identify the highest-value first step (usually `CLAUDE.md` + one persona) and iterate.
-- **Respect existing conventions.** If the target project uses specific branching strategies, test frameworks, or CI pipelines, encode those into the generated artifacts rather than replacing them.
-- **Track transformation state.** When working on a target project transformation, maintain a `transformation-log.md` in this project under `logs/<project-name>/` documenting what was done, what was deferred, and what needs revisiting.
-- **Templates are starting points, not gospel.** Always adapt persona prompts and governance criteria to the target project's language, framework, team size and maturity.
+- **NEVER modify target project files directly.** Produce prompts and deliverables here; the human executes them in the target project. (See "Target Project Isolation" above.)
+- **Always ask which target project** the user wants to work on before generating any artifacts.
+- **Assess before prescribing.** Read the target project's existing structure (you CAN read target project files for assessment purposes) before proposing changes.
+- **Favour incremental transformation.** Don't propose a 50-file overhaul. Identify the highest-value first step and iterate.
+- **Respect existing conventions.** Encode the target project's existing patterns into generated artifacts rather than replacing them.
+- **Track everything in targets/.** Every observation, decision, question, and deliverable goes into the target's workspace.
+- **Templates are starting points, not gospel.** Always adapt to the target project's language, framework, team size and maturity.
+- **Update targets/index.md** whenever a target project's phase or status changes.
 
 ## Context Management
 
 - This is a documentation-heavy project. Context fills up fast when reading target projects.
-- Prefer short, focused sessions: one assessment, one persona, one governance review per session.
-- Before exiting, update `logs/<project-name>/transformation-log.md` with progress.
-- On fresh start, read this file, then `logs/<project-name>/transformation-log.md` for the active target.
-
-## Key Commands
-
-```bash
-# Start a session for this harness project
-claude
-
-# Start with a specific persona (for target project work)
-claude --system-prompt-file templates/personas/analyst.md
-claude --system-prompt-file templates/personas/architect.md
-claude --system-prompt-file templates/personas/developer.md
-claude --system-prompt-file templates/personas/reviewer.md
-```
-
-## Project Structure
-
-```
-.
-├── CLAUDE.md                          # This file
-├── README.md                          # Mission statement and evolution log
-├── templates/
-│   ├── personas/
-│   │   ├── analyst.md                 # Requirements gathering persona
-│   │   ├── architect.md               # Solution design persona
-│   │   ├── developer.md               # Implementation persona
-│   │   └── reviewer.md                # Code review persona
-│   ├── project/
-│   │   ├── CLAUDE.md.template         # Template for target project CLAUDE.md
-│   │   └── agents.md.template         # Cross-tool agent config template
-│   └── governance/
-│       ├── assessment-checklist.md    # Evaluate a project's agentic readiness
-│       └── review-criteria.md         # Quality rubric for agentic config files
-├── docs/
-│   ├── how-i-tamed-claude-ndc-london-2026.md
-│   ├── raw transcript.txt
-│   └── Screenshot 2026-02-15 at 15.17.33.png
-└── logs/
-    └── <project-name>/
-        └── transformation-log.md      # Per-project transformation journal
-```
+- Prefer short, focused sessions: one assessment, one persona adaptation, one prompt batch per session.
+- Before exiting, update `targets/<project>/journal.md` and `targets/<project>/tasks.md` with progress.
+- On fresh start, read this file, then `targets/index.md`, then the active target's `profile.md` and `tasks.md`.
 
 ## On First Contact With a New User Session
 
 When Claude starts in this project, it should:
 
-1. Greet the user and state the mission briefly.
-2. Ask: "Which project would you like to transform, or would you like to work on the harness itself?"
-3. If transforming a target project:
-   a. Ask for the path to the target project.
+1. Read `targets/index.md` to see the current landscape.
+2. Briefly state what targets are in progress and at what phase.
+3. Ask: "Which target would you like to continue with, would you like to add a new target, or would you like to work on the harness itself?"
+4. If continuing an existing target:
+   a. Read that target's `profile.md`, `tasks.md`, and `open-questions.md`.
+   b. Summarise current state and propose next steps.
+5. If adding a new target:
+   a. Ask for the project path.
    b. Read its top-level structure, README, and any existing agentic config.
-   c. Run the assessment checklist (`templates/governance/assessment-checklist.md`).
-   d. Present findings and propose a transformation plan.
-   e. Proceed incrementally with user approval at each step.
-4. If working on the harness itself:
+   c. Create the target workspace and run the assessment.
+6. If working on the harness itself:
    a. Ask what aspect to improve (templates, governance, docs, process).
    b. Work on it, commit when the user is satisfied.
+
+## Project Structure
+
+```
+.
+├── CLAUDE.md                              # This file
+├── README.md                              # Mission statement and evolution log
+├── templates/
+│   ├── personas/
+│   │   ├── analyst.md                     # Requirements gathering persona
+│   │   ├── architect.md                   # Solution design persona
+│   │   ├── developer.md                   # TDD implementation persona
+│   │   └── reviewer.md                    # Code review persona
+│   ├── project/
+│   │   ├── CLAUDE.md.template             # Scaffold for target project CLAUDE.md
+│   │   └── agents.md.template             # Cross-tool agent config scaffold
+│   └── governance/
+│       ├── assessment-checklist.md        # Evaluate agentic readiness
+│       └── review-criteria.md             # Quality rubric for config files
+├── targets/
+│   ├── index.md                           # Registry of all target projects
+│   └── <project-slug>/                    # Per-project transformation workspace
+│       ├── profile.md                     #   Identity, path, stack, context
+│       ├── assessment.md                  #   Assessment checklist results
+│       ├── transformation-plan.md         #   Phased transformation plan
+│       ├── tasks.md                       #   Task tracking for transformation
+│       ├── decisions.md                   #   Decisions and rationale
+│       ├── open-questions.md              #   Unresolved questions
+│       ├── prompts/                       #   Ready-to-paste prompts for target
+│       ├── deliverables/                  #   Adapted files for target project
+│       └── journal.md                     #   Chronological session log
+├── docs/
+│   ├── how-i-tamed-claude-ndc-london-2026.md
+│   ├── raw transcript.txt
+│   └── Screenshot 2026-02-15 at 15.17.33.png
+└── logs/                                  # (legacy, migrated to targets/)
+```

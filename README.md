@@ -21,20 +21,31 @@ This project codifies a **four-persona workflow** (Analyst → Architect → Dev
 - It is **not specific to any language or stack**. The templates are adapted per target project.
 - It **does not implement software**. It produces the configuration, documentation and process artifacts that *drive* implementation.
 
-## How To Use It
+## How It Works
+
+### The Two-Claude Model
+
+This harness operates on a strict separation principle:
+
+1. **Harness-side Claude** (running in this project) -- reads target projects, analyses them, produces plans, generates adapted templates and ready-to-paste prompts. **Never modifies target project files directly.**
+2. **Target-side Claude** (running in the target project) -- receives prompts from the human operator, executes changes within the target project's own context and permissions.
+
+This separation ensures auditability, reproducibility, and clean context boundaries. Every change to a target project is made by a Claude instance that reads *that project's* `CLAUDE.md` and follows *that project's* conventions.
 
 ### Transforming an Existing Project
 
-1. Clone this repo alongside your target project.
-2. Start Claude Code in this project's directory:
+1. Start Claude Code in this project's directory:
    ```bash
    cd /path/to/agentic-engineering-harness
    claude
    ```
-3. Claude will orient itself via `CLAUDE.md` and ask which project you want to transform.
-4. Provide the path to your target project.
-5. Claude will assess the project's current state using the assessment checklist and propose an incremental transformation plan.
-6. Work through the plan together -- creating `CLAUDE.md`, persona prompts, spec docs, and governance files in the target project.
+2. Claude orients via `CLAUDE.md` → `targets/index.md` and asks what you want to work on.
+3. Nominate a target project by path.
+4. Claude reads the target's structure and runs the assessment checklist.
+5. Together, you produce a transformation plan stored in `targets/<project>/`.
+6. Claude generates deliverables (adapted personas, `CLAUDE.md`, etc.) and numbered prompts.
+7. You take each prompt to a Claude Code session **inside the target project** and execute it.
+8. Results feed back into the harness for review and refinement.
 
 ### Working on the Harness Itself
 
@@ -62,13 +73,27 @@ Start Claude Code here and say you want to improve the harness. Areas for ongoin
 │   └── governance/
 │       ├── assessment-checklist.md        # Evaluate agentic readiness
 │       └── review-criteria.md             # Quality rubric for config files
+├── targets/
+│   ├── index.md                           # Registry of all target projects + status
+│   └── <project-slug>/                    # Per-project transformation workspace
+│       ├── profile.md                     #   Identity, path, stack, context
+│       ├── assessment.md                  #   Assessment checklist results
+│       ├── transformation-plan.md         #   Phased transformation plan
+│       ├── tasks.md                       #   Task tracking for transformation
+│       ├── decisions.md                   #   Key decisions with rationale
+│       ├── open-questions.md              #   Unresolved questions
+│       ├── prompts/                       #   Ready-to-paste prompts for target
+│       │   ├── 001-create-claude-md.md
+│       │   └── ...
+│       ├── deliverables/                  #   Adapted files for the target project
+│       │   ├── CLAUDE.md
+│       │   └── ...
+│       └── journal.md                     #   Chronological session log
 ├── docs/
 │   ├── how-i-tamed-claude-ndc-london-2026.md  # Structured reference from source talk
 │   ├── raw transcript.txt                     # Raw talk transcript
 │   └── Screenshot 2026-02-15 at 15.17.33.png  # Resources slide
-└── logs/                                  # Per-project transformation journals
-    └── <project-name>/
-        └── transformation-log.md
+└── logs/                                  # (legacy, migrated to targets/)
 ```
 
 ## Core Principles
@@ -103,11 +128,22 @@ This section tracks how the project's scope and understanding evolve over time.
 - Created initial persona templates (Analyst, Architect, Developer, Reviewer).
 - Created project templates (`CLAUDE.md`, `agents.md`) and governance criteria.
 - Established the transformation workflow: assess → plan → adapt → validate.
+
+### v0.2 -- Target Project Isolation & Multi-Project Tracking (Feb 2026)
+
+- Established the **Two-Claude Model**: harness-side Claude reads and plans, target-side Claude executes. Hard boundary: harness never modifies target files directly.
+- Created `targets/` workspace structure with per-project directories for profile, assessment, plans, tasks, decisions, open questions, prompts, deliverables and journal.
+- Created `targets/index.md` as the orientation entry point for fresh sessions.
+- Defined the **prompt file format** -- self-contained, numbered, ordered prompts that a human pastes into a target-project Claude session.
+- Defined five transformation phases: assessment → planning → implementing → reviewing → maintaining.
+- Replaced `logs/` with `targets/` as the canonical location for all per-project state.
 - **Open questions:**
   - How well do the generic persona templates adapt to radically different stacks (embedded C vs. web SPA vs. data pipeline)?
   - What is the right granularity for the assessment checklist?
   - How should OpenSpec integration be templated now that it has changed its structure?
   - What MCP server configurations should be recommended vs. left to project discretion?
+  - How should the prompt numbering scheme handle re-ordering or inserting new prompts?
+  - What's the right feedback loop when a target-side prompt execution reveals issues?
 
 ### Future directions
 
