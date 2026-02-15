@@ -1,0 +1,1239 @@
+How I Tamed Claude - Emmz Rendle - NDC London 2026
+
+https://www.youtube.com/watch?v=pey9u_ANXZM 
+
+
+
+Hello. Hello. Welcome to the last afternoon of the week. We're nearly there. I can nearly
+0:18
+jump in a cab, go to Clark and Will and play bass. Um, so yes, this is how I
+0:23
+tamed Claude. Uh I submitted this talk for consideration by the committee I
+0:29
+think about six months ago. Claude was on like 1.0 something at that point. Um and I was
+0:37
+going to tell you all about CC sessions because CC sessions was this MCP server
+0:43
+that you plugged into Claude that gave it access to like a long-term memory and
+0:49
+planning and all this sort of stuff. The thing with this is that life comes
+0:56
+at you fast in the world of AI agents and everything. And so I'm not going to
+1:01
+tell you anything about CC sessions beyond the fact that this talk used to have that in it. It doesn't anymore.
+1:08
+There's something else now. Um, yes, the thing that I am actually going
+1:13
+to talk about, true story, uh, it's brilliant.
+1:19
+two, three days ago, three days ago now. Um, they released a completely new version that totally changes the way it
+1:25
+works and I have not had time to get my head around the way it works. Now, I am
+1:32
+assured by their migration guide that it is still essentially the same thing.
+1:37
+They've just changed the interface completely. There's a migration guide
+1:42
+and everything. So I will try to explain how that works. But fundamentally this
+1:49
+is a talk about how to work with AI agents generally and why you are not
+1:58
+programmers anymore. Uh we're going to go through three stages. I also have no idea how long
+2:05
+this is going to go on for now. I will try and keep it inside the hour. If it finishes early, we'll just have a Q&A
+2:11
+session. Um, so yes, [snorts] but we're going to go through the basics. So, who here is using um a coding agent of any
+2:19
+kind, GitHub, copilot, whatever. So, yeah, basically everybody. Um, who's using Claude?
+2:26
+Who's got some sucker to pay for Claude Max for $200 a month?
+2:33
+It's so good. [clears throat] Like three terminals open on three different computers doing three different things
+2:38
+and you're just there going, "Ha, I am a god." Um but no uh I do think that
+2:47
+Claude is the better of the coding agents that are
+2:54
+available and I do have reasons for this and I have tried I've tried Gemini uh
+2:59
+CLI I've tried uh Copilot both in VS Code and um on the command line uh I've
+3:07
+tried various integrations in various Jet Brains IDE keys and I always ended up coming back to just going to my
+3:15
+terminal and typing claude and starting a session. And I think what it is that terminal
+3:20
+based workflow just makes it really really simple. You cd into the directory where the files
+3:26
+are that you want to work with. You start cla and it just goes am I all right to look at files and do things in
+3:32
+this directory and you say yes and you're off and running. And that's really nice. And it's you've got the
+3:38
+whole screen to have the conversation. It's not sort of tucked away in the side. Um and uh Chris down the front was
+3:46
+just saying he's introducing his team to it. And they were kind of like where's where's the editor? Where's the code?
+3:51
+Why can't I see the code? No, that's not how any of this works anymore. uh you
+3:56
+have a separate you can I have zed open on another um desktop and I can see the
+4:02
+code that's being written and I can review the code but I what I am essentially doing is micromanaging
+4:08
+things um claude is very low-level and configurable a lot of the other agents
+4:13
+are kind of they've got a lot their system prompts are very long and very
+4:18
+specific and uh like I'm pretty sure Gemini
+4:23
+kind of goes have you considered doing this in flutter and you're like uh no
+4:30
+and it goes all you really so yes um claud has got a lot of configuration
+4:36
+points is very very easy to configure you can mostly configure it with markdown files there standard ways of
+4:42
+doing that and it's actually when claude code does something like skills or
+4:48
+commands you then find the other ones come along and imitate that so you can
+4:53
+use those same features and uh and standards. Um but Anthropic have kind of
+5:01
+this is their focus. You feel like claude code is what Anthropic are building and selling and those $200 a
+5:09
+month subscriptions are Anthropic's path to monetization. They're not going to be putting ads in clawed code. They're not
+5:16
+struggling to find what they're doing. They're basically going, "Let's get every programmer on the planet giving us
+5:22
+$200 a month uh in order to use our product." Um, and a lot of people do.
+5:29
+And that means it's the most popular. And so anytime you see anything about, you know, as a new coding agent, how
+5:36
+does it compare to Claude? Um, and so that popularity means that there's an ecosystem. There's a lot of awesome
+5:42
+Claude blah uh repositories on GitHub and everything else. And like I say,
+5:47
+I've tried other things and I keep coming back to it. Um, I found this quote while I was doing the research
+5:52
+from Andre Carpathy. Uh, it's not just a website you go to like Google. It's a little spirit or ghost that lives on
+6:00
+your computer. And it actually it is like that especially the desktop. So I have claude code which is where I do the
+6:06
+coding and the generative stuff and I have claude desktop which I use for
+6:11
+other things and claude desktop has like projects and it has a long-term memory
+6:17
+[snorts] across the entire thing and sometimes I'll just start a new chat and ask it something and it knows that we're
+6:24
+talking about something that I mentioned to it six weeks ago and it's still got that in there. Um, and it is it's like
+6:31
+uh like an assistant that actually knows what you're doing. So, let's talk about
+6:37
+the basics. And the absolute basic thing that you need with Claude is a good
+6:42
+claude.md file. And actually, you can have multiple Claude MD files. You can have one that lives in your home
+6:49
+directory and a sort of claude and you put a claw.md in there. And that's kind
+6:54
+of basic instructions for claude across your entire system, any projects you're working in. And then you can also put a
+7:00
+claude.md into uh your project directory. And that gives it specific
+7:06
+directions for that project. And you can start off with, you know, we have the bash commands to do an mpm uh run the
+7:14
+build. Uh we can talk about the code style. And you end up telling Claude to
+7:20
+update its own claude.mmd file to make notes that it needs to do something. And that's where you would put stuff like we
+7:27
+are doing testdriven development. Write the test first then make it pass. Uh
+7:32
+always plan, always make sure you've answered questions. All that sort of stuff goes into claude uh.md.
+7:39
+Um, and so some tips for claude.md that I've kind of either found or or uh
+7:47
+discovered along the way. Um, you can link to documents using at as the
+7:53
+prefix. And you can do this when you're typing directly into chord code on the CLI. You just do at and then you'll
+7:59
+start to get autocomplete for files and directories that it can see. But if you do that inside your markdown files and
+8:07
+link between them in that way, it's like having sort of anchor links in uh markdown and it gives it sort of
+8:15
+specific instructions to say yes, I do actually want you to read that file and consider that content there. Um
+8:22
+I do a lot of I've got a side project that I'm working on which you're going to love and I'm going to sell it to
+8:28
+Apple in about five years for hundred million dollars. Um, and it's going to
+8:33
+take over the world and replace operating systems. Um, and I'm building that. Uh, and in that one, I am just
+8:41
+letting Claude run completely riot. And so the claude.mmd file is maintained by Claude. Uh, if we say we're going to do
+8:47
+something, it makes the most of it in there. There's an agents.mmd file and all sorts of other stuff. If you are
+8:53
+working as part of a team and you're all building stuff together, Claude creates
+8:58
+a claude directory inside the project and that should be added into source
+9:04
+control. Despite starting with dot, you should definitely be checking all that into source control. And then in there
+9:10
+you can have essentially the coding guidelines and and uh team guidelines
+9:17
+that you would have for onboarding a new person onto your team should all be encoded into your claw.md file so that
+9:25
+every time it starts up it loads about 15 20k of of markdown and then it knows
+9:31
+what it's supposed to be doing. And yeah, you can put the standard commands
+9:36
+that you need to run, what your code style is going to be, uh, tell it to look at the editor config to understand
+9:42
+the code style, um, make a record of your architecture design records and all
+9:49
+those sorts of things can go into that claw.md file.
+9:55
+Then there are the commands that you have when you're actually inside clawed code. And I'm just gonna actually bring
+10:03
+up a a session and we'll do something. So
+10:10
+there is nothing up my sleeve. Uh so we will do claude
+10:17
+and then we will do slashinit. I'm still on my slides. God damn it.
+10:33
+That is extremely unhelpful PowerPoint. Uh
+10:43
+there we go. End show.
+10:52
+Yay. Is that visible? Yeah. Cool. Right. So I'm inside claw
+10:58
+code uh empty directory. So I'm going to do slashinit
+11:04
+and it's going to create some stuff.
+11:09
+Um and it's searching for patterns and the directory appears to be empty. Let me verify this. So this is going to
+11:16
+create the claw.md file and then you can go through a process and it says right I
+11:24
+to create a useful claw.md file I need a code base to analyze uh tell me what
+11:29
+kind of project you want to create add some code first or create a placeholder
+11:35
+and I'm just going to say three at this point because
+11:40
+we are just going to uh we're going to do a bunch of other stuff before we
+11:46
+decide what kind of project we want to create. And it says, "Do you want to create claude.md?"
+11:53
+You get yes and then yes, allow all edits during this session. That second
+12:00
+one is kind of interesting. Um it's generally okay for setup and and that
+12:07
+sort of thing, but um it can be a bit dodgy. uh and you can sort of say don't
+12:14
+touch any of the files in that directory. Do not edit that directory. So now saying I've created a minimal
+12:19
+claw.md template. So, if I exit out of there, um, and
+12:25
+we'll do Z dot and
+12:33
+uh, view zoom in,
+12:40
+right? So, yes, this is your sort of
+12:45
+placeholder claude.mmd file. Um, and you can put your build and dev
+12:52
+commands and all this sort of stuff. And then various other things will add to your claude file as you are going along.
+12:59
+So going to go back in again now.
+13:09
+Okay. Um, the next one that is very very important is slash context. So Claude
+13:17
+has a context window of 200,000 tokens. It's a decent size. You can do most of
+13:23
+the things that you should be doing with Claude inside a 100,000 tokens. And you
+13:30
+should aim for a 100,000 tokens. As you're sort of progressing through your session and achieving something, run
+13:37
+slashcontext quite frequently. It will be filling up and filling up and filling up. Once it gets to like 80 90 95% it
+13:45
+will autoco compact. And what compact means is it clears that context but it
+13:51
+kind of summarizes everything that's been done. If you get to that point you
+13:57
+need to either run another command which is slashcle or you need to do what I do
+14:02
+which is exit claude and restart it which kind of because I'm never sure whether slashclear is really clearing.
+14:09
+Uh but I know that if I exit it and start it again, then it's actually starting a new session. And you can see
+14:15
+what's using tokens in here. We've got MCP tools. There's only one MCP tool uh attached to this at the moment. And
+14:22
+that's uh we'll talk about that later on. Um you can see the system prompt, the system tools, skills, memory files,
+14:29
+all these sorts of things. Uh once you get past a 100,000 tokens, it actually
+14:35
+starts to become less effective. uh especially if you're using Opus and if you have a Mac subscription, you can
+14:41
+just put it on Opus 4.5 and leave it on that and actually have three sessions running all using Opus because they made
+14:47
+it much cheaper. Um so yes, uh once it gets past 100,000 tokens, it's like it's
+14:53
+got too much information. It's like when you are holding too much state in your
+14:58
+head. You know that that moment where someone comes along and goes, "Could you just look at this?" and you stab them to
+15:04
+death because they've completely broken your flow and it's going to take you two days to get back into it. So yes, once
+15:10
+it gets past 100,000, kill it and start again or finish get it to finish what
+15:16
+it's doing, but we're going to talk more about that. Um, so yes, we have that and
+15:21
+then we can also we can say MCP tell me what MCP servers I am actually using.
+15:26
+You see there it's using context 7. We'll talk about that uh in a moment.
+15:33
+And we can do slashskills and we'll talk about skills. No skills found, but we'll do something about that
+15:39
+later. And um so yes, and there is slashcle, which clears conversation
+15:47
+history and frees up context and slash compact. So it will autocompact once it
+15:52
+hits the limit. But you can run slash compact, but never do that. Uh, and
+15:58
+never run clear. Just once you get past a 100,000 tokens, get to a nice stopping point, tell it to record its progress or
+16:05
+whatever it's doing, and then uh kill it and start a new one. This is why Ralph
+16:12
+works so well. I am not going to talk about Ralph, okay? Because I don't use a
+16:18
+Ralph. I haven't used Ralph. I haven't tried it. I'm I'm meaning to try it, but it's kind of finding something that it
+16:23
+makes sense to use on it. And so I'm not claiming that this is the complete list of best practices. This is what I do. It
+16:30
+works for me. I've shipped stuff with it. It's it's good. Okay,
+16:41
+let's go back to here and then we'll do the um keyboard shortcut to start it from
+16:49
+the current slide. Play from There we go.
+16:54
+exit command. I just keep doing C control C and everything. Yeah, that works too.
+17:00
+Um, so yes, there are a bunch of other commands and if you type slash, you get autocomplete on them and uh it'll sort
+17:09
+of explain what they all are and everything, but those are the ones that I use on a regular basis in a particular
+17:14
+session. Um, that's how many tokens are in the context window. Uh that's how
+17:20
+many you should sort of you treat it as a soft limit. Try to stay below that.
+17:26
+All right, let's talk about workflow. Um who would characterize what they do
+17:32
+as vibe coding? Yeah, nobody's going to admit to that, are they?
+17:39
+But you know who you are. Uh yeah, this is not vibe coding. Vibe coding is for
+17:46
+people who think they can build a startup and make millions of dollars without hiring anybody who knows
+17:52
+anything about creating software. Uh the rest of us are trying to use this as a
+17:58
+tool to do the thing that we know how to do but more quickly and in new and
+18:04
+interesting ways. And so when I work with Claude, it has four personalities
+18:13
+that I use. Um I have an analyst mode and that is I've got an idea for
+18:20
+something that I want to build and I'm going to go the analyst is going to help me describe it. Then I have an architect
+18:25
+who creates a spec, plans the implementation, a developer who does test-driven development and builds the
+18:32
+system, and a reviewer who after each feature is complete can review the code.
+18:37
+The great thing about L. I had this weird notion when I first
+18:42
+started this. I would use Claude to generate the code because it was the better one for doing that and then I
+18:49
+would use Gemini to review it because I was like, well, I'll get a different LLM to review it. But that's not how LLMs
+18:54
+work. You can sort of stop Claude, start it again, and then go review this code.
+19:00
+And he goes, "Oh, that's interesting. I've never seen this code before." You're like, "You just wrote it." No, no, no, no, no. This is completely fresh
+19:06
+to me. So, yes. So, let's talk about the analyst mode and let's talk about system prompts. Um, the analyst is going to do
+19:13
+requirements gathering. The analyst is going to interview me and ask me
+19:18
+questions and gather the information. And I'm going to say, I want to build a
+19:24
+chatbot with voice recognition and text to speech. And the analyst is going to
+19:31
+ask me questions about that. How does it work? What platform is it going to run on? Uh what are the constraints? Do you
+19:37
+want to use a cloud model or a local ondevice model? All these sorts of things. And so I have a system prompt
+19:44
+called analyst. It's in a file called analyst.md. And
+19:50
+uh system prompts are quite long and contain quite a lot of instructions and they're very tricky things to write well
+19:57
+and properly. But there's a crapload of them out there on the internet and on GitHub in open source projects. And so
+20:06
+one thing that LLMs are really good at is writing system prompts for LLMs. And
+20:11
+so so I can go into Claude and this is where I use Claude desktop. It's one of
+20:17
+the things that I use Claude desktop for. I'll stop adjust stop doing this because that's the microphone. Um, and
+20:23
+so I can go into Claude desktop.
+20:31
+Um, and I can say uh create a system prompt
+20:42
+uh file document for a requirements analyst
+20:51
+that gathers information and uh
+21:00
+constraints questions
+21:06
+to produce a requirements.md
+21:15
+document that a solution architect can
+21:20
+use to design the solution and plan the
+21:29
+implementation.
+21:36
+and Claude will go off and do that. Now, if I have upfront information, let's say
+21:43
+I'm working in a place where every single programmer is a .NET developer, so I know we're going to do this inn
+21:49
+.NET, then I would uh go in and say it's it we know it's going to be .NET and
+21:55
+that gives it information. So for every project, I don't have a standard prompt.
+22:00
+I use Claude to help me build the system prompt for that particular project. And
+22:06
+what I would actually do is if I knew what the project was, I would tell it at this point so that the requirements
+22:13
+analyst AI assistant knew what we were building and knew what to ask questions about and I could put sort of the the
+22:20
+fundamental like three or four line description uh in there. Um, and then
+22:25
+you can see it has it's generated all these sorts of things. [snorts]
+22:32
+Um, and this is this is just Sonnet running this. Uh, if you aren't lucky
+22:37
+enough to have a Claude Max subscription, which lets you use Opus for eight hours a day. Um, then Sonnet
+22:44
+4.5 is really good and the $20 a month subscription, you can kind of get four
+22:50
+to six hours a day out of it, I think. Um, but yes, there you go. This is that's a
+22:58
+system prompt and it creates the file.
+23:04
+Presenting the file. Come on. Present the There we go. Um, puts it over on
+23:10
+that side there. And then I can just uh Yes, I know what you've done. I told
+23:17
+you to do [laughter] it. I can go to here. Uh, next try. Try this in co-work. I
+23:24
+haven't tried co-work yet. I honestly don't know what it does. Um, so then I'm going to go to here. I'm going to create
+23:30
+a new file and call it analyst.m MD. And then I'm going to paste all of
+23:36
+that stuff in there and write that. And then I'm going to go back to my command
+23:41
+line. Uh, and we're going to do clear. And then
+23:48
+uh we are going to run claude d-systemprompt
+23:54
+file analyst.mmd. Okay.
+24:01
+So system prompt is the thing that tells the AI assistant what it is. Now there
+24:08
+is a core system prompt that you can't override. Uh that's fundamental to
+24:13
+claude. Then there is a clawed code system prompt and there's a default one and it's kind of like you're a
+24:19
+programmer. That's it. Uh we now have a detailed system prompt that we've created and you know if I was actually
+24:26
+creating this I would have read through that and checked on things and maybe made some edits or maybe asked Claude to
+24:31
+make some changes to it. Uh that sort of thing. But so now I have Claude code but
+24:37
+it thinks it's a requirements analyst. I can prove that. I can say who are you
+24:45
+and it should non-deterministically
+24:50
+tell me what it is. Um, so yeah, there you go. I'm Claude Code, but I've been
+24:57
+configured with a specialized role as a requirements analyst. In this role, I and it tells you what you've configured
+25:03
+it to do. Okay, so now we have phase one of our workflow. And
+25:09
+this is where we as developers, as people who are paid to create software,
+25:17
+this is how we differentiate ourselves from those idiots vibe coding things,
+25:22
+boasting about it on bloody X one day going, I've launched my SAS in five days
+25:28
+and I vibe coded the whole thing and I haven't even looked at any of the code. And then the next day going, I'm under attack. Help. Help. Why is my Oorth
+25:36
+system not working? Um, we are not programmers anymore. We are
+25:43
+micromanagers of a very small team of insanely brilliant but also bloody stupid
+25:53
+experts. And our job is to do all of those
+25:59
+things. So if you ever wanted to call yourself an architect, now you're learning what architect means and what
+26:05
+it involves and how you're not sort of necessarily learning how to do it. You're learning to manage an architect.
+26:12
+And you might learn something about being an architect along the way. You might learn something about being a
+26:17
+business analyst or a requirements analyst or a customer uh interviewer or
+26:22
+a product owner or any of these things. And you can just create system prompts and create these distinct personalities
+26:29
+and then manage them to deliver stuff. And for me personally,
+26:34
+that's a really weird way to work because for 30 years I've had a
+26:41
+programmer hat on. And so I'm sitting in meetings and people are going it needs to do this and we want to use that kind
+26:47
+of authentication and all this sort of stuff. And by the end of the meeting, I've kind of got all the code. I know
+26:53
+roughly what it's going to look like. like I know what the classes and the methods are going to be called and it's all in my head and then I am one of
+26:59
+those you know six weeks of coding can save you like several hours of planning.
+27:05
+Um [clears throat] you can't do that anymore. You literally
+27:10
+cannot do that anymore. If you just open claude with no system prompt at all and
+27:16
+say you can say create Tetris and it will do that. It will create you a Tetris that runs in the browser or that
+27:22
+uses Avalonia or which by the way Avalonia have a very good MCP server if
+27:28
+you use Avalonia. Anyway, never mind that. It'll do it in Unreal Engine if you wanted to do it in Unreal Engine and
+27:34
+you can have like the most graphically advanced Tetris ever with Nanite and
+27:39
+Lumen and you know Unreal 5.4. Um, but
+27:44
+if you have actual requirements, somebody who's going to be satisfied some success criteria, you need to go
+27:51
+through these steps. And so, you need to put that requirements gathering hat on. And so, it's now going to ask me is uh,
+27:57
+do you have a project I want to create
+28:03
+to create a voice based chatbot?
+28:11
+Um, so yeah, once you've got that system prompt, you can literally type that one
+28:16
+line and it will now go off and simmer apparently.
+28:22
+Um, and then it will it's it's coming up with a whole list of questions. So here we go. Business context and purpose. So
+28:29
+this is going to take me through this entire thing. I spend like an hour or two um going through these questions and
+28:37
+you can put stuff in the system prompt say really nail it down. There should be no ambiguity left. By the end of this
+28:44
+process, the solution architect should have everything that they need in order
+28:49
+to design and plan this solution. Um, so yes, what are the core
+28:55
+capabilities? What will it be running on? All this sort of thing. Uh,
+29:00
+PowerPoint.
+29:06
+Okay. So, our requirements analyst. Um,
+29:12
+one of the things that I had discovered over the six months of working with with Claude, uh, I was building a system that
+29:19
+involved speech recognition, transcription, translation. Uh, there
+29:24
+was an iOS app, an Android app, things that ran on Macs, things that ran on the
+29:30
+cloud, things that ran all over the place. And I've always thought of myself
+29:35
+as a net developer, but you can't develop some of that stuff in .NET. If you want to run stuff on a Mac, you want
+29:41
+to run a large language model locally on a Mac using Apple's MLX framework, which
+29:46
+by the way is awesome, uh, then there's a C wrapper for it. There's a Swift
+29:52
+wrapper for it, but the easiest way to do it is Python. And so you go, all right, let's let's use Python. If you
+30:00
+don't have constraints, if you have a complete green field, then part of what
+30:07
+the requirements analyst can do is define your actual needs. And then the
+30:13
+solution architect can say well the best language platform framework to implement
+30:18
+this in is Python or Swift and Swift UI for an iPhone application or Cotlin for
+30:26
+an Android application. My favorite thing is
+30:32
+um who uses Net Maui to write cross-platform applications? No, exactly right. Um who used to use Zamarind
+30:39
+before they wrecked it? Yeah. Uh anyone use cotlin multiplatform for anything?
+30:44
+Flutter? Yeah, but you know these things who works on a mobile application where
+30:51
+there's a bunch of people writing swift code for the iOS application and a bunch of people writing Cotlin and Java for
+30:56
+the Android application. Who who's not working on a mobile application?
+31:03
+Weird crowd. What the hell are you doing with your lives? Um anyway, normally you
+31:09
+get a bunch of people go, "Oh, we use Cotlin multiplatform. we use Flutter. Um, you don't need to do that now
+31:14
+because all of those are compromises and net marau is the ultimate compromises. That that is just dedication to C beyond
+31:21
+anything I've ever experienced. Um, but when you're using an AI assistant to
+31:28
+write this code, you get your requirements analyst and that goes this is what the application is going to do.
+31:33
+this. Then you get your solution architect step and that writes the specification and breaks it down into
+31:39
+steps and tasks and components and all this sort of stuff. And then you make two copies of the spec file and in one
+31:46
+of them you just have Android, Cotlin, whatever. And on the other one you have iOS, Swift UI, Xcode
+31:54
+and other things. Um, and it writes the same application twice in the native
+32:01
+code using what one assumes is best practices because it's looking at the documentation and finding reference
+32:07
+material uh on the internet for stuff. So then we get into the architect and
+32:14
+the architect system prompt. I have uh snippets for this somewhere.
+32:20
+Um,
+32:29
+what did I Oh, I didn't type CD. Um,
+32:35
+I'm I'm not Uh, this isn't for public consumption.
+32:42
+Uh, there we go.
+32:47
+And then we're going to go to there. Oh, god damn it.
+32:56
+Sometimes I really hate Mac OS. Um, those times are pretty much when I
+33:04
+have my MacBook open. Um,
+33:10
+and then we can go to here and
+33:15
+we can do command N.
+33:20
+Right. And then we can switch across from our slides.
+33:28
+God damn it. It just I go go to the slides and it goes, "Yep,
+33:34
+I'm on the slides." And you're like, "No, not not the actual slide that's on the screen. I want to go to There we go.
+33:40
+The presenter view." Right. Okay. So, here we go. system prompt for
+33:47
+the claude code CLI tool telling it it is a solution architect and giving it instructions to read a requirements.mmd
+33:53
+document then engage with the user to design a solution and plan the implementation producing a specd
+33:58
+document to be used along with the open spec tool spoilers to implement the solution and so we go through the same
+34:05
+process with this and the nice thing actually is if you're kind of working
+34:11
+for company stuff um I always feel like doing the requirements.mmd bit and
+34:17
+getting that sorted and checked into source control. That feels like a day's work, even if it takes like three hours.
+34:23
+And then I can kind of go, yes, I'm going to spend the rest of the day enriching myself
+34:29
+in Boulders's Gate 3. Um [clears throat] or or doing whatever, you know, watching
+34:35
+YouTube generally. Uh and then the next day I'll do the solution architect system prompt and then we'll go through
+34:42
+that and we'll plan the solution and everything else. And then I'll go, yes, that's another good day's work. Back to
+34:47
+bed. And so on. So yes, I can do this. And we'll see it comes out with a
+34:54
+different system prompt. And at this point, so yes, the other
+35:00
+point here is that I don't write this system prompt until I've already got my
+35:05
+requirements.mmd because I might change the way the solution architect is
+35:11
+prompted based on something that came up while I was doing the requirements. uh we might have already decided it was
+35:18
+going to be cloud-based and so I would sort of say you are an expert and I know that my company uses AWS and so I'm
+35:25
+going to go you're an AWS expert and it's going to say yep okay I'm going to know all about Dynamo DB and S3 storage
+35:31
+and all that sort of thing um and so yes
+35:38
+here we have our system prompt solution architect for
+35:43
+specification development Your primary objective is to analyze requirements, engage in collaborative
+35:49
+design discussions and produce comprehensive technical specifications. Begin by reading the requirements. So
+35:55
+blah blah blah blah blah. So then I use this system prompt to start another clawed code session and it goes in and
+36:02
+this helps me design my solution. This comes out with uh a spec.md
+36:09
+file which includes a breakdown of the
+36:14
+entire solution. What platforms we're going to use, what languages we're going to use, what the different components
+36:20
+are, what the stages are, the phases of implementation. You'll see phase one, create a Python server project using
+36:27
+gRPC. Phase two, create a .NET client library using gRPC. phase three, create
+36:35
+a Unity application, blah blah. And then after that's ready, you can go to the
+36:42
+next phase
+36:48
+um which is developer.
+36:53
+You are going to spend most of your time in the developer personality and you are probably going to revise the system
+37:00
+prompt uh quite a lot while the developer is working. Um but you are
+37:06
+going to give the developer some fairly standard uh instructions.
+37:13
+It's going to look something like this. And you might have multiple system
+37:18
+prompts. So you might have a different system prompt for the developer personality when you're working on the
+37:24
+Python backend server versus when you're working on the uh Swift UI mobile client
+37:31
+or the Mac desktop application or whatever it is. Uh and so you are a
+37:36
+language developer could potentially change. If you're creating an iOS
+37:42
+application using Swift UI, then you might not be using test-driven development because it's an absolute
+37:49
+car crash trying to do test-driven development with Swift UI. I hate it. I really, really hate it.
+37:56
+But for everything else, you want test-driven development. You want to say to it, comment your code because
+38:04
+a commented code is good and it's really nice for the first time in my life to be
+38:10
+checking properly commented code into GitHub repositories instead of like having the occasional line here and
+38:16
+there that above a line that says uh x= x + one, I've got a comment that says
+38:23
+increment x. Um, so yes, you can tell it to comment its code usefully explain
+38:28
+what it's doing and why it's doing it and why it's chosen to do it that way.
+38:34
+And then you the main thing, the very very important thing that you do at the
+38:40
+bottom here is every time it starts a new task, every time it starts to build
+38:45
+a new component, you're going to say create a git branch to do that. And and
+38:51
+this is the other um very important
+38:57
+thing you are going to tell it to work in the smallest increments possible. So in that
+39:03
+same way uh where your GitHub commit and your pull request should be fixing one
+39:10
+thing. It should be fixing one issue. You shouldn't kind of like go I fixed 18 issues. I fixed everything. Here's one
+39:16
+massive massive pull request. It should be doing stuff that you are capable of reviewing in the same way that you would
+39:22
+review another developer's submission and in the same way that if that developer committed a 100,000 lines of
+39:29
+whites space changes, you would go and I I talk about stabbing people a lot. I have rage issues. Talk to my
+39:36
+psychiatrist. But the other thing we are going to use here [sighs] and I'm not going to
+39:42
+particularly demo it because they've broken everything. Um is openspec.
+39:47
+Uh so um npm install minusg uh fishaiopspec
+39:53
+and then you run openspec in it. Um openspec go to openspec.dev that will
+39:59
+explain what it is. Uh this is the thing that's kind of replaced CC sessions and about two or three other MCP servers
+40:06
+that I used to use. And it's not an MCP server and that is a really good thing. There are issues with MCP servers. If
+40:12
+you have a lot of them loaded, there are people who have like 50 60 MCP servers
+40:18
+loaded just globally every time they start clawed code. Every single one of those is eating context tokens. You
+40:24
+could have like 20,000 of your 100,000 context tokens already gone because you've loaded MCP servers which are
+40:31
+accessing the the language documentation for Zigg0.14.1.
+40:36
+Um, so yes, but OpenSpec is a command line tool and OpenSpec
+40:43
+integrates with Claude by giving it commands and skills that it can use. And
+40:49
+OpenSpec, I will show you what OpenSpec used to look like and then
+40:56
+we will talk about what OpenSpec have done deliberately on purpose to me
+41:02
+because they hate me. Um, They knew I was giving this talk.
+41:09
+Uh, where's the other one of those gone?
+41:16
+That's how you exit Vim, by the way. Um,
+41:28
+right. Here we go. Openspec. Um, this is my world changing application.
+41:34
+um ignore everything but yes so opensp spec you used to run openspec in it and
+41:39
+it created this opensp spec directory and in there you would have your design
+41:44
+md and this is sort of essentially sourced from the spec that the solution
+41:50
+architect has generated and you have your proposal which is the thing that you kind of created with your
+41:56
+requirements analyst and then you have a tasks MD file and you can see that's got
+42:02
+lots of check boxes so And that's where we're keeping track of what we've done and what we still need to do. Um, I
+42:07
+really need to make sure we've got the proof of concept out before this goes on YouTube, don't I? Yeah, my business
+42:13
+partner down the front here. Hello. Um, we have agents.md. So, this is
+42:18
+agents.mmd is a weird standard. Uh, this is like claw.md, but theoretically, if
+42:24
+you put it into a a project, you can run claude, it'll read it. You can run gemini, it'll read it. all the people
+42:30
+who make these Cly tools have just gone we'll look for an agent.mmd file and that's actually something that's
+42:35
+happening more and more and we'll come back to that a bit more in a minute. Um and then
+42:42
+uh we have this changes folder here and every time you are implementing
+42:49
+something, every time you're adding a feature or changing a feature, changing the way authentication works, whatever else it is, you tell openspec to create
+42:56
+a change and then it puts the proposal in there for it. It puts the implementation thing as the task
+43:01
+requests. add demon PO is a very very big one and it's a very long task list
+43:08
+but it is just a proof of concept so I don't need to break it down that much but you would literally sort of be have
+43:14
+this could be something like add a dark theme or um add GitHub authentication
+43:20
+whatever it is uh you can put it in and openspec does that um so to start that
+43:26
+off I'm just going to jump back to my CLI and we're going to do slash dash
+43:32
+exit and then we'll clear that and then we'll do opensp spec
+43:42
+in it and it's going to ask which tool I want
+43:48
+to use it with and I'm going to say clawed code and then I'm going to tab and then it's going to do all of this
+43:53
+sort of stuff and then I'm going to do clear and then I can go back to my demo
+44:01
+thing And you can see opensp spec has created uh specs and a change archive
+44:07
+and a config.yaml and this claude directory here and then
+44:13
+commands and skills. I'm going to come back to this because
+44:18
+I'm going to talk about commands and skills in a bit. But this is how openspec works. This is what they
+44:24
+changed three days ago. So if I had been doing I swear to God if I've been doing this talk on Wednesday morning I could
+44:30
+have showed you the stuff that was in my demon project and it would all have been valid and current. But now it's all
+44:37
+/opsx and I don't know how any of it works. All I know is it's doing basically the
+44:44
+same thing and it's really really helpful because it encourages you to
+44:50
+break things down to that single component single change. Yes, it's very
+44:56
+very easy and an LLM can quite happily write you a 100,000 lines of code all in
+45:01
+one go. You have no hope of ever understanding what any of that code is
+45:07
+doing. So you want to be using an LLM very very differently from that.
+45:15
+So yes, remember autocomplete actually is does anyone remember before
+45:22
+autocomplete like writing C um in vi on a Unix wise
+45:29
+terminal where the way that you remembered the system libraries was you
+45:34
+had a ring binder with a print out of like std uh functions and stuff and then
+45:41
+autocomplete came along and originally it was like intellisense and it was when object-orient oriented programming meant if you typed the name of a variable and
+45:48
+then dot the system could work out what all the methods and and members of that
+45:53
+object were and give you that choice. And then over time it got more and more intelligent and clever and it would
+45:59
+start to do autocomplete of entire link loops or for loops. You could got to
+46:05
+this point very very early copilot you would type the name of a function and it was like verify ISBN number and it would
+46:12
+just go off and do it. But it was still just autocomplete. LLM's clawed code in
+46:18
+its developer mode is autocomplete. It's just autocomplete. You know the
+46:24
+snippet thing that you have in like Visual Studio where you do CW and then
+46:30
+expands to that console.right line. Yeah, it's like that except that CW
+46:36
+snippet shorthand becomes your opensp spec change that I am doing and the
+46:43
+autocomplete becomes I've written a class. I've written a method. I have potentially
+46:51
+written a controller and I've created some views for it. That's the level that
+46:56
+you want to be working at. That's what you want to be reviewing. And that's where that's at the point where you can
+47:02
+look at it and go, "Yes, it autocompleted what I was going to type.
+47:08
+I was definitely going to type that." And my favorite thing about it is
+47:14
+um who knows C#, who knows Python, who knows Java, who
+47:21
+knows Objective C, who knows C++, who knows Rust, who knows Zigg.
+47:28
+Zig's great. Claude is really good at Zigg. Mitchell Hashimoto, who uh is no longer at
+47:35
+Hashior um and is now making a a terminal. That's the terminal that I'm using here. Ghost TTY. Um, and 90% of
+47:43
+the code is Zigg and he writes most of it with Claude. Um, and it's also open
+47:48
+source, which means Claude is trained on it. Uh, also Anthropic just acquired Bun, which is the JavaScript alternative
+47:56
+to Node that is famous for two things. One, it's written in Zigg. Two, it frequently [clears throat] Seg faults.
+48:03
+Um, whether those two things are related, I don't know. I haven't had Ghost TTY seg fault on me. So it's
+48:09
+obviously not uh necessary. Um but Anthropic have acquired that and uh I
+48:16
+think it's because Claude code is written in JavaScript. It was an npm package. It's now a native package which
+48:22
+I think means they're bundling it with bun. Um but yes the good news now is
+48:29
+that if you know C or any C like language you now know all the sea like
+48:35
+languages because you can read all of them. So you can say I want to create an
+48:42
+objective C function that does this and it will generate it and you can look at it and you can pretty much go yeah okay
+48:49
+I can see what that's doing even though um Objective C is the way they made
+48:55
+Objective C was they took the best bits of C++ and the best best bits of small talk and they threw them away and
+49:02
+Objective C is what's left. It will happily compile
+49:07
+an executable and link it even if you are passing too
+49:13
+many parameters to a method because it's not calling the method with arguments.
+49:18
+It's sending messages to the method and it will happily compile something where
+49:24
+the method doesn't exist. It's it's like Ruby but controlled by Apple. Um but
+49:31
+yes, so now this is what I was saying about choosing the right platform for the right thing. If you can program in
+49:37
+like two or three languages, you can read all the languages. If you can
+49:42
+program C#, you can definitely read Java. Java is almost a word for word copy of C. Um I mean I don't know how
+49:49
+Oracle got away with it to be honest. Um I'm I'm planning on doing this talk at
+49:55
+Devox. That's going to be fun. um trolling the audience. Uh yeah, and then
+50:00
+even the languages that are slightly different like Python. Um the main issues that I've always had with Python
+50:07
+is I can never remember which of the lines have the colon at the end and which of them don't. And the the hidden
+50:15
+bugs because there's a tab in your whites space. Um and both of those things go away. But Python is incredibly
+50:20
+easy to read. Swift is incredibly easy to read. Cotlin is really easy to read. Um, mobile applications, the way mobile
+50:28
+applications are structured, different languages, but actually there's a file that says this is what the view looks
+50:33
+like and there's a file that says, hey, here's the control. They're basically using model view controller or model view presenter or MVVM or whatever it
+50:41
+might be. And you can read the code and you can check that it's doing roughly what you want it to do. And uh if you
+50:48
+load it up into the relevant IDE um which is sometimes Xcode and I'm
+50:54
+sorry uh but um I've got like the full set of Jet Brains IDEs. So, I've got uh
+51:01
+Ryder, Android Studio, WebStorm, PyCharm, uh Sea Lion with a Zigg plugin,
+51:08
+Rust Rover, and I don't have Ruby Mine because uh no LLM is ever going to say
+51:16
+anything to me despite what the system prompt might say that is going to convince me that writing anything in Ruby is a good idea.
+51:23
+So, yes. So, you are going to use your developer prompt to generate code.
+51:29
+You're going to do this on a branch and then you're going to commit that branch and you're going to push that branch somewhere so you have a record of
+51:35
+something. If the LLM completely it up, you're going to reset hard minus
+51:41
+minus hard head and quit clawed code, start it again and make it have another
+51:47
+go. This is really fun. This is where, oh, let's make them non-deterministic
+51:53
+because otherwise you would actually have the same code being generated in lots of different places across the
+51:58
+country and it would essentially be like Nugat. Uh, so yeah, it's it's it's weird. Um, but uh sometimes it does make
+52:08
+a complete mess. Sometimes it gets stuck. Sometimes it gets in a loop and it you go, "That's not right. That line there isn't compiling. It goes, all
+52:14
+right, I'll fix that." And it fixes it, but then it also changes another line somewhere else. when I was using Gemini,
+52:21
+I actually started shouting at it and insulting it and I gave it an existential crisis. Um, and it was just
+52:28
+I'm really really sorry. I am not fit to work on software. I should you know it
+52:33
+wanted to die. That was quite fun actually. Um but yes so you are going to
+52:40
+create small reviewable self-contained welldocumented well understood pull
+52:47
+requests effectively. Now you can push these to GitHub and you can put them through a pull request process or you
+52:53
+can just review them on your machine and then you can do git merge and merge them back onto dev or main or however you're
+52:59
+working. And for this we create a reviewer and you can make that reviewer as picky
+53:07
+and uh sort of oh that's check spelling and and we don't this is not our coding
+53:13
+style and uh opening braces for catch exception should go on the same line as
+53:20
+the word catch and the exception type everything else should use KN&R style
+53:25
+real coding standard from somewhere I worked um but yes So you get your developer and then you exit claw code.
+53:32
+You've got your branch. You've committed the changes to the branch and then you go you load up the reviewer thing and
+53:39
+you say review the changes in this commit. Uh which it can do because it can do git log and git diff and all
+53:46
+these sorts of things. And so it can actually go off and analyze those without needing GitHub's lovely PR
+53:51
+review interface. and it can uh make
+53:59
+a comments.mmd file. The comments.mmd file is transient. So once the
+54:04
+comments.mmd file has been dealt with, you delete it and then the reviewer creates another one. Um so you it goes
+54:13
+through the changes. It notes things. It goes, "Oh, there's a better way of doing that or that's not going to work
+54:19
+properly or there's an edge case you appear to have missed." puts all this sort of stuff into the comments file.
+54:24
+Exit clawed code, start it with the developer system prompt, tell it to read the comments.mmd file and address those
+54:31
+things. Commit the changes, go back, exit clawed code, load it up again with the reviewer prompt, do this as many
+54:37
+times as you want. Um, it's great fun. And that is that's the core thing. So
+54:44
+the fundamentals there is four personalities. Uh oh, the developer is obviously responsible for doing test
+54:50
+drip development and all that sort of thing. So it's like write the tests first, make it pass, check that the, you
+54:55
+know, check with the user that the tests make sense. Ask the user for inputs. Uh
+55:02
+you're doing voice recognition. It's kind of like if you need a web file with JFK's ask not what you can do for your
+55:07
+country speech uh that you can then load into your voice recognition system and assert that the text that comes out is
+55:14
+in fact correct, which by the way is JFK.wave. WAV is the standard way of
+55:19
+testing voice recognition systems in English because it's a really grainy recording and heav
+55:26
+with um yes that weird accent he had. But yeah um you're going through this
+55:33
+process, you've done your requirements, you've done your solution architect bit, and then you're looping between the
+55:40
+developer and the reviewer until you eventually get to the point where everything in that tasks.md file is
+55:45
+ticked off. Congratulations, you've created a feature or a proof of concept
+55:50
+or applied a change to your system and uh you have kept control of the process
+55:56
+the entire way. You've done it using whatever the best tools for the job were instead of the ones you just happen to
+56:03
+know how to use. And you actually have an idea of roughly what's been added to
+56:09
+the system, what new packages and libraries you might be using, whether the code is clean. uh whether the tests
+56:17
+make sense. You can check coverage. You can put coverage rules into your developer prompt. So coverage cannot go
+56:23
+down. Use XY Z uh for unit testing and so on.
+56:29
+So yes, just to finish up quick note about extensions. Um we used to have MCP
+56:36
+servers and those were great but they do use up a lot of context. Uh Claude also
+56:42
+has commands and these are files um in the project directory or in your home directory and it has skills which
+56:49
+weirdly are files that are in your um project directory or in your home directory. I have two MCP servers that I
+56:56
+still use. One is context 7. Context 7 is a sort of uh gateway MCP server to
+57:03
+the documentation for stuff and it's got literally hundreds of links to docs for
+57:10
+all different versions of all the programming languages frameworks. It's got links to you know all the different
+57:15
+Apple docs for Swift UI and Swift and Objective C and all the NS things
+57:22
+because Apple OS is still essentially next step. Um so context 7 means that
+57:28
+the AI can go off and find the documentation that it needs for any particular thing. And then there is
+57:33
+Serena which is an LSP integration. So if you say rename this method and you
+57:40
+haven't got Serena or something similar, it will literally have to go and analyze
+57:46
+every single text file and it's basically using GP. If you have Serena, Serena understands and knows about the
+57:52
+language server. So it uses Roslin if you're working on a .NET solution and then it will say I'm calling Serena find
+57:59
+symbol and it's a it's much much quicker uses way less context than grepping
+58:06
+through all the files and doing stuff that way. Those are the only two MCP servers that I still use.
+58:13
+Commands those slash um init and slashclear
+58:18
+and slashexit and all these sorts of things. You can add your own ones of those. And if we go and look at we'll
+58:24
+look at what um OpenSpec did in a moment. It added a bunch of commands under /Ospx
+58:30
+or opsx. Um that GitHub repository, he's really
+58:35
+him/ awesomeclaw code. There's a whole bunch of kind of very standard reusable
+58:40
+commands. Uh and I put a bunch of I sort of just have that bookmarked and I'll go
+58:46
+and grab a few of them each time I pull something in. Um,
+58:53
+and then that should say skills. Um, I copied and pasted a slide. Okay,
+59:00
+we'll we'll look in the uh thing here instead. So, here we have Claude command
+59:05
+slashopsx and then we have apply. Still just got slides. You're going to
+59:12
+do it to me again, aren't you? I hate you so much. Not you. PowerPoint
+59:19
+on Mac. There we go. Right.
+59:26
+Okay. So, this is um how OpenSpec now works as
+59:31
+of bloody Wednesday. Um it's formalized everything into commands and skills. And
+59:39
+commands are markdown files that go in a commands directory below. Claude and
+59:45
+skills are markdown files that go in a skills directory below umclaude.
+59:52
+Uh the difference is that commands are much more uh accurately defined. So it's
+1:00:00
+ask this question and take accept these arguments and and all this sort of stuff. Um and you see we have tags on
+1:00:06
+there. The input is we can specify a change name. So we can do opsx apply add orth. And so this is finding a spec a
+1:00:12
+change that we've created which has the name add-orth and so we're saying apply that change and that is a sort of
+1:00:19
+shorthand way of saying let's implement the add orth specification. Uh so it's
+1:00:24
+sort of bringing in um autocomplete things as well. uh and then it show it
+1:00:30
+the steps and check the status and there are commands built into claude uh like
+1:00:38
+ask us a question which can be referenced in here and you can say ask the user a question give them these five
+1:00:44
+options they can choose multiple of them or only one of them and all this sort of stuff it's really weird it's like it's
+1:00:51
+it's like programming but [clears throat] in English it's it's so strange
+1:00:58
+yes Commands are explicit. Yes, commands are explicit. Skills. Let's take a look at a skill. Uh so if
+1:01:05
+we look at openspec apply, uh we have a skill.md file there.
+1:01:11
+Um so yes uh opensp spec apply change. This is a skill. This is dis uh telling
+1:01:17
+it how to do the apply change thing. So this is more conceptual and abstract than the apply change command. Um, but
+1:01:25
+you can see here that it's uh telling it it can do these things and how they work and all this sort of stuff. Um, skills
+1:01:34
+I think in a in an awful lot of cases are replacing MCP servers. They're not
+1:01:39
+going to completely replace MCP servers because there are things that MCP servers are really good for. But there
+1:01:45
+are things that people created MCP servers that are better expressed as
+1:01:50
+skills. And the other really cool thing, this skill directory here. I'm gonna find the um anthropic skills repository.
+1:02:04
+Yes, it does not fill up the context window with all the documentation on the various methods and endpoints that the
+1:02:10
+MCP server has and all this sort of stuff. So yeah, if we go to anthropic skills. So this is the the ones that
+1:02:18
+Anthropic kind of build in. And we have a DOCX skill. And you see here it's got
+1:02:24
+a skill.md um which is we've got some scripts and
+1:02:29
+you can use them to interact with the DOCX file and you can use this to once you've rendered some markdown in
+1:02:35
+whatever you are, we can then use these scripts to turn that markdown into a word file and you can then publish that.
+1:02:41
+And there's I think there's similar things for Excel and PowerPoint and all this sort of stuff. And so skills you
+1:02:46
+have your skill.mmd and a lot of skills that's all it is. But then you also have your um documentation for your uh
+1:02:55
+commands which is done as a tutorial. Um you have your OOXML technical reference
+1:03:01
+and then you have schemas and scripts and things uh
+1:03:08
+and yes. Yeah. Um, and so you can dump all kinds of crap. You can dump the PDF
+1:03:15
+documentation for the Bluetooth uh interface with the augmented reality
+1:03:21
+glasses. That is wrong. Uh, but you can put that in the skills folder and it will use that while it is uh building
+1:03:28
+the Bluetooth library to display subtitles on a pair of augmented reality glasses. Um, so yes, skills is that sort
+1:03:35
+of thing whereas commands is is very specific and focused stuff. Okay, I am at time.
+1:03:43
+So, in summary, you are now the micromanager of a team of brilliant but also very stupid experts. Have fun. Um,
+1:03:50
+you want your claw.md file. Uh, that's where you're putting general stuff in. That's where you're telling Claude how
+1:03:55
+to be better. Uh, you have system prompts for your four roles, analyst,
+1:04:01
+uh, solution architect, developer, and reviewer. You may think of another one and come up with something else that you
+1:04:08
+want on your team. You might have a designer. I I'm not very front- end thinky, but yes, you might have a
+1:04:13
+designer role and you go, "Oh, you know about color theory and accessibility." You might have just an accessibility
+1:04:20
+consultant who works on the team. So once the developer has made something, you have the reviewer who checks the
+1:04:26
+code for technical correctness and you have an accessibility reviewer who checks that Amy Capenit wouldn't kill
+1:04:32
+you if you put that website into production. Um, so yes, work that out
+1:04:37
+for yourself. I've told you what works for me. And then MCP servers, like I say, context 7 and Serena are insanely
+1:04:45
+useful. and I recommend those to everybody. But most of the other things are now replaced by skills and commands.
+1:04:52
+And that openspec tool is incredibly useful. If you have been using it, it's
+1:04:57
+completely changed. If you haven't been using it, uh then I don't know how it
+1:05:02
+works, but I'm going to find out next week. Um I'm not sure we have time for questions because I've run over by five
+1:05:08
+minutes. Uh but there are some resources there. Take a quick picture. Um, and
+1:05:14
+that's sort of GitHub links and all this sort of stuff. Uh, I will be dashing off
+1:05:20
+to Pubconf now. I hope to see some of you there. Uh, it's going to be brilliant. Um, and just wait to make
+1:05:28
+sure everybody's got the photograph. And then, yep, I have to show this slide
+1:05:33
+because [clears throat] the template says you have to show this slide. Uh, so that's thanks for the template. Um, I am
+1:05:39
+reendgmail.com because I got my Gmail address really early. Uh, I'm on blue sky rendle.dev.
+1:05:46
+I'm on LinkedIn rendle.dev spelled out. Um, and I'm happy to answer any of these
+1:05:53
+questions. And if you want to hire me to come to your company and teach you how to do this on an actual project, then
+1:05:58
+it's £5,000 a day and I'm very, very happy to do that for any of you, plus expenses. I'm awesome. You've been
+1:06:04
+great. Thanks for coming. Enjoy the rest of the conference. I hope to see some of you later and goodbye.
