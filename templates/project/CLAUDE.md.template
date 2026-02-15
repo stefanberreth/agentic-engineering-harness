@@ -1,0 +1,96 @@
+# CLAUDE.md Template for Target Projects
+
+> **Instructions:** Copy this file to the root of your target project as `CLAUDE.md`.
+> Replace all `[PLACEHOLDER]` values. Delete this instruction block when done.
+
+# [Project Name]
+
+## Project Overview
+
+[2-3 sentences: what this project is, who it's for, what problem it solves.]
+
+## Build & Run
+
+```bash
+# Install dependencies
+[INSTALL_COMMAND]
+
+# Run development server / build
+[DEV_COMMAND]
+
+# Run tests
+[TEST_COMMAND]
+
+# Run linter / formatter
+[LINT_COMMAND]
+
+# Build for production
+[BUILD_COMMAND]
+```
+
+## Code Style
+
+- [Language/framework-specific style rules, or point at config files]
+- Refer to `.editorconfig` / `[LINTER_CONFIG]` for formatting rules.
+- [Naming conventions: e.g. "camelCase for variables, PascalCase for types"]
+
+## Architecture
+
+- [Brief description of the architecture: monolith, microservices, monorepo, etc.]
+- Key directories:
+  - `src/` -- [what's in here]
+  - `tests/` -- [test organisation]
+  - `docs/` -- [documentation]
+- See `spec.md` for full architectural documentation.
+
+## Workflow
+
+This project uses a four-persona agentic engineering workflow:
+
+1. **Analyst** -- requirements gathering → `requirements.md`
+2. **Architect** -- solution design → `spec.md`
+3. **Developer** -- TDD implementation on feature branches
+4. **Reviewer** -- code review → `comments.md`
+
+### Developer Rules
+
+- **Test-driven development.** Write the test first, then make it pass.
+- **One task per branch.** Branch from `main` as `feature/[task-slug]`.
+- **Small commits.** Each commit should leave tests green and be reviewable in isolation.
+- **No dead code.** Don't commit commented-out blocks, unused imports, or TODO stubs.
+- **Write a retrospective** after each task in `reports/task-[N]-retrospective.md`.
+
+### Git Conventions
+
+- Branch naming: `feature/[task-slug]`, `fix/[issue-slug]`, `chore/[description]`
+- Commit messages: imperative mood, explain *why* not just *what*
+- [MERGE_STRATEGY: e.g. "squash merge to main", "rebase and merge", etc.]
+
+## Testing
+
+- Framework: [TEST_FRAMEWORK]
+- Run: `[TEST_COMMAND]`
+- Coverage target: [COVERAGE_TARGET, e.g. "80% line coverage, never decreasing"]
+- [Any special testing conventions or fixtures]
+
+## Key Files
+
+| File | Purpose |
+|---|---|
+| `CLAUDE.md` | This file -- project instructions for Claude |
+| `requirements.md` | Approved requirements document |
+| `spec.md` | Technical specification and implementation plan |
+| `tasks.md` | Task tracking with checkboxes |
+| `comments.md` | Current review cycle comments (transient) |
+| `reports/` | Task retrospectives |
+
+## Constraints and Decisions
+
+- [Record key technical decisions and their rationale here]
+- [Record constraints: "must use PostgreSQL", "must support Node 20+", etc.]
+
+## Context Management
+
+- Stay under 100k tokens. Run `/context` frequently.
+- Before exiting, commit work and update `tasks.md`.
+- On fresh start, read this file, then `spec.md`, then `tasks.md` to orient.
