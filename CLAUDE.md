@@ -16,7 +16,7 @@ This project is a **meta-engineering harness**. It does not implement software. 
 
 ## CRITICAL RULE: Target Project Isolation
 
-**Claude Code running in this harness project must NEVER directly modify files in any target project directory.**
+**Claude Code running in this harness project must NEVER directly modify application code, configuration, or general files in any target project directory.**
 
 This is not a suggestion. It is a hard boundary. The reasons are:
 
@@ -33,11 +33,49 @@ This is not a suggestion. It is a hard boundary. The reasons are:
 
 ### What this harness NEVER does
 
-- Write, edit, or delete files under a target project's directory tree
+- Write, edit, or delete application code, configuration, or general files under a target project's directory tree
 - Run build, test, or git commands inside a target project
 - Make commits or push changes in a target project's repository
 
 When producing deliverables, always write them to `targets/<project>/deliverables/` and generate an accompanying prompt in `targets/<project>/prompts/` that tells the target-side Claude Code instance how to apply them.
+
+### Selective exception: Direct Prompt Delivery
+
+There is **one narrow, optional exception** to the isolation rule: the harness may write prompt files directly into a target project's designated prompt inbox directory (conventionally `docs/AE/prompts/` within the target project). This allows the target-side Claude Code instance to simply reference and execute prompts by file path instead of requiring the human to copy-paste prompt text.
+
+**This is a per-target-project policy decision.** It must be:
+
+1. **Asked explicitly** when a new target project is onboarded. The question is:
+
+   > "Would you like the harness to deliver prompt files directly into this target project's `docs/AE/prompts/` directory? This means the harness will create/update/delete files ONLY in that specific directory -- nowhere else in the target project. The alternative is that all prompts stay in the harness and you copy-paste them manually."
+
+2. **Recorded in the target's `profile.md`** under a `## Prompt Delivery Policy` section, with one of:
+   - `direct` -- harness writes prompts to `<target-path>/docs/AE/prompts/`
+   - `manual` -- all prompts stay in `targets/<project>/prompts/`, human copy-pastes
+
+3. **Respected strictly.** If the policy is `direct`:
+   - The harness may ONLY write to `<target-path>/docs/AE/prompts/` -- no other target directory.
+   - Files written there are prompt files only (numbered `.md` files following the standard prompt format).
+   - The harness still writes its own copy to `targets/<project>/prompts/` as well (single source of truth stays in the harness).
+   - Deliverables (adapted `CLAUDE.md`, persona files, etc.) are NEVER written directly -- they always go to `targets/<project>/deliverables/` and a prompt instructs the target-side Claude to apply them.
+
+4. **Changeable at any time.** The human can switch the policy by telling Claude to update the target's `profile.md`. No other files need to change -- prompts are always maintained in both locations when `direct` is active.
+
+#### Why this exception exists
+
+Copy-pasting multi-page prompts is error-prone and tedious. When the harness can drop a prompt file directly into the target project, the human's instruction to the target-side Claude becomes simply:
+
+> "Read and execute `docs/AE/prompts/003-create-developer-prompt.md`"
+
+This is faster, less error-prone, and the prompt file is version-controlled in the target project's repo as a record of what was done.
+
+#### Directory convention
+
+The target-side directory is always `docs/AE/prompts/` (AE = Agentic Engineering). This convention:
+- Keeps harness artifacts namespaced and visible in the target project
+- Is unlikely to collide with existing directory structures
+- Is easy to `.gitignore` if the team doesn't want prompts in their repo
+- Can be overridden per-project by recording a different path in `profile.md`
 
 ---
 
@@ -70,7 +108,7 @@ targets/
 
 | File | Purpose | Updated by |
 |---|---|---|
-| `profile.md` | Stable identity and context for the target project. Read first on any session. | Created once, updated rarely. |
+| `profile.md` | Stable identity and context for the target project. Includes prompt delivery policy. Read first on any session. | Created once, updated when policy or context changes. |
 | `assessment.md` | Snapshot of the project's agentic readiness. Based on `templates/governance/assessment-checklist.md`. | Created during assessment phase. Re-run when the target evolves. |
 | `transformation-plan.md` | The phased plan: what to create, in what order, with what priority. | Created after assessment. Revised as work progresses. |
 | `tasks.md` | Granular task tracking for the transformation itself (not the target project's development tasks). | Updated every session. |
@@ -114,8 +152,11 @@ Each target project moves through these phases:
   - Adapt the relevant template to the target project
   - Write the adapted file to `targets/<project>/deliverables/`
   - Write a corresponding prompt to `targets/<project>/prompts/`
+  - If prompt delivery policy is `direct`: also write the prompt to `<target-path>/docs/AE/prompts/`
   - Update `targets/<project>/tasks.md`
-- The human takes each prompt to a Claude Code session in the target project and executes it
+- The human takes each prompt to a Claude Code session in the target project:
+  - If `direct` delivery: "Read and execute `docs/AE/prompts/NNN-title.md`"
+  - If `manual` delivery: human copy-pastes the prompt text from `targets/<project>/prompts/`
 
 ### 4. Reviewing
 - After the target project has its agentic config in place, review it using `templates/governance/review-criteria.md`
@@ -210,7 +251,8 @@ When Claude starts in this project, it should:
 5. If adding a new target:
    a. Ask for the project path.
    b. Read its top-level structure, README, and any existing agentic config.
-   c. Create the target workspace and run the assessment.
+   c. Ask the prompt delivery policy question (direct to `docs/AE/prompts/` or manual copy-paste).
+   d. Create the target workspace (including `profile.md` with the chosen policy) and run the assessment.
 6. If working on the harness itself:
    a. Ask what aspect to improve (templates, governance, docs, process).
    b. Work on it, commit when the user is satisfied.

@@ -27,10 +27,12 @@ This project codifies a **four-persona workflow** (Analyst → Architect → Dev
 
 This harness operates on a strict separation principle:
 
-1. **Harness-side Claude** (running in this project) -- reads target projects, analyses them, produces plans, generates adapted templates and ready-to-paste prompts. **Never modifies target project files directly.**
+1. **Harness-side Claude** (running in this project) -- reads target projects, analyses them, produces plans, generates adapted templates and ready-to-paste prompts. **Never modifies target project files** except for one optional, narrow exception (see below).
 2. **Target-side Claude** (running in the target project) -- receives prompts from the human operator, executes changes within the target project's own context and permissions.
 
 This separation ensures auditability, reproducibility, and clean context boundaries. Every change to a target project is made by a Claude instance that reads *that project's* `CLAUDE.md` and follows *that project's* conventions.
+
+**Optional: Direct Prompt Delivery.** Per-project, the user can choose to let the harness write prompt files directly into the target project's `docs/AE/prompts/` directory. This means the target-side Claude can simply be told "Read and execute `docs/AE/prompts/003-create-developer-prompt.md`" instead of requiring manual copy-paste. This is a policy choice asked during onboarding and recorded in the target's `profile.md`. The harness never writes anything else into the target project -- only prompt `.md` files into that single directory.
 
 ### Transforming an Existing Project
 
@@ -41,11 +43,12 @@ This separation ensures auditability, reproducibility, and clean context boundar
    ```
 2. Claude orients via `CLAUDE.md` → `targets/index.md` and asks what you want to work on.
 3. Nominate a target project by path.
-4. Claude reads the target's structure and runs the assessment checklist.
-5. Together, you produce a transformation plan stored in `targets/<project>/`.
-6. Claude generates deliverables (adapted personas, `CLAUDE.md`, etc.) and numbered prompts.
-7. You take each prompt to a Claude Code session **inside the target project** and execute it.
-8. Results feed back into the harness for review and refinement.
+4. Choose a prompt delivery policy: **direct** (harness writes prompts to target's `docs/AE/prompts/`) or **manual** (copy-paste from harness).
+5. Claude reads the target's structure and runs the assessment checklist.
+6. Together, you produce a transformation plan stored in `targets/<project>/`.
+7. Claude generates deliverables (adapted personas, `CLAUDE.md`, etc.) and numbered prompts.
+8. You point a Claude Code session **inside the target project** at each prompt to execute it.
+9. Results feed back into the harness for review and refinement.
 
 ### Working on the Harness Itself
 
