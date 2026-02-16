@@ -11,7 +11,7 @@ This playbook drives the guided assessment and transformation of a new target pr
 
 - Max 3 lines per step explanation.
 - No emoji, no exclamation marks.
-- Show progress: `[2/6] Reconnaissance`
+- Show progress: `[2/7] Reconnaissance`
 - Offer detail on demand: `(say "explain" for more)`
 - Never repeat information the user already acknowledged.
 
@@ -32,7 +32,7 @@ Experienced users can bypass Phase 1 entirely: `/onboard /path/to/project`
 ## Phase 1: Target Selection
 
 ```
-[1/6] Target Selection
+[1/7] Target Selection
 ```
 
 **If path was provided with `/onboard <path>`:** Skip to validation below.
@@ -108,7 +108,7 @@ Proceed to Phase 2.
 ## Phase 2: Reconnaissance
 
 ```
-[2/6] Reconnaissance
+[2/7] Reconnaissance
 ```
 
 ### 2a. Structural Snapshot
@@ -169,7 +169,7 @@ For each detected file/section:
 Present a concise summary to the user:
 
 ```
-[2/6] Reconnaissance -- <project-name>
+[2/7] Reconnaissance -- <project-name>
 
 Stack:      <primary language> · <framework> · <build tool>
 Size:       <N> source files · <N> test files · <N> docs
@@ -195,7 +195,7 @@ Ask: `Continue to assessment, or adjust scope?`
 ## Phase 3: Assessment
 
 ```
-[3/6] Assessment
+[3/7] Assessment
 ```
 
 ### 3a. Run Assessment Checklist
@@ -283,7 +283,7 @@ Proceed to Phase 4.
 ## Phase 4: Report
 
 ```
-[4/6] Report
+[4/7] Report
 ```
 
 Present findings in a compact, terminal-friendly format:
@@ -321,7 +321,7 @@ Record their choice in `targets/<slug>/decisions.md`.
 ## Phase 5: Plan
 
 ```
-[5/6] Plan
+[5/7] Plan
 ```
 
 Generate `targets/<slug>/transformation-plan.md` based on:
@@ -364,11 +364,23 @@ Write the final task list to `targets/<slug>/tasks.md`.
 
 ---
 
-## Phase 6: Execute
+## Phase 6: Execute (AE Harness Setup Only)
 
 ```
-[6/6] Execute
+[6/7] Execute -- harness setup
 ```
+
+**Scope boundary**: This phase generates prompts that set up the AE harness infrastructure in the target project. These prompts may ONLY touch:
+- `CLAUDE.md` (adding AE sections: session init, role selection, context management)
+- `docs/AE/` (personas, prompts, harness artifacts)
+- `.gitignore` (adding AE-related ignores like `.claude/persona`)
+- `_ai/reports/` (writing assessment/review reports)
+
+These prompts must NEVER touch:
+- Application code (`scripts/`, `src/`, `lib/`, etc.)
+- Non-AE documentation (`README.md`, `CONTRIBUTING.md`, `docs/` outside `docs/AE/`)
+- Non-AE configuration (`.gitignore` entries unrelated to AE, build configs, CI configs)
+- Test files, build scripts, or infrastructure
 
 For each approved task, in order:
 
@@ -380,7 +392,7 @@ Write to `targets/<slug>/deliverables/`.
 
 ### 6b. Generate Prompt -- Merge, Don't Replace
 
-Prompts that modify instruction files (CLAUDE.md, persona files, agents.md, etc.) must use a **merge-and-confirm** approach, not wholesale replacement. The generated prompt should instruct the target-side Claude to:
+Prompts that modify existing instruction files (CLAUDE.md, persona files, agents.md, etc.) must use a **merge-and-confirm** approach, not wholesale replacement. The generated prompt should instruct the target-side Claude to:
 
 1. **Read the current version** of the file being modified.
 2. **Read the deliverable** (the harness-prepared version).
@@ -407,19 +419,17 @@ If the target's prompt delivery policy is `direct`, also write to `<target-path>
 
 Wait for user confirmation before generating each prompt. If the user says `skip`, move to the next task. If `stop`, save progress and end.
 
-### 6d. After All Prompts
+### 6d. After Harness Setup Prompts
 
 ```
-All prompts generated.
+Harness setup complete.
 
   Prompts:      targets/<slug>/prompts/
   Deliverables: targets/<slug>/deliverables/
   <delivery note based on policy>
 
-Next steps:
-  1. Open Claude Code in the target project
-  2. Execute prompts in order (001 first, then 002, etc.)
-  3. After applying all prompts, run /health here to verify
+These prompts set up the AE harness structure only.
+No application code, configs, or non-AE docs will be touched.
 ```
 
 If existing setup was migrated, add:
@@ -429,7 +439,104 @@ If existing setup was migrated, add:
   structure. Original files are preserved until you choose to remove them.
 ```
 
-Offer to run a reviewer pass: `Want to generate a reviewer prompt (005-run-reviewer.md) now?`
+Proceed to Phase 7.
+
+---
+
+## Phase 7: Implementation Handoff
+
+```
+[7/7] Implementation handoff
+```
+
+This phase does NOT execute implementation. It presents the assessment findings and gives the user clear options for what to do next.
+
+### 7a. Present Findings Summary
+
+```
+Assessment complete: <project-name>
+
+Reports written:
+  Assessment:       targets/<slug>/assessment.md
+  Inconsistencies:  targets/<slug>/inconsistencies.md
+  Plan:             targets/<slug>/transformation-plan.md
+
+Findings: CRITICAL (<N>) · HIGH (<N>) · MEDIUM (<N>) · LOW (<N>)
+
+Top issues:
+  [C] I-01: <one-line description>
+  [C] I-02: <one-line description>
+  [H] I-03: <one-line description>
+```
+
+### 7b. Explain What Happens Next
+
+```
+The harness setup prompts (Phase 6) are safe to execute --
+they only create AE structure files (personas, session init, docs/AE/).
+
+To fix the issues found in the assessment, you need to run the
+reviewer-implementer loop. This WILL modify application code,
+configs, and documentation based on the findings above.
+```
+
+### 7c. Present Options
+
+```
+What would you like to do?
+
+  [1] Execute harness setup only (recommended for first run)
+      Run the generated prompts to set up AE structure.
+      Review the assessment reports yourself.
+      Decide what to fix and when.
+
+  [2] Execute harness setup, then run reviewer-implementer loop
+      Sets up AE structure, then runs a reviewer pass and
+      implementer fix round for CRITICAL and HIGH issues.
+      You review each fix before it's committed.
+      (Human-in-the-loop: you approve each change)
+
+  [3] Full auto: setup + reviewer-implementer loop, no stops
+      For experienced users who trust the process.
+      All CRITICAL and HIGH fixes applied automatically.
+      Individual commits for each fix -- revertable via git.
+      WARNING: This modifies application code without per-change approval.
+
+  [4] Stop here -- I'll review the reports and come back
+```
+
+### 7d. Handle Each Choice
+
+**Option 1 (default):**
+Generate only the harness setup prompts. End the playbook. The user runs them manually in the target project and decides independently what to fix.
+
+**Option 2 (supervised implementation):**
+Generate a reviewer-implementer prompt pair. The reviewer prompt runs autonomously (read-only). The implementer prompt is structured to present each proposed fix and wait for user confirmation before applying.
+
+Record this choice in `targets/<slug>/decisions.md`.
+
+**Option 3 (pre-approved auto):**
+Generate a single orchestration prompt that chains reviewer + implementer with no stops. Before generating, confirm:
+
+```
+You are pre-approving autonomous code changes. This means:
+  - The reviewer will scan the codebase and produce an issue list
+  - The implementer will fix all CRITICAL and HIGH issues
+  - Each fix gets its own commit (revertable individually)
+  - Tests are run after each code change
+  - If a fix breaks tests, it's reverted and skipped
+
+To undo everything after the fact:
+  git log --oneline    (find the commit before the fixes started)
+  git reset --hard <commit>
+
+Type "I understand, proceed" to confirm.
+```
+
+Only generate the auto-prompt if the user confirms with that exact phrase or equivalent explicit acknowledgement. Record this in `targets/<slug>/decisions.md` with timestamp.
+
+**Option 4:**
+Save progress, update journal, end the playbook. The user can return at any time to continue.
 
 ---
 

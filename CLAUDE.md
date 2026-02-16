@@ -285,6 +285,34 @@ This pattern is encoded in the prompt templates: `005-run-reviewer.md` runs the 
 
 ---
 
+## Assessment-Implementation Boundary
+
+Onboarding and assessment workflows operate in **read-and-report mode**. They may:
+- Read any file in the target project
+- Create/modify files in the AE harness namespace (`docs/AE/`, `_ai/reports/`)
+- Set up AE harness structure (personas, session init, CLAUDE.md sections for AE)
+- Generate reports, assessments, inconsistency lists, and transformation plans
+
+They must **never**:
+- Modify application code, scripts, or non-AE configuration files
+- Modify non-AE documentation (README, CONTRIBUTING, docs/ content outside `docs/AE/`)
+- Run build, test, or lint commands that modify state
+- Make fixes, refactors, or "improvements" to the codebase
+
+The boundary is: **assessment produces reports; implementation acts on them.** Implementation (code changes, doc fixes, config corrections) requires a separate step with human oversight.
+
+### Pre-approval for experienced users
+
+Users familiar with the process may pre-approve the implementation phase by explicitly saying so. This must be:
+1. **Asked, not assumed.** The onboarding playbook asks at the end of the assessment phase.
+2. **Informed.** The user is told what will happen: which issues will be fixed, which files will be touched, and that the reviewer-implementer loop will run autonomously.
+3. **Recoverable.** The prompt must include clear revert instructions (commit hashes, `git reset` commands) so the user can undo everything if it goes wrong.
+4. **Recorded.** The choice is logged in `targets/<slug>/decisions.md`.
+
+This is an opt-in escalation, not the default. The default is: assessment stops at the report, and the user decides what happens next.
+
+---
+
 ## Rule Capture Principle
 
 **Every rule, policy, or convention that emerges from a conversation must be captured into the correct instruction file.**
@@ -325,7 +353,7 @@ Playbooks are guided workflows stored in `templates/playbooks/`. When triggered,
 
 | Command | Playbook | When to use |
 |---------|----------|-------------|
-| `/onboard` | `templates/playbooks/onboarding.md` | Assess and transform a new target project. Runs 6 phases: target selection, reconnaissance, assessment, report, planning, execution. |
+| `/onboard` | `templates/playbooks/onboarding.md` | Assess and transform a new target project. Runs 7 phases: target selection, reconnaissance, assessment, report, planning, harness setup, implementation handoff. |
 | `/health` | `templates/playbooks/health-check.md` | Run a recurring compliance check on an existing target. Produces a delta report comparing current state vs last assessment, detects persona drift and instruction leaks. |
 
 When a playbook is triggered, Claude must read the playbook file and follow its instructions exactly. The playbook governs tone, pacing, output format, and user interaction for the duration of the workflow.
