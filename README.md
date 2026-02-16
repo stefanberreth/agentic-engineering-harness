@@ -41,14 +41,26 @@ This separation ensures auditability, reproducibility, and clean context boundar
    cd /path/to/agentic-engineering-harness
    claude
    ```
-2. Claude orients via `CLAUDE.md` → `targets/index.md` and asks what you want to work on.
-3. Nominate a target project by path.
-4. Choose a prompt delivery policy: **direct** (harness writes prompts to target's `docs/AE/prompts/`) or **manual** (copy-paste from harness).
-5. Claude reads the target's structure and runs the assessment checklist.
-6. Together, you produce a transformation plan stored in `targets/<project>/`.
-7. Claude generates deliverables (adapted personas, `CLAUDE.md`, etc.) and numbered prompts.
-8. You point a Claude Code session **inside the target project** at each prompt to execute it.
-9. Results feed back into the harness for review and refinement.
+2. Claude reads `CLAUDE.md` → `targets/index.md`, shows a session banner with active targets and roles.
+3. Say `/onboard` (or `/onboard /path/to/project`) to start the guided onboarding playbook.
+4. The playbook runs 7 phases:
+   - **Target selection** -- verify the path, check for existing workspace
+   - **Reconnaissance** -- structural snapshot, detect existing role-like instructions
+   - **Assessment** -- checklist evaluation, inconsistency report, existing setup migration analysis
+   - **Report** -- ranked findings presented in terminal-friendly format
+   - **Plan** -- transformation plan with numbered tasks and effort estimates
+   - **Execute (harness setup only)** -- generate deliverables and prompts that set up AE structure. These prompts only touch `docs/AE/`, `CLAUDE.md` (AE sections), and `_ai/reports/`. They never modify application code.
+   - **Implementation handoff** -- present findings and offer options: harness setup only, supervised reviewer-implementer loop, pre-approved auto mode, or stop and review
+5. You point a Claude Code session **inside the target project** at the generated prompts:
+   ```
+   Read and execute docs/AE/prompts/000-run-all-foundation.md
+   ```
+6. For code-touching implementation (fixing issues from the assessment), you run the reviewer-implementer loop separately with human oversight.
+7. Run `/health` periodically to check for drift, new issues, or persona staleness.
+
+### Returning to an Existing Target
+
+Say `/health` (or `/health <slug>`) to run a compliance check against the last assessment. The health check produces a delta report: new issues, resolved issues, regressions, persona drift, and instruction leaks (new guidelines that appeared outside the AE structure).
 
 ### Working on the Harness Itself
 
@@ -73,9 +85,12 @@ Start Claude Code here and say you want to improve the harness. Areas for ongoin
 │   ├── project/
 │   │   ├── CLAUDE.md.template             # Scaffold for target project CLAUDE.md
 │   │   └── agents.md.template             # Cross-tool agent config scaffold
-│   └── governance/
-│       ├── assessment-checklist.md        # Evaluate agentic readiness
-│       └── review-criteria.md             # Quality rubric for config files
+│   ├── governance/
+│   │   ├── assessment-checklist.md        # Evaluate agentic readiness
+│   │   └── review-criteria.md             # Quality rubric for config files
+│   └── playbooks/
+│       ├── onboarding.md                  # Guided 7-phase assessment + transformation
+│       └── health-check.md               # Recurring compliance check + delta report
 ├── targets/
 │   ├── index.md                           # Registry of all target projects + status
 │   └── <project-slug>/                    # Per-project transformation workspace
@@ -106,8 +121,10 @@ Start Claude Code here and say you want to improve the harness. Areas for ongoin
 3. **Small increments.** One task, one branch, one reviewable PR. No 100k-line commits.
 4. **Feedback loops.** Developer retrospectives feed back to the Reviewer and Architect. The spec is a living document.
 5. **Human in the loop.** The human approves requirements, designs, and review verdicts. The AI proposes; the human decides.
-6. **Templates are starting points.** Every template in this project must be adapted to the target project's language, framework, team, and culture.
-7. **Governance is continuous.** Agentic configuration files degrade over time. Regular assessment keeps them effective.
+6. **Assessment produces reports; implementation acts on them.** Onboarding and assessment workflows never modify application code. They read, analyse, and generate reports. Code changes require a separate step with human oversight (or explicit pre-approval).
+7. **Preserve existing conventions.** When a target project has working instructions, they become the foundation -- AE templates fill gaps, they don't replace what works. Merge, don't overwrite.
+8. **Templates are starting points.** Every template in this project must be adapted to the target project's language, framework, team, and culture.
+9. **Governance is continuous.** Agentic configuration files degrade over time. Regular `/health` checks keep them effective.
 
 ## Key Resources
 
@@ -147,6 +164,21 @@ This section tracks how the project's scope and understanding evolve over time.
   - What MCP server configurations should be recommended vs. left to project discretion?
   - How should the prompt numbering scheme handle re-ordering or inserting new prompts?
   - What's the right feedback loop when a target-side prompt execution reveals issues?
+
+### v0.3 -- Guided Playbooks, Boundary Enforcement & Session Init (Feb 2026)
+
+- Created **onboarding playbook** (`templates/playbooks/onboarding.md`) -- a guided 7-phase workflow for assessing and transforming new target projects. Triggered via `/onboard`. Includes existing setup detection, migration analysis, skip gates, and re-onboarding protection.
+- Created **health-check playbook** (`templates/playbooks/health-check.md`) -- recurring compliance checks for existing targets. Produces delta reports (new issues, resolved, regressions, persona drift, instruction leaks). Triggered via `/health`.
+- Established the **assessment-implementation boundary**: onboarding and assessment workflows operate in read-and-report mode only. They set up AE harness structure but never touch application code. Implementation requires a separate step with human oversight, or explicit pre-approval for experienced users.
+- Added **merge-and-confirm rule**: prompts that modify existing instruction files must diff current vs deliverable and confirm with the user before applying. No silent overwrites.
+- Added **session init and role selection**: persona persistence via `.claude/persona`, 3-line terminal banner, `/switch`, `/role info`, `/ignore` commands. Encoded in both harness CLAUDE.md and as a deliverable for target projects.
+- Produced **compression-poc-02 Phase 3 deliverable**: project-specific developer persona tailored to Python/PyTorch/HuggingFace patterns, frozen dataclass configs, Black/MyPy style, and config-driven architecture.
+- Reviewed and fixed all 7 existing prompts for compression-poc-02 (2 HIGH, 5 MEDIUM issues).
+- Created **orchestration prompt** (000-run-all-foundation.md) that chains harness setup steps in one pass, ending at the review report without touching code.
+- **Open questions:**
+  - How well does the 7-phase playbook flow for projects with radically different structures (monorepo, polyglot, no existing CLAUDE.md at all)?
+  - What's the right threshold for the health check's "30+ days" stale target suggestion?
+  - Should the pre-approval mechanism for auto-implementation have a scope limiter (e.g. "auto-fix CRITICAL only")?
 
 ### Future directions
 
