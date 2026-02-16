@@ -45,7 +45,51 @@ Experienced users can bypass Phase 1 entirely: `/onboard /path/to/project`
 1. Verify the path exists and is a directory.
 2. Verify read access (attempt to list top-level contents).
 3. Check whether a target workspace already exists for this path (search `targets/index.md`).
-   - If it exists: inform the user, offer to re-assess or continue where they left off.
+
+### Existing target detected
+
+If a workspace already exists for this path, read the target's `tasks.md`, `decisions.md`, and `transformation-plan.md` to assess how much progress has been made. Then present the user with a clear summary and choice:
+
+```
+This project is already being tracked: <slug> (<phase>)
+
+Progress:
+  Tasks:     <N> completed / <N> total
+  Decisions: <N> recorded
+  Prompts:   <N> generated, <N> applied
+
+Re-onboarding will regenerate the assessment, inconsistency report, and
+transformation plan from scratch. This means:
+  - Existing task statuses will be reset
+  - Recorded decisions (e.g. "no branching", "remove Fresh.dev") will
+    need to be re-confirmed or may be lost
+  - Prompts already generated but not yet applied will be replaced
+
+Options:
+  [1] Continue where you left off (recommended)
+      Resume the existing plan. Say /health to check for new issues.
+  [2] Run a health check instead
+      Compares current state vs last assessment. Preserves all progress.
+      Adds new tasks for new issues only.
+  [3] Re-onboard from scratch
+      Full re-assessment. Existing workspace files will be overwritten.
+      Use this if the project has changed significantly or the existing
+      plan is no longer relevant.
+```
+
+Wait for the user to choose. Do not proceed with re-onboarding unless the user explicitly picks option 3.
+
+If the user picks option 1: read the target's `tasks.md` and `open-questions.md`, summarise current state, and propose next steps. The playbook ends here.
+
+If the user picks option 2: switch to the health-check playbook (`templates/playbooks/health-check.md`). The onboarding playbook ends here.
+
+If the user picks option 3: proceed with Phase 2, but first back up the existing workspace:
+- Copy `targets/<slug>/decisions.md` to `targets/<slug>/decisions-pre-reonboard-<date>.md`
+- Note in the journal that a re-onboard was initiated and why
+
+### New target
+
+If no existing workspace is found:
 
 **Derive the slug:** Use the directory name, lowercased, hyphens for spaces. If it collides with an existing slug, append a number.
 
