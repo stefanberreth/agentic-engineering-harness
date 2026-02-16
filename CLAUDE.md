@@ -311,24 +311,101 @@ When a conversation produces a new insight about how the harness should work, or
 - Before exiting, update `targets/<project>/journal.md` and `targets/<project>/tasks.md` with progress.
 - On fresh start, read this file, then `targets/index.md`, then the active target's `profile.md` and `tasks.md`.
 
-## On First Contact With a New User Session
+## Playbooks
 
-When Claude starts in this project, it should:
+Playbooks are guided workflows stored in `templates/playbooks/`. When triggered, Claude reads the playbook file and follows it step-by-step. Each playbook has skip gates so experienced users can jump ahead or stop at any point.
 
-1. Read `targets/index.md` to see the current landscape.
-2. Briefly state what targets are in progress and at what phase.
-3. Ask: "Which target would you like to continue with, would you like to add a new target, or would you like to work on the harness itself?"
-4. If continuing an existing target:
-   a. Read that target's `profile.md`, `tasks.md`, and `open-questions.md`.
-   b. Summarise current state and propose next steps.
-5. If adding a new target:
-   a. Ask for the project path.
-   b. Read its top-level structure, README, and any existing agentic config.
-   c. Ask the prompt delivery policy question (direct to `docs/AE/prompts/` or manual copy-paste).
-   d. Create the target workspace (including `profile.md` with the chosen policy) and run the assessment.
-6. If working on the harness itself:
-   a. Ask what aspect to improve (templates, governance, docs, process).
-   b. Work on it, commit when the user is satisfied.
+| Command | Playbook | When to use |
+|---------|----------|-------------|
+| `/onboard` | `templates/playbooks/onboarding.md` | Assess and transform a new target project. Runs 6 phases: target selection, reconnaissance, assessment, report, planning, execution. |
+| `/health` | `templates/playbooks/health-check.md` | Run a recurring compliance check on an existing target. Produces a delta report comparing current state vs last assessment, detects persona drift and instruction leaks. |
+
+When a playbook is triggered, Claude must read the playbook file and follow its instructions exactly. The playbook governs tone, pacing, output format, and user interaction for the duration of the workflow.
+
+---
+
+## Session Init and Role Selection
+
+### Persona persistence
+
+The active persona is stored in `.claude/persona` as a single line (e.g. `reviewer`). This file is NOT tracked in git (add to `.gitignore`).
+
+Valid roles: `analyst`, `architect`, `developer`, `reviewer`
+
+An absent or empty file means no role is active.
+
+### On first message of every session
+
+1. Read `.claude/persona` (if it exists).
+2. Read `targets/index.md` for landscape context.
+3. Output the session banner. **Keep it to 3 lines max.** Style: clean, minimal, terminal-native.
+
+**If a persona is set:**
+
+```
+agentic-engineering-harness · reviewer
+  Targets: compression-poc-02 (implementing)
+  /switch role · /role info · /ignore role
+```
+
+**If no persona is set:**
+
+```
+agentic-engineering-harness · no active role
+  Roles: analyst · architect · developer · reviewer
+  Pick a role, or "no role" to work freestyle. /role info for details.
+```
+
+**If no active targets exist** (regardless of persona), append to the banner:
+
+```
+  No target projects yet. Say /onboard to assess your first project.
+```
+
+**If targets exist but any haven't been checked in 30+ days**, append:
+
+```
+  <slug> last checked <N> days ago. /health to run a check.
+```
+
+4. **Wait for the user** before doing anything else. Do not launch into work unprompted.
+
+### Role commands (natural language, not literal slash commands)
+
+These are shorthands the user can say at any time:
+
+| User says | Action |
+|-----------|--------|
+| `/switch` or "switch role" | Show role picker. Update `.claude/persona`. |
+| `/role info` or "role info" | Show one-line summary of each role + path to its definition file (`templates/personas/<role>.md`). |
+| `/ignore` or "no role" | Clear `.claude/persona`. Work without persona constraints. |
+| `/onboard` or `/onboard <path>` | Start the guided onboarding playbook for a new target project. Reads `templates/playbooks/onboarding.md` and follows it step-by-step. |
+| `/health` or `/health <slug>` | Run a health check on an existing target. Reads `templates/playbooks/health-check.md` and follows it step-by-step. |
+
+### Role behaviour
+
+When a persona is active, Claude should:
+- Read the persona definition file (`templates/personas/<role>.md`) at session start
+- Follow its instructions and constraints
+- Note the active role in any deliverables produced
+
+When no persona is active, Claude operates as a general assistant within the harness rules.
+
+### After the banner
+
+If continuing an existing target:
+  a. Read that target's `profile.md`, `tasks.md`, and `open-questions.md`.
+  b. Summarise current state and propose next steps.
+
+If adding a new target:
+  a. Ask for the project path.
+  b. Read its top-level structure, README, and any existing agentic config.
+  c. Ask the prompt delivery policy question (direct to `docs/AE/prompts/` or manual copy-paste).
+  d. Create the target workspace (including `profile.md` with the chosen policy) and run the assessment.
+
+If working on the harness itself:
+  a. Ask what aspect to improve (templates, governance, docs, process).
+  b. Work on it, commit when the user is satisfied.
 
 ## Project Structure
 
@@ -345,9 +422,12 @@ When Claude starts in this project, it should:
 │   ├── project/
 │   │   ├── CLAUDE.md.template             # Scaffold for target project CLAUDE.md
 │   │   └── agents.md.template             # Cross-tool agent config scaffold
-│   └── governance/
-│       ├── assessment-checklist.md        # Evaluate agentic readiness
-│       └── review-criteria.md             # Quality rubric for config files
+│   ├── governance/
+│   │   ├── assessment-checklist.md        # Evaluate agentic readiness
+│   │   └── review-criteria.md             # Quality rubric for config files
+│   └── playbooks/
+│       ├── onboarding.md                  # Guided assessment + transformation workflow
+│       └── health-check.md               # Recurring compliance check workflow
 ├── targets/
 │   ├── index.md                           # Registry of all target projects
 │   └── <project-slug>/                    # Per-project transformation workspace

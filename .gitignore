@@ -2,3 +2,6 @@
 *.swp
 *.swo
 *~
+
+# Local session state (not project config)
+.claude/persona
