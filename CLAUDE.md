@@ -259,6 +259,38 @@ Every assessment produces these files in `targets/<project>/`:
 
 ---
 
+## The Reviewer-Implementer Loop
+
+The core operational workflow for transforming a target project:
+
+1. **Harness** writes policy/rule files as deliverables (adapted CLAUDE.md, persona prompts, policies)
+2. **Reviewer** Claude instance (in target project) evaluates rules against project ground truth, produces a ranked issue list as technical instruction tickets
+3. **Implementer** Claude instance (in target project) works through tickets top-down (CRITICAL first, then HIGH, etc.)
+4. **Repeat** until the reviewer finds no further CRITICAL or HIGH violations
+
+The human's role is to:
+- Review the harness's deliverables before applying them
+- Review the reviewer's findings and approve/prioritise
+- Decide when to stop iterating (e.g. MEDIUM/LOW issues can be deferred)
+
+This pattern is encoded in the prompt templates: `005-run-reviewer.md` runs the review, `006-implementer-fix-round.md` runs the fixes. These are reusable -- run them as many times as needed.
+
+---
+
+## Rule Capture Principle
+
+**Every rule, policy, or convention that emerges from a conversation must be captured into the correct instruction file.**
+
+Rules don't live in chat transcripts. They live in files:
+- **Target project rules** -> deliverables (adapted CLAUDE.md, persona prompts)
+- **Harness process rules** -> this file (CLAUDE.md)
+- **Per-target decisions** -> `targets/<project>/decisions.md`
+- **Governance criteria** -> `templates/governance/`
+
+When a conversation produces a new insight about how the harness should work, or how a target project should be configured, always ask: "Where does this rule belong?" and write it there. Don't rely on the human remembering it from a previous session.
+
+---
+
 ## Working Rules
 
 - **Never write application code.** This project produces markdown, configuration, process documentation, and prompt engineering artifacts only.
@@ -270,6 +302,7 @@ Every assessment produces these files in `targets/<project>/`:
 - **Track everything in targets/.** Every observation, decision, question, and deliverable goes into the target's workspace.
 - **Templates are starting points, not gospel.** Always adapt to the target project's language, framework, team size and maturity.
 - **Update targets/index.md** whenever a target project's phase or status changes.
+- **Capture rules into files.** When a conversation produces a new rule or policy, write it into the correct instruction file immediately. (See "Rule Capture Principle" above.)
 
 ## Context Management
 

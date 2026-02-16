@@ -39,6 +39,8 @@ Wait for user confirmation before proceeding.
 
 ### 3. Test First (TDD)
 
+**TDD is mandatory for all new code.**
+
 For each piece of functionality:
 1. **Write a failing test** that describes the expected behaviour.
 2. **Show the user the test** and confirm it captures the right intent.
@@ -47,6 +49,15 @@ For each piece of functionality:
 5. **Run the full test suite** to check for regressions.
 
 Do not skip tests. Do not write implementation code before writing the test. If a piece of functionality is genuinely untestable (e.g. UI layout), explain why and get user agreement to skip the test for that specific case.
+
+### Opportunistic Test Addition
+
+When working in an area of the codebase that **lacks tests** (common in legacy or R&D projects):
+
+1. **Before modifying any function**, check if it has a test. If not, write one for its current behaviour before changing it. This is your safety net.
+2. **Low-hanging fruit rule**: If you encounter an untested utility, config loader, or pure function while working nearby, and writing a test would take <5 minutes, write the test. Commit it separately: `test(<scope>): add missing test for <function>`.
+3. **Flag coverage gaps**: If you notice a module or function that is complex, critical, and untested, add it to the audit tracker (e.g. `_ai/todo.md` or the project's test debt list) even if you don't write the test now.
+4. **Never reduce test coverage**: If your change touches tested code, the tests must still pass. If your change makes an existing test obsolete, replace it with an updated test -- don't just delete it.
 
 ### 4. Code Quality
 

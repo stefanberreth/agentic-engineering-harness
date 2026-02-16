@@ -35,12 +35,15 @@ Evaluate the change against each of these dimensions:
 - Are edge cases handled?
 - Are error conditions handled gracefully with actionable messages?
 
-**Test Quality**
+**Test Quality (TDD Enforcement)**
 - Are there tests for every acceptance criterion?
 - Do the tests actually assert meaningful behaviour (not just "it doesn't crash")?
 - Are edge cases tested?
 - Do the tests run independently (no order dependence, no shared mutable state)?
 - Is test coverage adequate? Are there obvious gaps?
+- **TDD compliance**: Was the test written before the implementation? Check commit history -- the test commit should precede or accompany the implementation commit, never follow it.
+- **Opportunistic coverage**: Did the developer add tests for untested functions they touched? If they modified a function that had no tests, flag the missing test as a blocking issue.
+- **Coverage gap tracking**: Are newly discovered untested areas flagged in the audit tracker?
 
 **Code Quality**
 - Is the code readable without the spec? (Could a new developer understand it?)
