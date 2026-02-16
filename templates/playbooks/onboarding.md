@@ -378,9 +378,20 @@ Adapt the relevant template from `templates/` to the target project's specifics.
 
 Write to `targets/<slug>/deliverables/`.
 
-### 6b. Generate Prompt
+### 6b. Generate Prompt -- Merge, Don't Replace
 
-Write a prompt file following the standard format (see CLAUDE.md > Prompt File Format) to `targets/<slug>/prompts/`.
+Prompts that modify instruction files (CLAUDE.md, persona files, agents.md, etc.) must use a **merge-and-confirm** approach, not wholesale replacement. The generated prompt should instruct the target-side Claude to:
+
+1. **Read the current version** of the file being modified.
+2. **Read the deliverable** (the harness-prepared version).
+3. **Diff the two** and present a summary of what will change: sections added, sections modified, sections removed.
+4. **Ask the user to confirm** before applying. If the current file has been modified since the deliverable was prepared, the target-side Claude should flag the discrepancy and ask how to proceed rather than silently overwriting.
+
+This prevents loss of changes made between deliverable preparation and prompt execution, and makes the transformation auditable.
+
+**Exception**: For brand-new files that don't exist yet in the target project (e.g. creating a new persona file), the prompt can write directly without a merge step.
+
+Write the prompt following the standard format (see CLAUDE.md > Prompt File Format) to `targets/<slug>/prompts/`.
 
 If the target's prompt delivery policy is `direct`, also write to `<target-path>/docs/AE/prompts/`.
 

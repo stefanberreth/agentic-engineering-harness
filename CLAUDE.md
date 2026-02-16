@@ -192,7 +192,15 @@ who will paste it into the target project's Claude Code session.]
 [The actual text to paste into Claude Code. This should be self-contained:
 it should not assume the target-side Claude has any context from this
 harness project. It should reference only files that exist or will exist
-in the target project.]
+in the target project.
+
+IMPORTANT: When the prompt modifies an existing instruction file (CLAUDE.md,
+persona files, agents.md, etc.), it must use a merge-and-confirm approach:
+read the current file, read/receive the deliverable, diff the two, present
+the changes to the user, and confirm before applying. Never silently
+overwrite instruction files -- changes made between deliverable preparation
+and prompt execution would be lost. New files that don't yet exist in the
+target can be written directly.]
 
 ## Expected outcome
 
