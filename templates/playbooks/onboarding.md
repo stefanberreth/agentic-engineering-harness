@@ -235,6 +235,8 @@ If any agentic config files exist (CLAUDE.md, persona prompts, agents.md), evalu
 
 Score each applicable criterion: Good / Adequate / Poor / Missing.
 
+**Pay particular attention to section ordering in CLAUDE.md:** If the file has session init, persona selection, or safety-critical instructions, verify they appear in the first 50 lines. Instructions buried deep in a long CLAUDE.md (200+ lines) are unreliably followed by LLMs. Flag any session-critical content found late in the file as a HIGH issue.
+
 Append findings to `targets/<slug>/assessment.md` under a `## Existing Config Quality` section.
 
 ### 3c. Evaluate Existing Role Setup

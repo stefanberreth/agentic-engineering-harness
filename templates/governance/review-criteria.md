@@ -20,6 +20,7 @@ Use this rubric to evaluate the quality of the agentic engineering files in a ta
 | **Workflow**: Documents the expected development workflow | | |
 | **Context management**: Includes guidance on token limits and session management | | |
 | **Orientation**: A fresh Claude session reading only this file can understand the project | | |
+| **Section ordering**: Session-critical instructions (session init, persona selection, safety rules) appear in the first 50 lines | | |
 | **Conciseness**: Under 15-20k tokens (doesn't waste context budget) | | |
 | **Currency**: Reflects the current state of the project, not a stale snapshot | | |
 
@@ -28,6 +29,7 @@ Use this rubric to evaluate the quality of the agentic engineering files in a ta
 - Commands are copy-pasteable and work.
 - It says what NOT to do, not just what to do.
 - It evolves with the project (has been updated recently).
+- Session init instructions are near the top -- LLMs give more weight to early content in long files.
 
 ### Common problems
 - Stale build commands that don't work.
@@ -35,6 +37,7 @@ Use this rubric to evaluate the quality of the agentic engineering files in a ta
 - No mention of branch strategy or commit conventions.
 - Too long (>20k tokens) -- eating context budget.
 - Too short -- just a project name and nothing else.
+- **Session init buried deep**: instructions for banner display, persona loading, or first-message behaviour placed after hundreds of lines of project rules. LLMs reliably follow early instructions; late instructions in long files are often ignored.
 
 ---
 

@@ -81,7 +81,17 @@ Apply `templates/governance/assessment-checklist.md` against current state. Prod
 
 If agentic config files exist, evaluate against `templates/governance/review-criteria.md`.
 
-### 3e. Check Persona Drift
+### 3e. Check CLAUDE.md Section Ordering
+
+If the target has a CLAUDE.md, verify that session-critical instructions appear early in the file:
+
+- **Session init** (persona loading, banner display, first-message behaviour) must be in the first 50 lines
+- **Safety rules** (what NOT to do, critical constraints) should be in the first 100 lines
+- **Persona references** (role selection, persona file paths) should be near session init
+
+LLMs give more weight to early content in long files. Instructions buried past line 200+ in a large CLAUDE.md are unreliably followed. If session init is found late in the file, flag it as a HIGH issue with the fix: move it to the top.
+
+### 3f. Check Persona Drift
 
 For each persona file in the target project (if they exist):
 - Does it still reference the correct tech stack? (Check against package config)

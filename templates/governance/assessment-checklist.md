@@ -33,6 +33,7 @@ For each item, mark one of:
 | 2.5 | Code style rules are documented or referenced | | |
 | 2.6 | Architecture is described or referenced | | |
 | 2.7 | Context management guidance is included | | |
+| 2.8 | Session init instructions (if any) are in the first 50 lines of CLAUDE.md | | |
 
 ## 3. Specification & Planning
 
