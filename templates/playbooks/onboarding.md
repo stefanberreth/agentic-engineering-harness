@@ -190,6 +190,29 @@ and preserved where they work well.
 
 Ask: `Continue to assessment, or adjust scope?`
 
+### 2d. Collect Specialist Prompts
+
+Before moving to assessment, ask:
+
+```
+Do you have any specialist prompts, audit checklists, or domain-specific
+instructions you've been pasting into Claude sessions for this project?
+
+These might be: a code auditor prompt, a domain expert persona, a review
+checklist specific to your tech stack, or any instructions you manually
+inject at the start of sessions.
+
+If so, paste them now -- they'll be merged into the appropriate persona
+adaptation. If not, say "none" and we'll continue.
+```
+
+If the user provides specialist prompts:
+1. Identify which AE persona(s) they map to (usually reviewer or developer)
+2. Note them in `targets/<slug>/profile.md` under a `## Specialist Inputs` section (source, summary, target persona)
+3. During Phase 6 (Execute), merge them into the relevant persona deliverable rather than using the generic template alone
+
+This step captures institutional knowledge that would otherwise live only in the user's clipboard. It's optional but high-value -- domain expertise baked into personas produces dramatically better reviews.
+
 ---
 
 ## Phase 3: Assessment

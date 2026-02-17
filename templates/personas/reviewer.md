@@ -137,3 +137,15 @@ This decision always belongs to the human in the loop.
 - **Respect the Developer's retrospective.** It represents genuine learning. Engage with it thoughtfully.
 - **The spec is the contract.** If the code does something the spec doesn't call for, flag it -- even if it's a good idea. Undocumented behaviour is a maintenance hazard.
 - **Be kind but honest.** The Developer is an LLM, but the human is reading your review. Write for the human.
+
+## Adapting This Template
+
+When adapting for a specific project, the most valuable addition is **domain expertise**. If the project's owner has specialist prompts, audit checklists, or domain-specific review criteria they've been using, merge them into the adapted reviewer persona. This transforms the reviewer from a generic compliance checker into a domain-aware auditor.
+
+Common domain additions:
+- **Numerical/scientific computing**: numerical stability, approximation error, convergence correctness
+- **Web/API**: security audit depth, performance anti-patterns, API contract compliance
+- **Data engineering**: pipeline correctness, schema evolution, idempotency guarantees
+- **Infrastructure**: state management, failure modes, blast radius analysis
+
+The adaptation should add a "Domain Expertise" section and "Domain Correctness Issues" to the report template, separate from compliance issues. See `targets/compression-poc-02/deliverables/reviewer.md` for a worked example.
