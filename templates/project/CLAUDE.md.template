@@ -2,12 +2,67 @@
 
 > **Instructions:** Copy this file to the root of your target project as `CLAUDE.md`.
 > Replace all `[PLACEHOLDER]` values. Delete this instruction block when done.
+> **Section ordering matters.** Session init must stay at the top. LLMs give more
+> weight to early content in long files -- instructions buried past line 200 are
+> unreliably followed.
 
 # [Project Name]
 
 ## Project Overview
 
 [2-3 sentences: what this project is, who it's for, what problem it solves.]
+
+---
+
+## Session Init and Role Selection
+
+### Persona persistence
+
+The active persona is stored in `.claude/persona` as a single line (e.g. `reviewer`). This file is local and NOT tracked in git.
+
+Valid roles: `analyst`, `architect`, `developer`, `reviewer`
+
+An absent or empty file means no role is active.
+
+### On first message of every session
+
+1. Read `.claude/persona` (if it exists).
+2. Output the session banner. **Keep it to 3 lines max.**
+
+**If a persona is set:**
+
+    [PROJECT_NAME] · [role]
+      See: docs/AE/personas/[role].md
+      /switch role · /role info · /ignore role
+
+**If no persona is set:**
+
+    [PROJECT_NAME] · no active role
+      Roles: analyst · architect · developer · reviewer
+      Pick a role, or "no role" to work freestyle. /role info for details.
+
+3. **Wait for the user.** Do not start working until the user gives a task.
+
+### Role commands
+
+| User says | Action |
+|-----------|--------|
+| `/switch` or "switch role" | Show role picker. Write chosen role to `.claude/persona`. |
+| `/role info` or "role info" | Show one-line summary of each role + path to its definition file. |
+| `/ignore` or "no role" | Clear `.claude/persona`. Work without persona constraints. |
+
+### Role behaviour
+
+When a persona is active:
+- Read its definition file (`docs/AE/personas/<role>.md`) at session start
+- Follow its instructions and constraints throughout the session
+- Apply project rules from this file (CLAUDE.md) in addition to persona rules
+
+When no persona is active:
+- Follow CLAUDE.md rules only
+- Operate as a general assistant
+
+---
 
 ## Build & Run
 
@@ -45,25 +100,25 @@
 
 ## Workflow
 
-This project uses a four-persona agentic engineering workflow:
+This project uses a persona-driven agentic engineering workflow:
 
-1. **Analyst** -- requirements gathering → `requirements.md`
-2. **Architect** -- solution design → `spec.md`
-3. **Developer** -- TDD implementation on feature branches
-4. **Reviewer** -- code review → `comments.md`
+1. **Analyst** -- requirements gathering
+2. **Architect** -- solution design
+3. **Developer** -- TDD implementation
+4. **Reviewer** -- code review and compliance checking
 
 ### Developer Rules
 
 - **Test-driven development.** Write the test first, then make it pass.
-- **One task per branch.** Branch from `main` as `feature/[task-slug]`.
+- **One task per branch.** Branch from `main` as `feature/[task-slug]`. [Or: "This project works directly on `main`. Small, focused commits."]
 - **Small commits.** Each commit should leave tests green and be reviewable in isolation.
 - **No dead code.** Don't commit commented-out blocks, unused imports, or TODO stubs.
-- **Write a retrospective** after each task in `reports/task-[N]-retrospective.md`.
+- **Write a retrospective** after each task in `_ai/reports/` or `reports/`.
 
 ### Git Conventions
 
 - Branch naming: `feature/[task-slug]`, `fix/[issue-slug]`, `chore/[description]`
-- Commit messages: imperative mood, explain *why* not just *what*
+- Commit messages: `<type>(<scope>): <subject>` -- imperative mood, explain *why* not just *what*
 - [MERGE_STRATEGY: e.g. "squash merge to main", "rebase and merge", etc.]
 
 ## Testing
@@ -78,11 +133,9 @@ This project uses a four-persona agentic engineering workflow:
 | File | Purpose |
 |---|---|
 | `CLAUDE.md` | This file -- project instructions for Claude |
-| `requirements.md` | Approved requirements document |
-| `spec.md` | Technical specification and implementation plan |
-| `tasks.md` | Task tracking with checkboxes |
-| `comments.md` | Current review cycle comments (transient) |
-| `reports/` | Task retrospectives |
+| `docs/AE/personas/` | Role-specific persona prompts |
+| `_ai/todo.md` | Active issue tracker |
+| `_ai/reports/` | Audit and review reports |
 
 ## Constraints and Decisions
 
@@ -91,6 +144,7 @@ This project uses a four-persona agentic engineering workflow:
 
 ## Context Management
 
-- Stay under 100k tokens. Run `/context` frequently.
-- Before exiting, commit work and update `tasks.md`.
-- On fresh start, read this file, then `spec.md`, then `tasks.md` to orient.
+- Stay under 100k tokens. Run `/compact` frequently.
+- **One task per session** -- complete it, commit, exit.
+- Before exiting, commit work and update issue tracker with any new findings.
+- On fresh start, read this file, then check git status and recent commits to orient.
