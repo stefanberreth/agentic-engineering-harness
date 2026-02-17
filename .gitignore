@@ -5,3 +5,7 @@
 
 # Local session state (not project config)
 .claude/persona
+
+# Target project workspaces (contain private project data)
+# Only targets/index.md is tracked as an empty registry template
+targets/*/
