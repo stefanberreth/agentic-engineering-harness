@@ -342,7 +342,7 @@ This harness is a project like any other. It needs the same discipline it prescr
 - Changes README or public-facing documentation
 
 **Do not update the CHANGELOG for:**
-- Target-specific work (prompts, deliverables, journal entries) -- these are tracked in `targets/<project>/`
+- Target-specific work (prompts, deliverables, assessments, journal entries, persona adaptations) -- these are tracked per-project in `targets/<project>/tasks.md` and `targets/<project>/journal.md`
 - Typo fixes or minor formatting
 
 **When to bump the version:** When a coherent set of changes forms a meaningful capability increment. Not every commit is a version bump -- group related changes under the current unreleased version until they form a logical unit, then tag it.
