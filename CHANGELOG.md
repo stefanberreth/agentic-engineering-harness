@@ -30,6 +30,8 @@ Target-project-specific work (prompts, deliverables, assessments, journal entrie
 
 ### Fixed
 - `CLAUDE.md.template` had no session init section at all -- added it in the correct position (top of file)
+- `targets/*/` now gitignored -- private project data no longer pushed to remote. Only `targets/index.md` (empty registry template) is tracked.
+- Strategist template updated to two-document model: stable role definition + frequently-regenerated project knowledge briefing. Includes staleness guidance.
 
 ## [v0.3] - 2026-02-17
 
