@@ -538,6 +538,17 @@ Only generate the auto-prompt if the user confirms with that exact phrase or equ
 **Option 4:**
 Save progress, update journal, end the playbook. The user can return at any time to continue.
 
+### 7e. Mention the Strategist (informational only)
+
+After presenting the options, add one line:
+
+```
+Tip: If you want a strategic conversation partner (priorities, trade-offs,
+research context) outside Claude Code, see templates/personas/strategist.md.
+```
+
+Do not elaborate unless the user asks. This is a pointer, not a pitch.
+
 ---
 
 ## Phase Completion

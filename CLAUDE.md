@@ -6,7 +6,7 @@ This project is a **meta-engineering harness**. It does not implement software. 
 
 ## What This Project Contains
 
-- **Persona templates** (`templates/personas/`) -- system prompt files for the four core roles: Analyst, Architect, Developer, Reviewer. These are generic but principled starting points.
+- **Persona templates** (`templates/personas/`) -- system prompt files for the four core engineering roles (Analyst, Architect, Developer, Reviewer) plus the optional Strategist role. These are generic but principled starting points.
 - **Project templates** (`templates/project/`) -- scaffold files (`CLAUDE.md`, `agents.md`, governance checklists) to be adapted for target projects.
 - **Governance criteria** (`templates/governance/`) -- assessment checklists and quality rubrics for evaluating and evolving the agentic configuration of a target project.
 - **Reference documentation** (`docs/`) -- source material, transcripts and curated resources.
@@ -368,6 +368,8 @@ The active persona is stored in `.claude/persona` as a single line (e.g. `review
 
 Valid roles: `analyst`, `architect`, `developer`, `reviewer`
 
+Note: A `strategist` persona template also exists (`templates/personas/strategist.md`) but is not an active harness-side role. It is designed for use in external LLM sessions (Claude Web, etc.) where the human pastes an adapted briefing document. When users ask about roles or say `/role info`, mention the strategist as an available option for users who want a strategic conversation partner outside Claude Code. Don't push it -- just make it discoverable.
+
 An absent or empty file means no role is active.
 
 ### On first message of every session
@@ -413,7 +415,7 @@ These are shorthands the user can say at any time:
 | User says | Action |
 |-----------|--------|
 | `/switch` or "switch role" | Show role picker. Update `.claude/persona`. |
-| `/role info` or "role info" | Show one-line summary of each role + path to its definition file (`templates/personas/<role>.md`). |
+| `/role info` or "role info" | Show one-line summary of each role + path to its definition file (`templates/personas/<role>.md`). Include the strategist as an optional external role. |
 | `/ignore` or "no role" | Clear `.claude/persona`. Work without persona constraints. |
 | `/onboard` or `/onboard <path>` | Start the guided onboarding playbook for a new target project. Reads `templates/playbooks/onboarding.md` and follows it step-by-step. |
 | `/health` or `/health <slug>` | Run a health check on an existing target. Reads `templates/playbooks/health-check.md` and follows it step-by-step. |
@@ -454,7 +456,8 @@ If working on the harness itself:
 │   │   ├── analyst.md                     # Requirements gathering persona
 │   │   ├── architect.md                   # Solution design persona
 │   │   ├── developer.md                   # TDD implementation persona
-│   │   └── reviewer.md                    # Code review persona
+│   │   ├── reviewer.md                    # Code review persona
+│   │   └── strategist.md                  # Strategic advisor (optional, for external LLM sessions)
 │   ├── project/
 │   │   ├── CLAUDE.md.template             # Scaffold for target project CLAUDE.md
 │   │   └── agents.md.template             # Cross-tool agent config scaffold

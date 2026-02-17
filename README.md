@@ -1,6 +1,6 @@
-# Agentic Engineering Harness
+# AEH -- Agentic Engineering Harness
 
-A meta-engineering project that provides the templates, governance criteria, persona definitions and process documentation needed to transform any software development project into a mature agentic engineering setup -- where AI coding agents (Claude Code primarily) work within a structured, reviewable, restartable workflow.
+A meta-engineering toolkit for transforming software projects into structured agentic engineering setups -- where AI coding agents (Claude Code primarily) work within a reviewable, restartable, persona-driven workflow.
 
 ## The Problem
 
@@ -8,67 +8,105 @@ AI coding agents are powerful but undisciplined by default. Without structure, t
 
 ## The Solution
 
-This project codifies a **four-persona workflow** (Analyst → Architect → Developer → Reviewer) inspired by [Emmz Rendle's "How I Tamed Claude" talk at NDC London 2026](https://www.youtube.com/watch?v=pey9u_ANXZM). It provides:
+AEH codifies a **persona-driven workflow** (Analyst, Architect, Developer, Reviewer -- with an optional upstream Strategist) inspired by [Emmz Rendle's "How I Tamed Claude" talk at NDC London 2026](https://www.youtube.com/watch?v=pey9u_ANXZM). It provides:
 
-- **Persona templates** -- system prompts for each role, encoding mature software engineering principles (TDD, small commits, retrospectives, spec-driven development)
+- **Persona templates** -- system prompts for each role, encoding mature software engineering principles (TDD, small commits, retrospectives, spec-driven development). The four engineering personas run inside Claude Code; the optional Strategist runs in any LLM chat for higher-altitude decision-making.
 - **Project templates** -- `CLAUDE.md` and `agents.md` scaffolds to configure any target project
 - **Governance criteria** -- checklists and rubrics to assess and improve agentic configuration quality
+- **Guided playbooks** -- step-by-step workflows for onboarding new projects and running health checks
 - **Transformation process** -- a repeatable method for taking an existing project from zero agentic setup to a fully structured one
 
-## What This Project Is NOT
+## Who Is This For
+
+- **Solo developers** using Claude Code (or similar) who want structure without bureaucracy
+- **Small teams** introducing AI coding agents and needing a shared workflow
+- **Technical leads** evaluating how to integrate AI agents into existing processes
+- **Anyone** who has experienced the "100 files changed, no idea what happened" problem with AI coding
+
+## What This Is NOT
 
 - It is **not a framework or library**. There is no code to install or import.
 - It is **not specific to any language or stack**. The templates are adapted per target project.
-- It **does not implement software**. It produces the configuration, documentation and process artifacts that *drive* implementation.
+- It **does not implement software**. It produces the configuration, documentation, and process artifacts that *drive* implementation.
+- It is **not Claude-exclusive**. While optimised for Claude Code, the persona templates and governance criteria work with any LLM-based coding agent.
+
+## Quick Start
+
+```bash
+git clone https://gitlab.com/stefanberreth/agentic-engineering-harness.git
+cd agentic-engineering-harness
+claude
+```
+
+Then say `/onboard /path/to/your/project` to start the guided assessment.
+
+AEH will:
+1. Read your project's structure, README, and any existing AI agent configuration
+2. Run a 30-item assessment checklist across 7 categories
+3. Produce a ranked inconsistency report (CRITICAL / HIGH / MEDIUM / LOW)
+4. Generate a phased transformation plan
+5. Create ready-to-execute prompts for setting up the agentic structure in your project
+
+No code in your project is modified during onboarding. The harness only reads and reports.
 
 ## How It Works
 
-### The Two-Claude Model
+### The Two-Project Model
 
-This harness operates on a strict separation principle:
+AEH operates on a strict separation principle:
 
-1. **Harness-side Claude** (running in this project) -- reads target projects, analyses them, produces plans, generates adapted templates and ready-to-paste prompts. **Never modifies target project files** except for one optional, narrow exception (see below).
-2. **Target-side Claude** (running in the target project) -- receives prompts from the human operator, executes changes within the target project's own context and permissions.
+1. **Harness-side** (this project) -- reads target projects, analyses them, produces plans, generates adapted templates and prompts. Never modifies target project files directly (with one narrow, optional exception for prompt delivery).
+2. **Target-side** (your project) -- a separate Claude Code session receives prompts and executes changes within your project's own context and conventions.
 
-This separation ensures auditability, reproducibility, and clean context boundaries. Every change to a target project is made by a Claude instance that reads *that project's* `CLAUDE.md` and follows *that project's* conventions.
+This separation ensures auditability, reproducibility, and clean context boundaries.
 
-**Optional: Direct Prompt Delivery.** Per-project, the user can choose to let the harness write prompt files directly into the target project's `docs/AE/prompts/` directory. This means the target-side Claude can simply be told "Read and execute `docs/AE/prompts/003-create-developer-prompt.md`" instead of requiring manual copy-paste. This is a policy choice asked during onboarding and recorded in the target's `profile.md`. The harness never writes anything else into the target project -- only prompt `.md` files into that single directory.
+### The Personas
 
-### Transforming an Existing Project
+| Persona | Where it runs | What it does |
+|---------|---------------|--------------|
+| **Analyst** | Claude Code (harness or target) | Gathers requirements, produces specs |
+| **Architect** | Claude Code (harness or target) | Designs solutions, defines boundaries |
+| **Developer** | Claude Code (target) | TDD implementation, follows conventions |
+| **Reviewer** | Claude Code (target) | Compliance checking, produces issue lists |
+| **Strategist** | Any LLM chat (optional) | Business strategy, priorities, trade-offs |
 
-1. Start Claude Code in this project's directory:
-   ```bash
-   cd /path/to/agentic-engineering-harness
-   claude
-   ```
-2. Claude reads `CLAUDE.md` → `targets/index.md`, shows a session banner with active targets and roles.
-3. Say `/onboard` (or `/onboard /path/to/project`) to start the guided onboarding playbook.
-4. The playbook runs 7 phases:
-   - **Target selection** -- verify the path, check for existing workspace
-   - **Reconnaissance** -- structural snapshot, detect existing role-like instructions
-   - **Assessment** -- checklist evaluation, inconsistency report, existing setup migration analysis
-   - **Report** -- ranked findings presented in terminal-friendly format
-   - **Plan** -- transformation plan with numbered tasks and effort estimates
-   - **Execute (harness setup only)** -- generate deliverables and prompts that set up AE structure. These prompts only touch `docs/AE/`, `CLAUDE.md` (AE sections), and `_ai/reports/`. They never modify application code.
-   - **Implementation handoff** -- present findings and offer options: harness setup only, supervised reviewer-implementer loop, pre-approved auto mode, or stop and review
-5. You point a Claude Code session **inside the target project** at the generated prompts:
+The four engineering personas are the core workflow. The Strategist is an optional upstream role for users who want a strategic conversation partner (e.g. in Claude Web) to inform engineering priorities. See `templates/personas/strategist.md` for details.
+
+### The Workflow
+
+```
+/onboard your project
+    |
+    v
+Assessment (read-only, produces reports)
+    |
+    v
+Plan (phased, prioritised transformation tasks)
+    |
+    v
+Harness setup (AE structure in your project -- personas, session init)
+    |
+    v
+Reviewer-Implementer loop (find issues, fix them, repeat)
+    |
+    v
+/health checks (periodic, detect drift)
+```
+
+Each step is human-approved. The harness generates prompts; you decide when and whether to execute them.
+
+### Transforming a Project Step by Step
+
+1. Start Claude Code in the AEH directory
+2. Say `/onboard /path/to/your/project`
+3. The playbook runs 7 phases with skip gates at every step
+4. At the end, you get assessment reports and ready-to-execute prompts
+5. Open Claude Code in your project and run the prompts:
    ```
    Read and execute docs/AE/prompts/000-run-all-foundation.md
    ```
-6. For code-touching implementation (fixing issues from the assessment), you run the reviewer-implementer loop separately with human oversight.
-7. Run `/health` periodically to check for drift, new issues, or persona staleness.
-
-### Returning to an Existing Target
-
-Say `/health` (or `/health <slug>`) to run a compliance check against the last assessment. The health check produces a delta report: new issues, resolved issues, regressions, persona drift, and instruction leaks (new guidelines that appeared outside the AE structure).
-
-### Working on the Harness Itself
-
-Start Claude Code here and say you want to improve the harness. Areas for ongoing refinement:
-- Persona prompt effectiveness
-- Governance criteria completeness
-- New patterns discovered from transformation experience
-- Documentation of lessons learned
+6. For code-level fixes, run the reviewer-implementer loop with human oversight
+7. Run `/health` periodically to check for drift
 
 ## Project Structure
 
@@ -81,7 +119,8 @@ Start Claude Code here and say you want to improve the harness. Areas for ongoin
 │   │   ├── analyst.md                     # Requirements gathering persona
 │   │   ├── architect.md                   # Solution design persona
 │   │   ├── developer.md                   # TDD implementation persona
-│   │   └── reviewer.md                    # Code review persona
+│   │   ├── reviewer.md                    # Code review persona
+│   │   └── strategist.md                  # Strategic advisor (optional, external sessions)
 │   ├── project/
 │   │   ├── CLAUDE.md.template             # Scaffold for target project CLAUDE.md
 │   │   └── agents.md.template             # Cross-tool agent config scaffold
@@ -89,109 +128,104 @@ Start Claude Code here and say you want to improve the harness. Areas for ongoin
 │   │   ├── assessment-checklist.md        # Evaluate agentic readiness
 │   │   └── review-criteria.md             # Quality rubric for config files
 │   └── playbooks/
-│       ├── onboarding.md                  # Guided 7-phase assessment + transformation
+│       ├── onboarding.md                  # Guided 7-phase onboarding workflow
 │       └── health-check.md               # Recurring compliance check + delta report
 ├── targets/
-│   ├── index.md                           # Registry of all target projects + status
-│   └── <project-slug>/                    # Per-project transformation workspace
-│       ├── profile.md                     #   Identity, path, stack, context
-│       ├── assessment.md                  #   Assessment checklist results
-│       ├── transformation-plan.md         #   Phased transformation plan
-│       ├── tasks.md                       #   Task tracking for transformation
-│       ├── decisions.md                   #   Key decisions with rationale
-│       ├── open-questions.md              #   Unresolved questions
-│       ├── prompts/                       #   Ready-to-paste prompts for target
-│       │   ├── 001-create-claude-md.md
-│       │   └── ...
-│       ├── deliverables/                  #   Adapted files for the target project
-│       │   ├── CLAUDE.md
-│       │   └── ...
-│       └── journal.md                     #   Chronological session log
-├── docs/
-│   ├── how-i-tamed-claude-ndc-london-2026.md  # Structured reference from source talk
-│   ├── raw transcript.txt                     # Raw talk transcript
-│   └── Screenshot 2026-02-15 at 15.17.33.png  # Resources slide
-└── logs/                                  # (legacy, migrated to targets/)
+│   └── index.md                           # Registry of target projects + status
+└── docs/
+    ├── how-i-tamed-claude-ndc-london-2026.md  # Structured reference from source talk
+    └── ...
 ```
+
+When you onboard a project, AEH creates a workspace under `targets/<your-project>/` with assessment, plan, tasks, decisions, prompts, deliverables, and a session journal.
 
 ## Core Principles
 
 1. **Structure over speed.** A well-structured agentic setup is slower to start but dramatically more productive and reliable over time.
-2. **Restartability.** Every piece of state that matters must live in committed files, not in conversation history. Any Claude session can be killed and work resumed from disk.
-3. **Small increments.** One task, one branch, one reviewable PR. No 100k-line commits.
-4. **Feedback loops.** Developer retrospectives feed back to the Reviewer and Architect. The spec is a living document.
-5. **Human in the loop.** The human approves requirements, designs, and review verdicts. The AI proposes; the human decides.
-6. **Assessment produces reports; implementation acts on them.** Onboarding and assessment workflows never modify application code. They read, analyse, and generate reports. Code changes require a separate step with human oversight (or explicit pre-approval).
-7. **Preserve existing conventions.** When a target project has working instructions, they become the foundation -- AE templates fill gaps, they don't replace what works. Merge, don't overwrite.
-8. **Templates are starting points.** Every template in this project must be adapted to the target project's language, framework, team, and culture.
-9. **Governance is continuous.** Agentic configuration files degrade over time. Regular `/health` checks keep them effective.
+2. **Restartability.** Every piece of state that matters lives in committed files, not conversation history. Any session can be killed and work resumed from disk.
+3. **Small increments.** One task, one commit, one reviewable change. No 100k-line surprises.
+4. **Human in the loop.** The AI proposes; the human decides. Every code-touching change requires explicit approval (or explicit pre-approval for experienced users).
+5. **Assessment before implementation.** Onboarding reads and reports. It never modifies your code. Implementation is a separate, conscious step.
+6. **Preserve what works.** When your project already has good instructions or conventions, AEH builds on them. Templates fill gaps -- they don't replace what's working.
+7. **Governance is continuous.** Agentic configuration degrades over time. Regular `/health` checks keep it effective.
+
+## Maturity Model
+
+AEH doesn't require you to adopt everything at once. Start where you are:
+
+| Level | What you get | Effort |
+|-------|-------------|--------|
+| **1. Assessment only** | Run `/onboard`, get a ranked report of your project's agentic readiness. No changes made. | 15 minutes |
+| **2. Harness setup** | Add AE structure (personas, session init, CLAUDE.md sections). Your code untouched. | 1 session |
+| **3. Reviewer-implementer loop** | Fix issues found in the assessment with human oversight. | 2-3 sessions |
+| **4. Full workflow** | All personas active, regular `/health` checks, continuous governance. | Ongoing |
+| **5. Strategic layer** | Add a Strategist in an external LLM chat for business-level decision support. | When needed |
+
+Most projects get significant value at level 2. You don't need to reach level 5 to benefit.
+
+## Requirements
+
+- [Claude Code](https://claude.ai/code) (CLI tool from Anthropic)
+- A software project you want to structure for agentic development
+- That's it. No dependencies, no installation, no build step.
+
+## Current Status
+
+AEH is in active development. It has been used to transform one real project end-to-end (a Python/PyTorch ML compression toolkit). The templates and governance criteria are based on that experience plus the principles from the source talk.
+
+What's working:
+- Onboarding playbook (7-phase guided assessment)
+- Four engineering persona templates + optional Strategist
+- Assessment checklist and review criteria
+- Prompt generation and direct delivery
+- Health check playbook (delta reports)
+
+What's evolving:
+- Templates are being refined based on real-world usage
+- Governance criteria may expand as more projects are onboarded
+- Multi-agent coordination patterns are not yet documented
+- CI/CD integration templates are planned but not yet created
 
 ## Key Resources
 
-| Resource | URL |
-|---|---|
-| Claude Code Docs | https://code.claude.com/docs |
-| OpenSpec | https://openspec.dev/ |
-| Context7 (docs MCP) | https://context7.com/ |
-| Serena (LSP MCP) | https://oraios.github.io/serena |
-| Anthropic Skills | https://github.com/anthropic/skills |
-| Awesome Claude Code | https://github.com/hesreallyhim/awesome-claude-code |
-| Awesome Claude Skills | https://github.com/travisvn/awesome-claude-skills |
+| Resource | Description |
+|----------|-------------|
+| [How I Tamed Claude (NDC London 2026)](https://www.youtube.com/watch?v=pey9u_ANXZM) | The talk that inspired this project |
+| [Claude Code Docs](https://docs.anthropic.com/en/docs/claude-code) | Official Claude Code documentation |
+| [OpenSpec](https://openspec.dev/) | Specification-driven development tool |
+| [Context7](https://context7.com/) | Documentation MCP server |
 
 ## Mission Evolution
 
-This section tracks how the project's scope and understanding evolve over time.
-
 ### v0.1 -- Foundation (Feb 2026)
 
-- Transcribed and structured the source talk as reference material.
-- Created initial persona templates (Analyst, Architect, Developer, Reviewer).
-- Created project templates (`CLAUDE.md`, `agents.md`) and governance criteria.
-- Established the transformation workflow: assess → plan → adapt → validate.
+- Transcribed and structured the source talk as reference material
+- Created initial persona templates (Analyst, Architect, Developer, Reviewer)
+- Created project templates (`CLAUDE.md`, `agents.md`) and governance criteria
+- Established the transformation workflow: assess, plan, adapt, validate
 
 ### v0.2 -- Target Project Isolation & Multi-Project Tracking (Feb 2026)
 
-- Established the **Two-Claude Model**: harness-side Claude reads and plans, target-side Claude executes. Hard boundary: harness never modifies target files directly.
-- Created `targets/` workspace structure with per-project directories for profile, assessment, plans, tasks, decisions, open questions, prompts, deliverables and journal.
-- Created `targets/index.md` as the orientation entry point for fresh sessions.
-- Defined the **prompt file format** -- self-contained, numbered, ordered prompts that a human pastes into a target-project Claude session.
-- Defined five transformation phases: assessment → planning → implementing → reviewing → maintaining.
-- Replaced `logs/` with `targets/` as the canonical location for all per-project state.
-- **Open questions:**
-  - How well do the generic persona templates adapt to radically different stacks (embedded C vs. web SPA vs. data pipeline)?
-  - What is the right granularity for the assessment checklist?
-  - How should OpenSpec integration be templated now that it has changed its structure?
-  - What MCP server configurations should be recommended vs. left to project discretion?
-  - How should the prompt numbering scheme handle re-ordering or inserting new prompts?
-  - What's the right feedback loop when a target-side prompt execution reveals issues?
+- Established the Two-Project Model with strict isolation boundary
+- Created `targets/` workspace structure for per-project transformation state
+- Defined the prompt file format and five transformation phases
+- Open questions: stack adaptability, checklist granularity, MCP recommendations
 
 ### v0.3 -- Guided Playbooks, Boundary Enforcement & Session Init (Feb 2026)
 
-- Created **onboarding playbook** (`templates/playbooks/onboarding.md`) -- a guided 7-phase workflow for assessing and transforming new target projects. Triggered via `/onboard`. Includes existing setup detection, migration analysis, skip gates, and re-onboarding protection.
-- Created **health-check playbook** (`templates/playbooks/health-check.md`) -- recurring compliance checks for existing targets. Produces delta reports (new issues, resolved, regressions, persona drift, instruction leaks). Triggered via `/health`.
-- Established the **assessment-implementation boundary**: onboarding and assessment workflows operate in read-and-report mode only. They set up AE harness structure but never touch application code. Implementation requires a separate step with human oversight, or explicit pre-approval for experienced users.
-- Added **merge-and-confirm rule**: prompts that modify existing instruction files must diff current vs deliverable and confirm with the user before applying. No silent overwrites.
-- Added **session init and role selection**: persona persistence via `.claude/persona`, 3-line terminal banner, `/switch`, `/role info`, `/ignore` commands. Encoded in both harness CLAUDE.md and as a deliverable for target projects.
-- Produced **compression-poc-02 Phase 3 deliverable**: project-specific developer persona tailored to Python/PyTorch/HuggingFace patterns, frozen dataclass configs, Black/MyPy style, and config-driven architecture.
-- Reviewed and fixed all 7 existing prompts for compression-poc-02 (2 HIGH, 5 MEDIUM issues).
-- Created **orchestration prompt** (000-run-all-foundation.md) that chains harness setup steps in one pass, ending at the review report without touching code.
-- **Open questions:**
-  - How well does the 7-phase playbook flow for projects with radically different structures (monorepo, polyglot, no existing CLAUDE.md at all)?
-  - What's the right threshold for the health check's "30+ days" stale target suggestion?
-  - Should the pre-approval mechanism for auto-implementation have a scope limiter (e.g. "auto-fix CRITICAL only")?
+- Created onboarding playbook (7-phase guided workflow with skip gates)
+- Created health-check playbook (recurring compliance checks with delta reports)
+- Established assessment-implementation boundary (onboarding never touches code)
+- Added session init, role selection, and merge-and-confirm rule
+- First real-world transformation completed (compression-poc-02)
 
-### Future directions
+### v0.4 -- Strategist Persona (Feb 2026)
 
-- **Battle-tested refinement:** Apply the harness to real projects, capture what works and what doesn't in transformation logs, and feed improvements back into templates.
-- **Skills and commands library:** Develop reusable Claude skills/commands that support the transformation workflow itself.
-- **Multi-agent coordination patterns:** Document how to run multiple Claude sessions (e.g. developer + reviewer) effectively.
-- **CI/CD integration patterns:** Templates for GitHub Actions / GitLab CI that enforce agentic workflow discipline (branch naming, test gates, coverage rules).
-- **Metrics and feedback:** Define how to measure whether an agentic setup is actually improving development velocity and quality.
-
-## License
-
-Private project. Not currently licensed for external use.
+- Added optional Strategist persona for upstream business/strategic decision support
+- Designed for use in external LLM sessions (Claude Web, etc.) without filesystem access
+- Adapted per-project into context briefings that can be pasted into any chat
+- Kept deliberately lightweight -- discoverable but not required
 
 ## Contact
 
-Stefan Berreth -- maintained in personal GitLab at `gitlab.com/stefanberreth/agentic-engineering-harness`.
+Stefan Berreth -- [gitlab.com/stefanberreth/agentic-engineering-harness](https://gitlab.com/stefanberreth/agentic-engineering-harness)
