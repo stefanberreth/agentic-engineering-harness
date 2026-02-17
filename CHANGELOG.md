@@ -16,6 +16,9 @@ Target-project-specific work (prompts, deliverables, assessments, journal entrie
 - "Who Is This For", "Quick Start", and "Current Status" sections in README
 - CHANGELOG.md
 - Harness Maintenance Discipline section in CLAUDE.md
+- CLAUDE.md section ordering checks: assessment checklist item 2.8, review criteria "Section ordering" criterion, health-check step 3e, onboarding Phase 3b note
+- Specialist prompt collection step in onboarding playbook (Phase 2d): asks users for domain-specific prompts they've been pasting manually, merges them into persona adaptations
+- Domain expertise adaptation guidance in generic reviewer template, with worked example reference
 
 ### Changed
 - README rewritten for public audience (cleaner structure, less internal jargon)
@@ -23,6 +26,10 @@ Target-project-specific work (prompts, deliverables, assessments, journal entrie
 - Persona count updated from "four" to "four engineering + optional strategist" across CLAUDE.md, README, onboarding playbook
 - Onboarding playbook Phase 7: light strategist mention in handoff
 - `/role info` output now includes strategist as optional external role
+- `CLAUDE.md.template`: session init added as second section (after Project Overview), with note that section ordering matters
+
+### Fixed
+- `CLAUDE.md.template` had no session init section at all -- added it in the correct position (top of file)
 
 ## [v0.3] - 2026-02-17
 
