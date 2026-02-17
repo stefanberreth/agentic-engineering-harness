@@ -327,6 +327,46 @@ When a conversation produces a new insight about how the harness should work, or
 
 ---
 
+## Harness Maintenance Discipline
+
+This harness is a project like any other. It needs the same discipline it prescribes for target projects.
+
+### CHANGELOG.md
+
+`CHANGELOG.md` at project root tracks all notable changes. It follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format.
+
+**Update the CHANGELOG for every commit that:**
+- Adds, changes, or removes a template, persona, playbook, or governance document
+- Changes CLAUDE.md rules or working patterns
+- Adds or modifies harness-level features (commands, session init, playbooks)
+- Changes README or public-facing documentation
+
+**Do not update the CHANGELOG for:**
+- Target-specific work (prompts, deliverables, journal entries) -- these are tracked in `targets/<project>/`
+- Typo fixes or minor formatting
+
+**When to bump the version:** When a coherent set of changes forms a meaningful capability increment. Not every commit is a version bump -- group related changes under the current unreleased version until they form a logical unit, then tag it.
+
+### README.md
+
+The README is the public face of this project. Update it when:
+- A new capability is added (persona, playbook, command)
+- The project structure changes
+- Core principles are added or revised
+- The "Current Status" section becomes stale
+
+### Documentation currency
+
+After every session that modifies the harness itself (not target work), verify:
+1. Does CLAUDE.md reflect the current rules and structure?
+2. Does README.md reflect the current capabilities and status?
+3. Is CHANGELOG.md up to date?
+4. Does the project structure tree in CLAUDE.md and README.md match reality?
+
+If any of these are stale, fix them before committing other work.
+
+---
+
 ## Working Rules
 
 - **Never write application code.** This project produces markdown, configuration, process documentation, and prompt engineering artifacts only.
@@ -450,7 +490,8 @@ If working on the harness itself:
 ```
 .
 ├── CLAUDE.md                              # This file
-├── README.md                              # Mission statement and evolution log
+├── README.md                              # Public-facing project description
+├── CHANGELOG.md                           # Version history (Keep a Changelog format)
 ├── templates/
 │   ├── personas/
 │   │   ├── analyst.md                     # Requirements gathering persona

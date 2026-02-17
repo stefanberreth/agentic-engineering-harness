@@ -114,6 +114,7 @@ Each step is human-approved. The harness generates prompts; you decide when and 
 .
 ├── CLAUDE.md                              # Claude's instructions for this project
 ├── README.md                              # This file
+├── CHANGELOG.md                           # Version history (Keep a Changelog format)
 ├── templates/
 │   ├── personas/
 │   │   ├── analyst.md                     # Requirements gathering persona
