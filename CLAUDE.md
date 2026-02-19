@@ -478,9 +478,9 @@ An absent or empty file means no role is active.
 **If a persona is set:**
 
 ```
-agentic-engineering-harness · reviewer
+agentic-engineering-harness · reviewer (from last session)
   Targets: compression-poc-02 (implementing)
-  /switch role · /role info · /ignore role
+  Continue as reviewer, or /switch · /role info · /ignore role
 ```
 
 **If no persona is set:**
@@ -503,7 +503,7 @@ agentic-engineering-harness · no active role
   <slug> last checked <N> days ago. /health to run a check.
 ```
 
-4. **Wait for the user** before doing anything else. Do not launch into work unprompted.
+4. **Wait for the user before proceeding.** When a persona is carried over from a previous session, do NOT adopt it automatically. Show the banner and wait for the user to either confirm the role (by saying "continue", giving a task, or acknowledging) or switch/clear it. Do not read the persona definition file or apply persona constraints until confirmed. Do not launch into work unprompted.
 
 ### Role commands (natural language, not literal slash commands)
 
