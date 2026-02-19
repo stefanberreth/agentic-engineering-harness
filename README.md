@@ -148,7 +148,7 @@ Ask Claude to explain the setup, help you create it, or verify an existing one. 
 │       ├── openspec-setup.md / teardown   # OpenSpec MCP server setup/removal
 │       ├── context7-setup.md / teardown   # Context7 MCP server setup/removal
 │       └── serena-setup.md / teardown     # Serena MCP server setup/removal
-├── targets/
+├── targets/                               # Private nested repo (see "Managing Target Workspace History")
 │   └── index.md                           # Registry of target projects + status
 └── docs/
     ├── how-i-tamed-claude-ndc-london-2026.md  # Structured reference from source talk

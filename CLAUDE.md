@@ -372,9 +372,7 @@ This project uses two git repositories:
 1. **Harness repo** (root) -- public, tracks templates, governance, playbooks, docs, CLAUDE.md, README. Pushed to the public remote.
 2. **Targets repo** (`targets/`) -- private, tracks all target project workspaces (assessments, plans, prompts, deliverables, journals). Nested inside the harness directory but is an independent git repo.
 
-The harness `.gitignore` contains `targets/*/` so target workspace contents never leak into the public repo. The harness repo tracks only `targets/index.md` as an empty registry template.
-
-The targets repo tracks everything under `targets/`, including its own copy of `index.md` (the populated version with real project entries).
+The harness `.gitignore` contains `targets/` so nothing under `targets/` is tracked by the public repo. The targets repo owns everything in that directory, including `index.md`.
 
 **Commit and push rules:**
 
@@ -578,7 +576,7 @@ If working on the harness itself:
 │       ├── context7-teardown.md           # Context7 teardown prompt template
 │       ├── serena-setup.md                # Serena setup prompt template
 │       └── serena-teardown.md             # Serena teardown prompt template
-├── targets/
+├── targets/                               # Private nested repo (not tracked by public harness)
 │   ├── index.md                           # Registry of all target projects
 │   └── <project-slug>/                    # Per-project transformation workspace
 │       ├── profile.md                     #   Identity, path, stack, context
