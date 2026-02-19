@@ -6,6 +6,7 @@
 # Local session state (not project config)
 .claude/persona
 
-# Target project workspaces (contain private project data)
-# Only targets/index.md is tracked as an empty registry template
+# Target project workspaces (private, tracked by nested repo in targets/)
+# Only targets/index.md is tracked by the harness (public) repo as an empty template.
+# All target workspace contents are tracked by targets/.git (private repo).
 targets/*/

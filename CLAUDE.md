@@ -365,6 +365,36 @@ After every session that modifies the harness itself (not target work), verify:
 
 If any of these are stale, fix them before committing other work.
 
+### Nested Repository Structure (targets/)
+
+This project uses two git repositories:
+
+1. **Harness repo** (root) -- public, tracks templates, governance, playbooks, docs, CLAUDE.md, README. Pushed to the public remote.
+2. **Targets repo** (`targets/`) -- private, tracks all target project workspaces (assessments, plans, prompts, deliverables, journals). Nested inside the harness directory but is an independent git repo.
+
+The harness `.gitignore` contains `targets/*/` so target workspace contents never leak into the public repo. The harness repo tracks only `targets/index.md` as an empty registry template.
+
+The targets repo tracks everything under `targets/`, including its own copy of `index.md` (the populated version with real project entries).
+
+**Commit and push rules:**
+
+When the user says "commit" or "commit and push":
+1. **Determine what changed.** Run `git status` in BOTH the root and `targets/` repos.
+2. **If only harness files changed:** Commit and push the harness repo only.
+3. **If only target files changed:** Commit and push the targets repo only (`git -C targets/ ...`).
+4. **If both changed:** Commit and push BOTH repos, in separate commits with appropriate messages. Commit the targets repo first (it's the inner dependency), then the harness repo.
+
+When committing target-specific work (assessments, prompts, deliverables, journal entries):
+- Commit to the **targets repo**, not the harness repo.
+- Use descriptive messages: `<slug>: <what changed>` (e.g. `compression-poc-02: complete Phase 3 assessment`).
+- Do NOT update CHANGELOG.md for target-specific work.
+
+When committing harness work (templates, governance, playbooks, CLAUDE.md):
+- Commit to the **harness repo** only.
+- Follow the existing CHANGELOG/README currency rules.
+
+**Never assume only one repo is affected.** Always check both on commit.
+
 ---
 
 ## Working Rules
