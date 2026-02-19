@@ -127,7 +127,6 @@ Ask Claude to explain the setup, help you create it, or verify an existing one. 
 ├── CLAUDE.md                              # Claude's instructions for this project
 ├── README.md                              # This file
 ├── CHANGELOG.md                           # Version history (Keep a Changelog format)
-├── .gitlab-ci.yml                         # CI guard against private data leaks
 ├── templates/
 │   ├── personas/
 │   │   ├── analyst.md                     # Requirements gathering persona

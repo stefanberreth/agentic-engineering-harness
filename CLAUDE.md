@@ -395,8 +395,6 @@ When committing harness work (templates, governance, playbooks, CLAUDE.md):
 
 **Never assume only one repo is affected.** Always check both on commit.
 
-**CI guard:** `.gitlab-ci.yml` contains a `check-no-targets-leak` job that fails the pipeline if any files matching `targets/.+/` appear in a push to the public repo. This is a server-side tripwire -- the `.gitignore` is the primary protection, and this CI job catches anything that slips through. If this job fails, it means target workspace files were accidentally committed to the harness repo. Fix by removing them from the commit and recommitting.
-
 **Detecting and offering the nested repo setup:**
 
 On session start, check whether `targets/.git/` exists. If it does not, and target workspaces exist under `targets/`, mention it briefly:
@@ -433,6 +431,12 @@ If the targets repo has no remote configured, do not nag -- but if the user asks
 - **Templates are starting points, not gospel.** Always adapt to the target project's language, framework, team size and maturity.
 - **Update targets/index.md** whenever a target project's phase or status changes.
 - **Capture rules into files.** When a conversation produces a new rule or policy, write it into the correct instruction file immediately. (See "Rule Capture Principle" above.)
+
+## Screenshots
+
+The user shares screenshots via `docs/screenshots/`. This directory is gitignored (transient communication, not project content).
+
+Files are named with macOS default timestamps: `Screenshot YYYY-MM-DD at HH.MM.SS.png`. When the user refers to "the screenshot", "the last screenshot", or "the latest one", glob `docs/screenshots/*.png` and use the timestamp in the filename to determine recency. Read the most recent file to view it.
 
 ## Context Management
 
@@ -548,7 +552,6 @@ If working on the harness itself:
 ├── CLAUDE.md                              # This file
 ├── README.md                              # Public-facing project description
 ├── CHANGELOG.md                           # Version history (Keep a Changelog format)
-├── .gitlab-ci.yml                         # CI guard: blocks private target data from public repo
 ├── templates/
 │   ├── personas/
 │   │   ├── analyst.md                     # Requirements gathering persona
