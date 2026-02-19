@@ -1,0 +1,37 @@
+# AEH CI -- guards and checks for the public harness repo
+
+stages:
+  - guard
+
+# Block any push that includes private target workspace files.
+# Only targets/index.md is allowed in this repo.
+check-no-targets-leak:
+  stage: guard
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push"
+  script:
+    - |
+      if [ "$CI_COMMIT_BEFORE_SHA" = "0000000000000000000000000000000000000000" ]; then
+        # New branch -- check all files in the commit range
+        LEAKED=$(git diff-tree --no-commit-id --name-only -r "$CI_COMMIT_SHA" | grep -E '^targets/.+/' || true)
+      else
+        LEAKED=$(git diff --name-only "$CI_COMMIT_BEFORE_SHA".."$CI_COMMIT_SHA" | grep -E '^targets/.+/' || true)
+      fi
+      if [ -n "$LEAKED" ]; then
+        echo ""
+        echo "========================================="
+        echo "  BLOCKED: private target data detected"
+        echo "========================================="
+        echo ""
+        echo "The following files belong in the private targets repo,"
+        echo "not the public harness repo:"
+        echo ""
+        echo "$LEAKED"
+        echo ""
+        echo "Only targets/index.md is allowed in the public repo."
+        echo "Target workspace contents must stay in the nested"
+        echo "targets/ private repo."
+        echo ""
+        exit 1
+      fi
+      echo "Guard passed: no target workspace files in push."

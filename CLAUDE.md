@@ -395,6 +395,8 @@ When committing harness work (templates, governance, playbooks, CLAUDE.md):
 
 **Never assume only one repo is affected.** Always check both on commit.
 
+**CI guard:** `.gitlab-ci.yml` contains a `check-no-targets-leak` job that fails the pipeline if any files matching `targets/.+/` appear in a push to the public repo. This is a server-side tripwire -- the `.gitignore` is the primary protection, and this CI job catches anything that slips through. If this job fails, it means target workspace files were accidentally committed to the harness repo. Fix by removing them from the commit and recommitting.
+
 **Detecting and offering the nested repo setup:**
 
 On session start, check whether `targets/.git/` exists. If it does not, and target workspaces exist under `targets/`, mention it briefly:
@@ -546,6 +548,7 @@ If working on the harness itself:
 ├── CLAUDE.md                              # This file
 ├── README.md                              # Public-facing project description
 ├── CHANGELOG.md                           # Version history (Keep a Changelog format)
+├── .gitlab-ci.yml                         # CI guard: blocks private target data from public repo
 ├── templates/
 │   ├── personas/
 │   │   ├── analyst.md                     # Requirements gathering persona
