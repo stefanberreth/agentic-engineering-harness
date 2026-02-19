@@ -395,6 +395,28 @@ When committing harness work (templates, governance, playbooks, CLAUDE.md):
 
 **Never assume only one repo is affected.** Always check both on commit.
 
+**Detecting and offering the nested repo setup:**
+
+On session start, check whether `targets/.git/` exists. If it does not, and target workspaces exist under `targets/`, mention it briefly:
+
+```
+Note: targets/ has no private repo set up. Your target workspaces are
+unversioned. Say "set up targets repo" for the recommended setup.
+```
+
+If the user says "set up targets repo" (or equivalent), explain briefly:
+- What it is: a nested private git repo inside `targets/` that tracks all transformation workspaces independently from the public harness repo
+- Why: keeps private project data versioned without risk of leaking into a shared/public harness
+- How: `git init` in `targets/`, add all existing files, optionally add a private remote for backup
+
+Then offer to create it. After creation, verify it works:
+- `git -C targets/ status` shows a clean working tree
+- `git status` in the root shows no target workspace files
+
+If the user already has it set up, verify on first commit of the session that both repos are healthy (`git status` in both).
+
+If the targets repo has no remote configured, do not nag -- but if the user asks about backup or syncing target data across machines, suggest adding a private remote.
+
 ---
 
 ## Working Rules

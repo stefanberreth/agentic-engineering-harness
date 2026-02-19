@@ -318,6 +318,17 @@ targets/<slug>/
 
 Update `targets/index.md` with the new target (phase: assessment).
 
+**If `targets/.git/` does not exist** (no private targets repo yet), mention it:
+
+```
+Your target workspaces are not yet version-controlled separately.
+A nested private repo in targets/ keeps your transformation history
+safe without leaking into the public harness. Say "set up targets repo"
+to create it, or continue without it.
+```
+
+Do not block on this -- it's an offer, not a gate. Proceed regardless of the user's answer.
+
 Proceed to Phase 4.
 
 ---

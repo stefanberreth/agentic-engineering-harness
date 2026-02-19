@@ -112,6 +112,14 @@ Each step is human-approved. The harness generates prompts; you decide when and 
 6. For code-level fixes, run the reviewer-implementer loop with human oversight
 7. Run `/health` periodically to check for drift
 
+### Managing Target Workspace History
+
+When you onboard projects, AEH creates workspaces under `targets/` containing assessments, plans, prompts, and journals. These are valuable artifacts -- but they're also private to you and have no place in a shared or public harness repo.
+
+The recommended setup is a **nested private repo** inside `targets/`. The harness repo (public) ignores target workspace contents via `.gitignore`; the targets repo (private) tracks them independently with its own commit history. Two repos, one working directory, zero risk of leaking private project data into the public harness.
+
+Ask Claude to explain the setup, help you create it, or verify an existing one. Say `set up targets repo` or ask about it -- Claude knows how to configure and maintain it.
+
 ## Project Structure
 
 ```
