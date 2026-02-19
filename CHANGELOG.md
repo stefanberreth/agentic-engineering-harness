@@ -34,6 +34,14 @@ Target-project-specific work (prompts, deliverables, assessments, journal entrie
 - CLAUDE.md playbooks table and role commands table include `/tools`
 - CLAUDE.md project structure tree updated with `templates/tools/` and `tools.md` playbook
 - README updated with tool integration in features list, workflow diagram, project structure, and current status
+- **Nested private repo for `targets/`** -- recommended setup for keeping private target workspaces versioned independently from the public harness repo
+- CLAUDE.md documents dual-repo commit/push rules, detection, and proactive setup offering
+- Onboarding Phase 3e offers nested repo setup during first workspace creation
+- README documents the pattern under "Managing Target Workspace History"
+- `docs/screenshots/` convention for transient human-Claude screenshot exchange (gitignored, timestamp-based)
+
+### Removed
+- `.gitlab-ci.yml` -- CI guard for target data leaks was non-functional without runners (GitLab Free tier). The `.gitignore` + nested repo structure provides sufficient protection.
 
 ---
 
