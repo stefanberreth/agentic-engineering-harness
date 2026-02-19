@@ -10,6 +10,9 @@ Target-project-specific work (prompts, deliverables, assessments, journal entrie
 
 ## [v0.5] - 2026-02-19
 
+### Fixed
+- Session init now requires user confirmation before adopting a carried-over persona. Previously, a role persisted from the last session was adopted silently. Updated in harness CLAUDE.md and `CLAUDE.md.template`.
+
 ### Added
 - **Tool integration system** for optional MCP server management (OpenSpec, Context7, Serena)
 - `templates/tools/` directory with setup and teardown prompt templates for each tool
