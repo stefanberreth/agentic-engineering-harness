@@ -89,21 +89,36 @@ For each item, mark one of:
 
 ---
 
-## 8. Development Tooling (Optional)
+## 8. Project Layout & Naming Hygiene
+
+| # | Item | Status | Notes |
+|---|---|---|---|
+| 8.1 | Directory structure follows a consistent organisational principle | | |
+| 8.2 | File naming conventions are consistent (casing, separators, prefixes) | | |
+| 8.3 | No redundant files with different names covering the same content | | |
+| 8.4 | No files placed in wrong directories (e.g. root clutter, misplaced docs) | | |
+| 8.5 | Obsolete/superseded files are archived or removed, not left in-place | | |
+| 8.6 | Documentation directory structure matches a clear taxonomy (not ad-hoc) | | |
+| 8.7 | No orphaned redirect/stub files pointing to moved or deleted content | | |
+| 8.8 | Config files are consolidated (not scattered across root and subdirectories) | | |
+
+---
+
+## 9. Development Tooling (Optional)
 
 > This category is **informational only**. Tool absence is not a deficiency -- it simply
 > records what is present. No items here affect the overall readiness rating.
 
 | # | Item | Status | Notes |
 |---|---|---|---|
-| 8.1 | `.mcp.json` exists and is well-formed | | |
-| 8.2 | MCP servers documented in CLAUDE.md (if any configured) | | |
-| 8.3 | OpenSpec: directory structure and MCP config present | | |
-| 8.4 | Context7: MCP config present with valid transport | | |
-| 8.5 | Serena: `.serena/project.yml` present and matches tech stack | | |
-| 8.6 | Functional equivalents: ADR/RFC/spec management exists | | |
-| 8.7 | Functional equivalents: alternative doc/code intelligence servers | | |
-| 8.8 | Tool configuration consistent (`.mcp.json` entries match CLAUDE.md documentation) | | |
+| 9.1 | `.mcp.json` exists and is well-formed | | |
+| 9.2 | MCP servers documented in CLAUDE.md (if any configured) | | |
+| 9.3 | OpenSpec: directory structure and MCP config present | | |
+| 9.4 | Context7: MCP config present with valid transport | | |
+| 9.5 | Serena: `.serena/project.yml` present and matches tech stack | | |
+| 9.6 | Functional equivalents: ADR/RFC/spec management exists | | |
+| 9.7 | Functional equivalents: alternative doc/code intelligence servers | | |
+| 9.8 | Tool configuration consistent (`.mcp.json` entries match CLAUDE.md documentation) | | |
 
 ---
 
