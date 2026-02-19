@@ -108,6 +108,28 @@ Use this rubric to evaluate the quality of the agentic engineering files in a ta
 
 ---
 
+## 5. Tool Integration Quality (Optional)
+
+> Only score this rubric if the project has actively configured development tools (OpenSpec, Context7, Serena, or other MCP servers). If no tools are configured, skip this section entirely.
+
+| Criterion | Score | Notes |
+|---|---|---|
+| **Config accuracy**: `.mcp.json` entries are valid and servers can connect | | |
+| **Documentation**: Each configured tool has a subsection in CLAUDE.md under Development Tools | | |
+| **Scope appropriateness**: Tools match the project's needs (e.g. Serena for large codebases, not 5-file scripts) | | |
+| **Consistency**: All configured tools follow the same documentation pattern in CLAUDE.md | | |
+| **Maintainability**: Tool configs reference correct tech stack (Serena's `project.yml` matches actual languages) | | |
+| **Reversibility**: Setup was done via harness prompts and can be undone via teardown prompts | | |
+
+### Common problems
+- Tool in `.mcp.json` but not documented in CLAUDE.md (invisible to new sessions)
+- Serena's `project.yml` references a language server for a language the project no longer uses
+- Context7 configured but `CONTEXT7_API_KEY` never set (silent failure)
+- Tool configured during onboarding but never actually used -- dead config weight
+- Multiple overlapping tools for the same function (e.g. Serena + Sourcegraph)
+
+---
+
 ## Overall Assessment
 
 | Aspect | Rating | Priority |
@@ -116,6 +138,7 @@ Use this rubric to evaluate the quality of the agentic engineering files in a ta
 | Persona prompts | | |
 | Specification | | |
 | Governance & process | | |
+| Tool integration (if applicable) | | |
 
 **Top recommendations:**
 1. [Most impactful improvement]

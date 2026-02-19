@@ -147,12 +147,29 @@ Many projects already have role-based instructions in non-standard locations. De
 | agents.md / agents.yaml | Project root, `.claude/` | Cursor rules, Windsurf configs, other tool agent files |
 | Workflow instructions | README, CONTRIBUTING.md, `docs/` | `## Development Workflow`, `## Code Review Process` |
 | Custom conventions | Various | Commit hooks with role logic, CI configs with review steps |
+| MCP configuration | Project root, `.claude/` | `.mcp.json`, `.claude/settings.json` with `mcpServers` |
+| Development tools | Project root | `openspec/`, `.serena/`, `.claude/skills/openspec-*` |
+| Spec/ADR management | `docs/`, project root | `docs/adr/`, `docs/rfc/`, `specs/`, `.changeset/` |
+| Code intelligence | Project root | `.sourcegraph/`, `tags`, `.ctags` |
 
 **Search strategy:**
 1. Glob for files with names containing: `prompt`, `persona`, `role`, `agent`, `instruction`, `system`, `rules`, `convention`, `workflow`, `CONTRIBUTING`
 2. Grep CLAUDE.md (if it exists) for section headings suggesting role-specific content: `developer`, `reviewer`, `review`, `coding standard`, `architect`, `analyst`, `workflow`
 3. Check `.claude/` directory contents for any instruction-like files beyond the standard `settings.json`
 4. Scan README for sections about development workflow, code review, or contribution guidelines
+5. Check for `.mcp.json` at project root; if found, read and catalogue all configured MCP servers
+6. Check for `.claude/settings.json` and grep for `mcpServers`
+7. Check for tool-specific directories: `openspec/`, `.serena/`, `.claude/skills/openspec-*`
+8. Check for functional equivalents: `docs/adr/`, `docs/rfc/`, `specs/`, `.changeset/`, `.sourcegraph/`
+
+**When development tools are detected**, add a "Development Tools" section to the catalogue:
+
+For each detected tool or MCP server:
+- **Tool name**: identified tool or "unknown MCP server"
+- **Config location**: where detected (`.mcp.json` entry, directory, etc.)
+- **Documented**: whether it's mentioned in CLAUDE.md
+- **Status**: working / incomplete / stale
+- **Functional equivalents**: any related non-MCP tools detected (ADR dirs, etc.)
 
 **When existing setup is found, build a catalogue:**
 
@@ -462,6 +479,13 @@ If existing setup was migrated, add:
 ```
   Note: Prompts will migrate your existing instructions into the AE
   structure. Original files are preserved until you choose to remove them.
+```
+
+Always add:
+
+```
+  Optional: Development tools (OpenSpec, Context7, Serena) can enhance
+  your agentic workflow. Say /tools to explore options.
 ```
 
 Proceed to Phase 7.

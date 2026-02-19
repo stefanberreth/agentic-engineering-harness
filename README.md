@@ -13,7 +13,8 @@ AEH codifies a **persona-driven workflow** (Analyst, Architect, Developer, Revie
 - **Persona templates** -- system prompts for each role, encoding mature software engineering principles (TDD, small commits, retrospectives, spec-driven development). The four engineering personas run inside Claude Code; the optional Strategist runs in any LLM chat for higher-altitude decision-making.
 - **Project templates** -- `CLAUDE.md` and `agents.md` scaffolds to configure any target project
 - **Governance criteria** -- checklists and rubrics to assess and improve agentic configuration quality
-- **Guided playbooks** -- step-by-step workflows for onboarding new projects and running health checks
+- **Guided playbooks** -- step-by-step workflows for onboarding new projects, running health checks, and configuring development tools
+- **Tool integration** -- optional MCP server setup/teardown for OpenSpec (specs), Context7 (docs), and Serena (code navigation), with detection of functional equivalents
 - **Transformation process** -- a repeatable method for taking an existing project from zero agentic setup to a fully structured one
 
 ## Who Is This For
@@ -87,10 +88,13 @@ Plan (phased, prioritised transformation tasks)
 Harness setup (AE structure in your project -- personas, session init)
     |
     v
+/tools (optional: configure OpenSpec, Context7, Serena)
+    |
+    v
 Reviewer-Implementer loop (find issues, fix them, repeat)
     |
     v
-/health checks (periodic, detect drift)
+/health checks (periodic, detect drift + tool health)
 ```
 
 Each step is human-approved. The harness generates prompts; you decide when and whether to execute them.
@@ -128,9 +132,14 @@ Each step is human-approved. The harness generates prompts; you decide when and 
 │   ├── governance/
 │   │   ├── assessment-checklist.md        # Evaluate agentic readiness
 │   │   └── review-criteria.md             # Quality rubric for config files
-│   └── playbooks/
-│       ├── onboarding.md                  # Guided 7-phase onboarding workflow
-│       └── health-check.md               # Recurring compliance check + delta report
+│   ├── playbooks/
+│   │   ├── onboarding.md                  # Guided 7-phase onboarding workflow
+│   │   ├── health-check.md               # Recurring compliance check + delta report
+│   │   └── tools.md                       # Optional development tool configuration
+│   └── tools/
+│       ├── openspec-setup.md / teardown   # OpenSpec MCP server setup/removal
+│       ├── context7-setup.md / teardown   # Context7 MCP server setup/removal
+│       └── serena-setup.md / teardown     # Serena MCP server setup/removal
 ├── targets/
 │   └── index.md                           # Registry of target projects + status
 └── docs/
@@ -179,7 +188,8 @@ What's working:
 - Four engineering persona templates + optional Strategist
 - Assessment checklist and review criteria
 - Prompt generation and direct delivery
-- Health check playbook (delta reports)
+- Health check playbook (delta reports + tool health)
+- Tool integration playbook (OpenSpec, Context7, Serena -- optional, reversible)
 
 What's evolving:
 - Templates are being refined based on real-world usage
@@ -226,6 +236,14 @@ What's evolving:
 - Designed for use in external LLM sessions (Claude Web, etc.) without filesystem access
 - Adapted per-project into context briefings that can be pasted into any chat
 - Kept deliberately lightweight -- discoverable but not required
+
+### v0.5 -- Tool Integration (Feb 2026)
+
+- Added optional tool integration system for OpenSpec, Context7, and Serena MCP servers
+- `/tools` playbook for setup, teardown, and repair -- runnable independently or during onboarding
+- Detection patterns for tools and functional equivalents (ADR directories, other MCP servers, etc.)
+- Tool health checking integrated into `/health` playbook
+- Every setup has a matching teardown -- fully reversible, per-project, never prescribed
 
 ## Contact
 

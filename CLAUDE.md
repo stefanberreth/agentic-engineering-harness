@@ -395,6 +395,7 @@ Playbooks are guided workflows stored in `templates/playbooks/`. When triggered,
 |---------|----------|-------------|
 | `/onboard` | `templates/playbooks/onboarding.md` | Assess and transform a new target project. Runs 7 phases: target selection, reconnaissance, assessment, report, planning, harness setup, implementation handoff. |
 | `/health` | `templates/playbooks/health-check.md` | Run a recurring compliance check on an existing target. Produces a delta report comparing current state vs last assessment, detects persona drift and instruction leaks. |
+| `/tools` | `templates/playbooks/tools.md` | Configure optional development tools (OpenSpec, Context7, Serena) for a target project. Detects existing tools, offers setup/removal, generates prompts. |
 
 When a playbook is triggered, Claude must read the playbook file and follow its instructions exactly. The playbook governs tone, pacing, output format, and user interaction for the duration of the workflow.
 
@@ -459,6 +460,7 @@ These are shorthands the user can say at any time:
 | `/ignore` or "no role" | Clear `.claude/persona`. Work without persona constraints. |
 | `/onboard` or `/onboard <path>` | Start the guided onboarding playbook for a new target project. Reads `templates/playbooks/onboarding.md` and follows it step-by-step. |
 | `/health` or `/health <slug>` | Run a health check on an existing target. Reads `templates/playbooks/health-check.md` and follows it step-by-step. |
+| `/tools` or `/tools <slug>` | Configure optional development tools for a target project. Reads `templates/playbooks/tools.md` and follows it step-by-step. |
 
 ### Role behaviour
 
@@ -505,9 +507,19 @@ If working on the harness itself:
 │   ├── governance/
 │   │   ├── assessment-checklist.md        # Evaluate agentic readiness
 │   │   └── review-criteria.md             # Quality rubric for config files
-│   └── playbooks/
-│       ├── onboarding.md                  # Guided assessment + transformation workflow
-│       └── health-check.md               # Recurring compliance check workflow
+│   ├── playbooks/
+│   │   ├── onboarding.md                  # Guided assessment + transformation workflow
+│   │   ├── health-check.md               # Recurring compliance check workflow
+│   │   └── tools.md                       # Optional development tool configuration
+│   └── tools/
+│       ├── README.md                      # Tool integration overview
+│       ├── tool-detection-patterns.md     # Detection patterns for tools + equivalents
+│       ├── openspec-setup.md              # OpenSpec setup prompt template
+│       ├── openspec-teardown.md           # OpenSpec teardown prompt template
+│       ├── context7-setup.md              # Context7 setup prompt template
+│       ├── context7-teardown.md           # Context7 teardown prompt template
+│       ├── serena-setup.md                # Serena setup prompt template
+│       └── serena-teardown.md             # Serena teardown prompt template
 ├── targets/
 │   ├── index.md                           # Registry of all target projects
 │   └── <project-slug>/                    # Per-project transformation workspace

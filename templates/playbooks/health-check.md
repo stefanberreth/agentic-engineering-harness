@@ -99,6 +99,20 @@ For each persona file in the target project (if they exist):
 - Are there new patterns in the codebase that the persona should know about? (New frameworks added, new test patterns, new directories)
 - Are there conventions encoded in the persona that the codebase no longer follows?
 
+### 3g. Tool Health Check
+
+If `targets/<slug>/profile.md` records any configured development tools (under `## Development Tools`), verify each one:
+
+1. **Config present:** Is the tool's entry still in `.mcp.json`?
+2. **Documented:** Is the tool still documented in the target's CLAUDE.md under a Development Tools section?
+3. **Config matches reality:** For Serena, does `.serena/project.yml` reference languages the project still uses? For Context7, is the transport config valid?
+4. **No orphaned config:** Are there tools in `.mcp.json` that are NOT documented in CLAUDE.md? (These are invisible to new sessions.)
+5. **No removed tools:** Are there tools documented in CLAUDE.md that are NOT in `.mcp.json`? (These are documented but non-functional.)
+
+Use detection patterns from `templates/tools/tool-detection-patterns.md`.
+
+Report findings as tool drift items in the delta report (Phase 4).
+
 ---
 
 ## Phase 4: Delta Report
@@ -116,6 +130,7 @@ Compare the fresh assessment against the baseline. Categorise every finding:
 | **Regression** | Was resolved or improved, now worse again |
 | **Unchanged** | Same status as baseline |
 | **Persona drift** | Persona files are out of sync with project reality |
+| **Tool drift** | Tool configured but stale, broken, or undocumented |
 | **Instruction leak** | New role-like content appeared outside AE structure |
 
 ### Report Format
@@ -137,6 +152,7 @@ Write to `targets/<slug>/health-check-<YYYY-MM-DD>.md`:
 | Regressions | <N> |
 | Unchanged | <N> |
 | Persona drift | <N> |
+| Tool drift | <N> |
 | Instruction leaks | <N> |
 
 ## New Issues
@@ -171,6 +187,14 @@ Write to `targets/<slug>/health-check-<YYYY-MM-DD>.md`:
 | `CONTRIBUTING.md` (new) | Code review checklist | Integrate into reviewer persona |
 | `README.md` > New "Dev Setup" section | Build instructions | Merge into CLAUDE.md |
 
+## Tool Health
+
+| Tool | Status | Issue | Recommendation |
+|------|--------|-------|----------------|
+| OpenSpec | healthy | -- | -- |
+| Serena | drift | project.yml references Python but project migrated to TypeScript | Update .serena/project.yml |
+| Context7 | broken | In .mcp.json but not documented in CLAUDE.md | Run /tools to repair |
+
 ## Unchanged Issues
 
 <collapsed list of issues still present from baseline>
@@ -189,6 +213,7 @@ Baseline: <date> (<N> days ago)
   Resolved:          <N>
   Regressions:       <N>
   Persona drift:     <N>
+  Tool drift:        <N>
   Instruction leaks: <N>
 
 Full report: targets/<slug>/health-check-<date>.md
@@ -204,7 +229,7 @@ Based on the delta report, offer to generate fix prompts:
 Found <N> actionable items. Generate fix prompts?
   [1] Fix all new CRITICAL and HIGH issues    (<N> prompts)
   [2] Fix all new issues                      (<N> prompts)
-  [3] Fix issues + update drifted personas    (<N> prompts)
+  [3] Fix issues + update drifted personas + repair tools  (<N> prompts)
   [4] Skip -- I'll review the report first
 ```
 
@@ -212,6 +237,7 @@ If the user chooses to generate prompts:
 - Follow the same prompt generation process as onboarding Phase 6.
 - For persona drift fixes, generate prompts that update the specific persona files with corrected references and new conventions.
 - For instruction leaks, generate prompts that integrate the leaked content into the appropriate AE-managed file and add a note to the source file pointing to the canonical location.
+- For tool drift fixes, use `templates/tools/<tool>-setup.md` as the reference for what a correct configuration looks like. Generate repair prompts that bring the existing config back into alignment rather than full reinstallation.
 
 ---
 

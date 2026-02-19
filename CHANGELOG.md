@@ -8,6 +8,35 @@ Target-project-specific work (prompts, deliverables, assessments, journal entrie
 
 ---
 
+## [v0.5] - 2026-02-19
+
+### Added
+- **Tool integration system** for optional MCP server management (OpenSpec, Context7, Serena)
+- `templates/tools/` directory with setup and teardown prompt templates for each tool
+- `templates/tools/README.md` -- overview and design principles for the tool integration system
+- `templates/tools/tool-detection-patterns.md` -- glob/grep patterns for detecting tools and functional equivalents
+- `templates/tools/openspec-setup.md` / `openspec-teardown.md` -- OpenSpec MCP server configuration
+- `templates/tools/context7-setup.md` / `context7-teardown.md` -- Context7 MCP server configuration
+- `templates/tools/serena-setup.md` / `serena-teardown.md` -- Serena MCP server configuration
+- `/tools` playbook (`templates/playbooks/tools.md`) -- 5-phase workflow for tool detection, offering, setup/teardown, and recording
+- Assessment checklist Category 8: "Development Tooling (Optional)" -- informational only, never penalises absence
+- Review criteria Rubric 5: "Tool Integration Quality (Optional)" -- scored only when tools are actively configured
+- Health-check step 3g: Tool Health Check -- verifies configured tools are still present, documented, and consistent
+- Health-check tool drift category in delta reports
+- Onboarding Phase 2b: MCP and tool detection patterns in reconnaissance search strategy
+- Onboarding Phase 6d: informational mention of `/tools` after harness setup
+- `CLAUDE.md.template`: optional "Development Tools" section with subsection templates for all three tools
+
+### Changed
+- Onboarding Phase 2b detection targets table expanded with MCP, tool, and spec management rows
+- Health-check Phase 4 delta report includes tool drift as a category
+- Health-check Phase 5 remediation option 3 now includes tool repair
+- CLAUDE.md playbooks table and role commands table include `/tools`
+- CLAUDE.md project structure tree updated with `templates/tools/` and `tools.md` playbook
+- README updated with tool integration in features list, workflow diagram, project structure, and current status
+
+---
+
 ## [v0.4] - 2026-02-17
 
 ### Added

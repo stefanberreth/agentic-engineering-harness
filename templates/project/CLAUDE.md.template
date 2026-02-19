@@ -142,6 +142,43 @@ This project uses a persona-driven agentic engineering workflow:
 - [Record key technical decisions and their rationale here]
 - [Record constraints: "must use PostgreSQL", "must support Node 20+", etc.]
 
+## Development Tools
+
+> Delete this section if no development tools are configured.
+> Each tool configured via `/tools` gets a subsection here.
+
+### OpenSpec
+
+Specification-driven development via MCP. Specs live in `openspec/specs/`, change proposals in `openspec/changes/`.
+
+Key commands (available as MCP tools):
+- `create_spec` -- create a new specification document
+- `propose_change` -- propose a change to an existing spec
+- `list_specs` -- list all specifications
+
+Docs: https://openspec.dev/
+
+### Context7
+
+Documentation lookup via MCP. Provides up-to-date library docs in context.
+
+Usage: Add "use context7" to prompts when current library documentation is needed.
+
+Docs: https://context7.com/
+
+### Serena
+
+Language-aware code navigation via MCP. Provides semantic code understanding through LSP.
+
+Key capabilities (available as MCP tools):
+- `go_to_definition` -- jump to where a symbol is defined
+- `find_references` -- find all usages of a symbol
+- `search_symbols` -- search for symbols by name across the project
+- `get_diagnostics` -- get LSP diagnostics (errors, warnings)
+
+Config: `.serena/project.yml`
+Docs: https://oraios.github.io/serena
+
 ## Context Management
 
 - Stay under 100k tokens. Run `/compact` frequently.

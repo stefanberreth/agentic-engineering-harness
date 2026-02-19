@@ -89,6 +89,24 @@ For each item, mark one of:
 
 ---
 
+## 8. Development Tooling (Optional)
+
+> This category is **informational only**. Tool absence is not a deficiency -- it simply
+> records what is present. No items here affect the overall readiness rating.
+
+| # | Item | Status | Notes |
+|---|---|---|---|
+| 8.1 | `.mcp.json` exists and is well-formed | | |
+| 8.2 | MCP servers documented in CLAUDE.md (if any configured) | | |
+| 8.3 | OpenSpec: directory structure and MCP config present | | |
+| 8.4 | Context7: MCP config present with valid transport | | |
+| 8.5 | Serena: `.serena/project.yml` present and matches tech stack | | |
+| 8.6 | Functional equivalents: ADR/RFC/spec management exists | | |
+| 8.7 | Functional equivalents: alternative doc/code intelligence servers | | |
+| 8.8 | Tool configuration consistent (`.mcp.json` entries match CLAUDE.md documentation) | | |
+
+---
+
 ## Summary
 
 **Overall readiness:** [Not Ready / Partially Ready / Ready with Gaps / Ready]
