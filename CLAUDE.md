@@ -390,8 +390,10 @@ The harness `.gitignore` contains `targets/` so nothing under `targets/` is trac
 
 **Commit and push rules:**
 
+**Command style for the targets repo:** Always use `git -C targets/` with a relative path -- never use an absolute path with `-C`. This ensures the command pattern matches across permission approvals (the user approves once, all subsequent `git -C targets/ ...` commands match). Example: `git -C targets/ status`, not `git -C "/full/path/targets" status`.
+
 When the user says "commit" or "commit and push":
-1. **Determine what changed.** Run `git status` in BOTH the root and `targets/` repos.
+1. **Determine what changed.** Run `git status` and `git -C targets/ status` to check both repos.
 2. **If only harness files changed:** Commit and push the harness repo only.
 3. **If only target files changed:** Commit and push the targets repo only (`git -C targets/ ...`).
 4. **If both changed:** Commit and push BOTH repos, in separate commits with appropriate messages. Commit the targets repo first (it's the inner dependency), then the harness repo.
