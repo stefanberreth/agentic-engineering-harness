@@ -64,6 +64,12 @@ When no persona is active:
 
 ---
 
+## Filesystem Scope
+
+**This agent operates exclusively within this project's directory tree (`[PROJECT_ROOT]/`).** Never read, write, or reference files outside this directory. If a prompt or instruction references external paths (other projects, parent directories, sibling directories), flag it to the user rather than attempting to access them. All inputs this agent needs must exist within the project or be provided inline in the prompt.
+
+---
+
 ## Build & Run
 
 ```bash
