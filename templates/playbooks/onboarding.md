@@ -472,7 +472,20 @@ If the target's prompt delivery policy is `direct`, also write to `<target-path>
 
 Wait for user confirmation before generating each prompt. If the user says `skip`, move to the next task. If `stop`, save progress and end.
 
-### 6d. After Harness Setup Prompts
+### 6d. Generate Regression Check Prompt
+
+**Always generate a regression check prompt as the final prompt in the sequence.** Adapt `templates/prompts/regression-check.md.template` to the target project:
+
+- Replace `[BUILD_COMMAND]` with the project's actual build command (from `package.json`, `Makefile`, etc.)
+- Replace `[DEV_SERVER_COMMAND]` with the project's dev server start command
+- Replace `[PORT]` and `[API_PORT]` with the project's actual ports
+- Add project-specific moved/archived paths to the import integrity checks based on the transformation plan
+
+This prompt verifies that the transformation didn't break builds, imports, config references, or runtime behaviour. The governance review checks structural correctness; the regression check verifies functional correctness.
+
+Number it as the **last prompt** in the sequence (after the governance review prompt).
+
+### 6e. After Harness Setup Prompts
 
 ```
 Harness setup complete.
@@ -483,6 +496,9 @@ Harness setup complete.
 
 These prompts set up the AE harness structure only.
 No application code, configs, or non-AE docs will be touched.
+
+The final prompt is a regression check -- run it last to verify
+no application functionality was broken by the transformation.
 ```
 
 If existing setup was migrated, add:

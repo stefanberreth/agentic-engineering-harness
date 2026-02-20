@@ -1,0 +1,128 @@
+# Prompt [NNN]: Post-Transformation Regression Check
+
+**Target project:** [PROJECT_NAME]
+**Target directory:** [TARGET_PATH]
+**Prerequisite prompts:** all transformation prompts
+**Phase:** reviewing
+
+## Context for the operator
+
+The AE harness transformation may have moved files, renamed directories, updated path references, and restructured documentation. This prompt verifies that no application functionality was broken. It checks builds, imports, path references, and runtime behaviour -- things the governance review does not cover.
+
+This prompt should be the **last prompt executed** after a transformation, or run anytime after a batch of structural changes.
+
+## Prompt
+
+Run a post-transformation regression check. Recent transformation work moved files, consolidated docs, archived legacy code, and updated path references. Verify nothing is broken.
+
+### 1. Build Check
+
+Run the project's build command:
+
+```bash
+[BUILD_COMMAND]
+```
+
+> **Adapt this:** Use the project's actual build command from `package.json`, `Makefile`, `Cargo.toml`, etc. Common examples: `npm run build`, `cargo build`, `go build ./...`, `python -m py_compile`.
+
+If the build fails, report the exact errors. Common causes after a transformation:
+- Broken import paths (files moved but imports not updated)
+- Missing type definitions (files accidentally archived)
+- Config file references to moved files
+
+### 2. Import and Reference Integrity
+
+Search all source files for references to paths that may have changed during the transformation. Specifically:
+
+**Moved files:** For every file that was moved or renamed, grep the entire source tree for references to the old path. Report any stale references found.
+
+**Archived directories:** Grep for imports from any directory that was archived. These should not be imported by active code.
+
+**Deleted files:** Grep for references to any file that was deleted. These are broken references.
+
+```bash
+# Example patterns to check (adapt to this project):
+# grep -r "old/path" src/ server/ --include="*.ts" --include="*.tsx" --include="*.js"
+```
+
+Report every stale reference found.
+
+### 3. Configuration Path Audit
+
+Check these files for stale path references:
+
+- **CLAUDE.md** -- every file path mentioned should resolve to an existing file
+- **CI config** (`.gitlab-ci.yml`, `.github/workflows/`, etc.) -- scripts and paths should be valid
+- **Package config** (`package.json` scripts section) -- referenced files should exist
+- **MCP config** (`.mcp.json`) -- server configs should be valid
+- **Dev scripts** -- all referenced paths should exist
+
+For each file, extract every file path mentioned and verify it exists on disk. Report any that don't resolve.
+
+### 4. Runtime Smoke Test
+
+Start the application and verify basic functionality:
+
+> **Adapt this:** Use the project's actual dev server command, port numbers, and health check endpoints.
+
+```bash
+[DEV_SERVER_COMMAND]
+```
+
+Wait for the server to start, then check:
+- Does it start without errors? (check logs)
+- Does the frontend respond? (`curl http://localhost:[PORT]`)
+- Does the backend respond? (`curl http://localhost:[API_PORT]/api/health` or equivalent)
+
+Stop the server after checking.
+
+If the project has no runnable server (library, CLI tool, etc.), skip this step and note it as SKIPPED.
+
+### 5. Git Status
+
+Verify the working tree is clean:
+
+```bash
+git status
+```
+
+There should be no untracked files left over from the transformation. If there are, report them.
+
+### 6. Report
+
+Present results:
+
+```
+Post-Transformation Regression Check
+=====================================
+
+Build:          PASS / FAIL
+Import paths:   PASS / N stale references found
+Config paths:   PASS / N stale references found
+Runtime:        PASS / FAIL / SKIPPED
+Git status:     Clean / N uncommitted items
+
+Issues found:
+  [list any problems, or "None"]
+
+Verdict: ALL CLEAR / ISSUES FOUND (see above)
+```
+
+If issues are found, fix them and commit with:
+```
+fix: resolve post-transformation stale references
+```
+
+## Expected outcome
+
+- Build succeeds
+- No stale import or path references
+- Config files reference valid paths
+- Application starts cleanly (if applicable)
+- Working tree is clean
+
+## If something goes wrong
+
+- Build failures from moved files: check the archive directories for files that should have stayed in their original location. The archiving step may have been too aggressive.
+- Stale path references: update them to the new locations. The transformation plan's file move table shows old → new mappings.
+- If the runtime fails to start, check logs. The transformation should not have touched application source code -- if it did, that's a bug in the transformation prompts.

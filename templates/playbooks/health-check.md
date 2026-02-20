@@ -238,6 +238,7 @@ If the user chooses to generate prompts:
 - For persona drift fixes, generate prompts that update the specific persona files with corrected references and new conventions.
 - For instruction leaks, generate prompts that integrate the leaked content into the appropriate AE-managed file and add a note to the source file pointing to the canonical location.
 - For tool drift fixes, use `templates/tools/<tool>-setup.md` as the reference for what a correct configuration looks like. Generate repair prompts that bring the existing config back into alignment rather than full reinstallation.
+- **If any fix prompts move, rename, or archive files**, also generate a regression check prompt (adapt `templates/prompts/regression-check.md.template`) as the final prompt in the batch. Structural changes can break builds and imports -- always verify after.
 
 ---
 

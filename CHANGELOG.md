@@ -8,12 +8,16 @@ Target-project-specific work (prompts, deliverables, assessments, journal entrie
 
 ---
 
-## [v0.5] - 2026-02-19
+## [v0.5] - 2026-02-20
 
 ### Fixed
 - Session init now requires user confirmation before adopting a carried-over persona. Previously, a role persisted from the last session was adopted silently. Updated in harness CLAUDE.md and `CLAUDE.md.template`.
 
 ### Added
+- **Post-transformation regression check** (`templates/prompts/regression-check.md.template`) -- verifies builds, import integrity, config path references, and runtime behaviour after structural transformations. Auto-generated as the final prompt in every onboarding sequence. Also triggered in health-check remediation when fix prompts move or rename files.
+- `templates/prompts/` directory for reusable prompt templates
+- Onboarding Phase 6d generates a regression check prompt adapted to the target project
+- Health-check Phase 5 generates a regression check when remediation moves files
 - **Tool integration system** for optional MCP server management (OpenSpec, Context7, Serena)
 - `templates/tools/` directory with setup and teardown prompt templates for each tool
 - `templates/tools/README.md` -- overview and design principles for the tool integration system
@@ -22,7 +26,8 @@ Target-project-specific work (prompts, deliverables, assessments, journal entrie
 - `templates/tools/context7-setup.md` / `context7-teardown.md` -- Context7 MCP server configuration
 - `templates/tools/serena-setup.md` / `serena-teardown.md` -- Serena MCP server configuration
 - `/tools` playbook (`templates/playbooks/tools.md`) -- 5-phase workflow for tool detection, offering, setup/teardown, and recording
-- Assessment checklist Category 8: "Development Tooling (Optional)" -- informational only, never penalises absence
+- Assessment checklist Category 8: "Project Layout & Naming Hygiene" -- directory structure, file naming, redundant/misplaced/obsolete files, documentation taxonomy
+- Assessment checklist Category 9: "Development Tooling (Optional)" -- informational only, never penalises absence (renumbered from 8)
 - Review criteria Rubric 5: "Tool Integration Quality (Optional)" -- scored only when tools are actively configured
 - Health-check step 3g: Tool Health Check -- verifies configured tools are still present, documented, and consistent
 - Health-check tool drift category in delta reports

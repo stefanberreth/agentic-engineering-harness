@@ -43,10 +43,11 @@ Then say `/onboard /path/to/your/project` to start the guided assessment.
 
 AEH will:
 1. Read your project's structure, README, and any existing AI agent configuration
-2. Run a 30-item assessment checklist across 7 categories
+2. Run an assessment checklist across 9 categories
 3. Produce a ranked inconsistency report (CRITICAL / HIGH / MEDIUM / LOW)
 4. Generate a phased transformation plan
 5. Create ready-to-execute prompts for setting up the agentic structure in your project
+6. Generate a regression check prompt to verify nothing was broken
 
 No code in your project is modified during onboarding. The harness only reads and reports.
 
@@ -94,6 +95,9 @@ Harness setup (AE structure in your project -- personas, session init)
 Reviewer-Implementer loop (find issues, fix them, repeat)
     |
     v
+Regression check (verify builds, imports, runtime still work)
+    |
+    v
 /health checks (periodic, detect drift + tool health)
 ```
 
@@ -134,6 +138,8 @@ Ask Claude to explain the setup, help you create it, or verify an existing one. 
 │   │   ├── developer.md                   # TDD implementation persona
 │   │   ├── reviewer.md                    # Code review persona
 │   │   └── strategist.md                  # Strategic advisor (optional, external sessions)
+│   ├── prompts/
+│   │   └── regression-check.md.template   # Post-transformation regression check
 │   ├── project/
 │   │   ├── CLAUDE.md.template             # Scaffold for target project CLAUDE.md
 │   │   └── agents.md.template             # Cross-tool agent config scaffold
@@ -189,19 +195,19 @@ Most projects get significant value at level 2. You don't need to reach level 5 
 
 ## Current Status
 
-AEH is in active development. It has been used to transform one real project end-to-end (a Python/PyTorch ML compression toolkit). The templates and governance criteria are based on that experience plus the principles from the source talk.
+AEH is in active development. It has been used to transform two real projects end-to-end: a Python/PyTorch ML compression toolkit and a React/Express/Supabase fintech platform. The templates and governance criteria are refined through real-world usage.
 
 What's working:
 - Onboarding playbook (7-phase guided assessment)
 - Four engineering persona templates + optional Strategist
-- Assessment checklist and review criteria
+- Assessment checklist (9 categories) and review criteria
 - Prompt generation and direct delivery
+- Post-transformation regression checks (build, imports, runtime verification)
 - Health check playbook (delta reports + tool health)
 - Tool integration playbook (OpenSpec, Context7, Serena -- optional, reversible)
 
 What's evolving:
 - Templates are being refined based on real-world usage
-- Governance criteria may expand as more projects are onboarded
 - Multi-agent coordination patterns are not yet documented
 - CI/CD integration templates are planned but not yet created
 

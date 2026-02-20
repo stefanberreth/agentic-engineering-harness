@@ -557,6 +557,8 @@ If working on the harness itself:
 │   │   ├── developer.md                   # TDD implementation persona
 │   │   ├── reviewer.md                    # Code review persona
 │   │   └── strategist.md                  # Strategic advisor (optional, for external LLM sessions)
+│   ├── prompts/
+│   │   └── regression-check.md.template   # Post-transformation functional regression check
 │   ├── project/
 │   │   ├── CLAUDE.md.template             # Scaffold for target project CLAUDE.md
 │   │   └── agents.md.template             # Cross-tool agent config scaffold
