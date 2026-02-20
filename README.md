@@ -10,14 +10,16 @@ AI coding agents are powerful but undisciplined by default. Without structure, t
 
 ## The Solution
 
-AEH codifies a **persona-driven workflow** (Analyst, Architect, Developer, Reviewer -- with an optional upstream Strategist) inspired by [Emmz Rendle's "How I Tamed Claude" talk at NDC London 2026](https://www.youtube.com/watch?v=pey9u_ANXZM). It provides:
+AEH codifies a **persona-driven workflow** inspired by [Emmz Rendle's "How I Tamed Claude" talk at NDC London 2026](https://www.youtube.com/watch?v=pey9u_ANXZM). The core insight: an AI coding agent given a focused role with clear boundaries (what it IS, what it is NOT, when to stop) produces dramatically better output than one agent asked to do everything. Separating concerns into Analyst, Architect, Developer, and Reviewer -- the same separation that makes human teams effective -- makes AI teams effective too.
 
-- **Persona templates** -- system prompts for each role, encoding mature software engineering principles (TDD, small commits, retrospectives, spec-driven development). The four engineering personas run inside Claude Code; the optional Strategist runs in any LLM chat for higher-altitude decision-making.
-- **Project templates** -- `CLAUDE.md` and `agents.md` scaffolds to configure any target project
-- **Governance criteria** -- checklists and rubrics to assess and improve agentic configuration quality
+AEH provides:
+
+- **Persona templates** -- instruction files ("system prompts") for each role, encoding mature software engineering principles (TDD, small commits, retrospectives, spec-driven development). These are loaded into the AI agent at the start of a session and shape its behaviour. The four engineering personas run inside Claude Code; the optional Strategist runs in any LLM chat for higher-altitude decision-making.
+- **Project templates** -- scaffolds for `CLAUDE.md` (Claude Code's project instruction file -- the single most important file for agentic engineering) and `agents.md` (cross-tool agent configuration), adapted per target project
+- **Governance criteria** -- checklists and rubrics to assess and improve agentic configuration quality, including agent permission audits
 - **Guided playbooks** -- step-by-step workflows for onboarding new projects, running health checks, and configuring development tools
-- **Tool integration** -- optional MCP server setup/teardown for OpenSpec (specs), Context7 (docs), and Serena (code navigation), with detection of functional equivalents
-- **Agent permission governance** -- audit, assess, and maintain coding agent permission configurations (deny lists, allow list hygiene, filesystem scope, secret detection)
+- **Tool integration** -- optional setup/teardown for MCP servers (Model Context Protocol -- a standard for giving AI agents access to external tools and data sources): OpenSpec (specs), Context7 (docs), and Serena (code navigation)
+- **Agent permission governance** -- AI coding agents accumulate permissions transactionally ("yes, don't ask again") with no systematic review. AEH audits these configurations: detecting secrets leaked into permission rules, flagging missing safety boundaries, consolidating sprawled allow lists, and enforcing filesystem scope
 - **Transformation process** -- a repeatable method for taking an existing project from zero agentic setup to a fully structured one
 
 ## Who Is This For
@@ -58,12 +60,10 @@ No code in your project is modified during onboarding. The harness only reads an
 
 ### The Two-Project Model
 
-AEH operates on a strict separation principle:
+AEH operates on a strict separation: the harness never directly modifies your project's code. Why? Because an AI agent that reads your project's own `CLAUDE.md`, follows your project's conventions, and operates within your project's permission model will make better, safer changes than one operating from an external context. The harness produces the plan; your project's own agent executes it.
 
 1. **Harness-side** (this project) -- reads target projects, analyses them, produces plans, generates adapted templates and prompts. Never modifies target project files directly (with one narrow, optional exception for prompt delivery).
 2. **Target-side** (your project) -- a separate Claude Code session receives prompts and executes changes within your project's own context and conventions.
-
-This separation ensures auditability, reproducibility, and clean context boundaries.
 
 ### The Personas
 
@@ -89,28 +89,32 @@ Assessment (read-only, produces reports)
 Plan (phased, prioritised transformation tasks)
     |
     v
-Harness setup (AE structure in your project -- personas, session init)
+Harness setup (personas, session init, CLAUDE.md sections)
     |
     v
 /tools (optional: configure OpenSpec, Context7, Serena)
     |
     v
-Reviewer-Implementer loop (find issues, fix them, repeat)
+Reviewer-Implementer loop (Reviewer scans → produces issue list →
+  Implementer fixes top issues → Reviewer re-scans → repeat until clean)
     |
     v
 Regression check (verify builds, imports, runtime still work)
     |
     v
-/health checks (periodic, detect drift + tool health)
+/health checks (periodic -- detect configuration drift, permission
+  sprawl, persona staleness, tool breakage)
 ```
 
 Each step is human-approved. The harness generates prompts; you decide when and whether to execute them.
+
+**What is "drift"?** Over time, an AI agent's configuration gradually falls out of sync with the project's actual state. New dependencies get added but personas don't mention them. Permission rules accumulate. Documentation references point to files that moved. Drift is silent and cumulative -- the agent still runs, it just gets progressively less effective. Regular health checks catch it.
 
 ### Transforming a Project Step by Step
 
 1. Start Claude Code in the AEH directory
 2. Say `/onboard /path/to/your/project`
-3. The playbook runs 7 phases with skip gates at every step
+3. The playbook runs 7 phases (you can skip ahead or stop at any point)
 4. At the end, you get assessment reports and ready-to-execute prompts
 5. Open Claude Code in your project and run the prompts:
    ```
@@ -175,12 +179,12 @@ When you onboard a project, AEH creates a workspace under `targets/<your-project
 ## Core Principles
 
 1. **Structure over speed.** A well-structured agentic setup is slower to start but dramatically more productive and reliable over time.
-2. **Restartability.** Every piece of state that matters lives in committed files, not conversation history. Any session can be killed and work resumed from disk.
+2. **Restartability.** AI agent sessions are ephemeral -- they lose all context when they end. AEH ensures every piece of state that matters (current task, decisions made, what was tried) lives in committed files, not conversation history. Kill a session at any point, start a fresh one, and it picks up where the last one left off by reading the project files.
 3. **Small increments.** One task, one commit, one reviewable change. No 100k-line surprises.
 4. **Human in the loop.** The AI proposes; the human decides. Every code-touching change requires explicit approval (or explicit pre-approval for experienced users).
 5. **Assessment before implementation.** Onboarding reads and reports. It never modifies your code. Implementation is a separate, conscious step.
 6. **Preserve what works.** When your project already has good instructions or conventions, AEH builds on them. Templates fill gaps -- they don't replace what's working.
-7. **Governance is continuous.** Agentic configuration degrades over time. Regular `/health` checks keep it effective.
+7. **Governance is continuous.** Agentic configuration degrades over time as the project evolves and permissions accumulate. Regular `/health` checks detect the drift before it causes problems.
 
 ## Maturity Model
 
