@@ -10,6 +10,8 @@
 
 A meta-engineering toolkit for transforming software projects into structured agentic engineering setups -- where AI coding agents (Claude Code primarily) work within a reviewable, restartable, persona-driven workflow.
 
+> Inspired by Emmz Rendle's "How I Tamed Claude" talk at NDC London 2026 | [Discord](https://discord.gg/qnKVnJEuQz) | [Ko-fi](https://ko-fi.com/stefanberreth)
+
 ## The Problem
 
 AI coding agents are powerful but undisciplined by default. Without structure, they produce unreviewable volumes of code, lose context between sessions, make silent assumptions, and resist being managed. Most people either "vibe code" (no process, no review) or bolt an AI into their existing workflow without rethinking how work is organised.
