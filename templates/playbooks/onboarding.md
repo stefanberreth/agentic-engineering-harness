@@ -443,12 +443,18 @@ Adapt the relevant template from `templates/` to the target project's specifics.
 
 Write to `targets/<slug>/deliverables/`.
 
-### 6b. Generate Prompt -- Merge, Don't Replace
+### 6b. Generate Prompt -- Self-Contained, Merge, Don't Replace
 
-Prompts that modify existing instruction files (CLAUDE.md, persona files, agents.md, etc.) must use a **merge-and-confirm** approach, not wholesale replacement. The generated prompt should instruct the target-side Claude to:
+**Self-containment rule:** Every prompt must be executable by a target-side Claude that has NO access to the harness filesystem. This means:
+
+- **NEVER reference harness-side paths** in the prompt text (`targets/<slug>/deliverables/`, `templates/`, or any path outside the target project directory).
+- **EMBED deliverable content directly** in the prompt as a fenced code block or inline text. The deliverable file in `targets/<slug>/deliverables/` is a working copy for the harness; the prompt is the delivery vehicle and must carry the full payload itself.
+- **Only reference target-local paths** -- files that exist or will exist inside the target project's own directory tree.
+
+**Merge-and-confirm rule:** Prompts that modify existing instruction files (CLAUDE.md, persona files, agents.md, etc.) must use a **merge-and-confirm** approach, not wholesale replacement. The generated prompt should instruct the target-side Claude to:
 
 1. **Read the current version** of the file being modified.
-2. **Read the deliverable** (the harness-prepared version).
+2. **Compare against the embedded deliverable content** in the prompt.
 3. **Diff the two** and present a summary of what will change: sections added, sections modified, sections removed.
 4. **Ask the user to confirm** before applying. If the current file has been modified since the deliverable was prepared, the target-side Claude should flag the discrepancy and ask how to proceed rather than silently overwriting.
 

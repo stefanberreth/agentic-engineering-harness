@@ -152,6 +152,7 @@ Each target project moves through these phases:
   - Adapt the relevant template to the target project
   - Write the adapted file to `targets/<project>/deliverables/`
   - Write a corresponding prompt to `targets/<project>/prompts/`
+  - **Self-containment check:** Before finalising the prompt, verify it contains NO references to harness-side paths (`targets/`, `deliverables/`, `templates/`). All deliverable content must be embedded directly in the prompt text.
   - If prompt delivery policy is `direct`: also write the prompt to `<target-path>/docs/AE/prompts/`
   - Update `targets/<project>/tasks.md`
 - The human takes each prompt to a Claude Code session in the target project:
@@ -193,6 +194,15 @@ who will paste it into the target project's Claude Code session.]
 it should not assume the target-side Claude has any context from this
 harness project. It should reference only files that exist or will exist
 in the target project.
+
+CRITICAL: Prompts must NEVER reference harness-side file paths (anything
+under targets/<project>/deliverables/, targets/<project>/, or the harness
+directory). The target-side Claude cannot access the harness filesystem.
+When a prompt needs to deliver content (persona files, adapted CLAUDE.md
+sections, configuration), the full content must be EMBEDDED directly in
+the prompt as a fenced code block or inline text. The deliverable file
+in the harness is a working copy for the harness; the prompt is the
+delivery vehicle and must carry the payload itself.
 
 IMPORTANT: When the prompt modifies an existing instruction file (CLAUDE.md,
 persona files, agents.md, etc.), it must use a merge-and-confirm approach:
