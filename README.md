@@ -1,6 +1,12 @@
+<p align="center">
+  <img src="docs/Images/AEH-Round.png" alt="AEH" width="120">
+</p>
+
 # AEH -- Agentic Engineering Harness
 
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![Discord](https://img.shields.io/badge/Discord-Join-5865F2)](https://discord.gg/qnKVnJEuQz)
+[![Support on Ko-fi](https://img.shields.io/badge/Ko--fi-Support-FF5E5B)](https://ko-fi.com/stefanberreth)
 
 A meta-engineering toolkit for transforming software projects into structured agentic engineering setups -- where AI coding agents (Claude Code primarily) work within a reviewable, restartable, persona-driven workflow.
 
@@ -202,19 +208,19 @@ Most projects get significant value at level 2. You don't need to reach level 5 
 
 ## Community
 
-- **Discord:** [Join the AEH Discord](#) -- chat, help, show-and-tell, feature ideas
+- **Discord:** [Join the AEH Discord](https://discord.gg/qnKVnJEuQz) -- chat, help, show-and-tell, feature ideas
 - **GitLab Issues:** [Report bugs and request features](https://gitlab.com/stefanberreth/agentic-engineering-harness/-/issues)
 - **Contributing:** See [CONTRIBUTING.md](CONTRIBUTING.md) -- we prefer prompts over patches
 
 ## Supporting AEH
 
-AEH is free and open source. If it saves you time, consider supporting continued development:
+AEH is free, open source, and maintained by one person. If it saves you time, consider supporting continued development:
 
-- **[Sponsor on GitHub](#)** -- recurring or one-time
-- **[Polar.sh](#)** -- fund specific features you want built
+- **[Support on Ko-fi](https://ko-fi.com/stefanberreth)** -- one-time or monthly
 - **Star the repo** -- visibility helps more than you'd think
+- **[Join the Discord](https://discord.gg/qnKVnJEuQz)** -- questions, ideas, show-and-tell
 
-For organisations wanting commercial licensing (embed AEH in proprietary tooling without AGPL obligations), contact Stefan Berreth.
+For organisations wanting to embed AEH in proprietary tooling or host it as a service without AGPL obligations, a commercial license is available -- contact Stefan Berreth.
 
 ## Requirements
 
@@ -298,7 +304,7 @@ What's evolving:
 
 AGPL-3.0. See [LICENSE](LICENSE) and [LICENSE-FAQ.md](LICENSE-FAQ.md).
 
-**TL;DR:** Use AEH freely on any project (including proprietary). The output belongs to you. If you modify AEH itself and distribute it or host it as a service, the AGPL applies to your modifications.
+**TL;DR:** Use AEH freely -- on personal projects, in teams, across your entire organisation. No license to buy, no obligations triggered by internal use. All generated output (personas, prompts, CLAUDE.md sections) belongs to you under any license you choose. The AGPL only applies if you take AEH itself, modify it, and offer it as a public service or distribute it externally.
 
 ## Contact
 

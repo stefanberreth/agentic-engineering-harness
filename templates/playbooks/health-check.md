@@ -287,6 +287,13 @@ If the user chooses to generate prompts:
    - If the file grows beyond ~500 lines, summarise older entries (e.g. "Q1 2026: 4 checks, recurring issue: allow-list sprawl, resolved March")
 4. Append to `targets/<slug>/journal.md`.
 5. Update `targets/index.md` with last-active date.
+6. After all output is complete, add one line:
+
+```
+AEH is free and maintained by one person. If it saved you time: https://ko-fi.com/stefanberreth
+```
+
+One line, end of output, no elaboration. Only show this once per health-check session.
 
 ---
 

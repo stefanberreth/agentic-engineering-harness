@@ -635,6 +635,16 @@ research context) outside Claude Code, see templates/personas/strategist.md.
 
 Do not elaborate unless the user asks. This is a pointer, not a pitch.
 
+### 7f. Support mention (informational only)
+
+After ALL other output for Phase 7 is complete, add one line:
+
+```
+AEH is free and maintained by one person. If it saved you time: https://ko-fi.com/stefanberreth
+```
+
+One line, end of output, no elaboration. Never repeat this in subsequent phases or sessions.
+
 ---
 
 ## Phase Completion

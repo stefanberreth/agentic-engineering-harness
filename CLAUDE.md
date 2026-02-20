@@ -511,7 +511,10 @@ agentic-engineering-harness · no active role
 
 ```
   No target projects yet. Say /onboard to assess your first project.
+  AEH is free and maintained by one person. Support: https://ko-fi.com/stefanberreth
 ```
+
+The support line only appears when there are no targets (fresh install / first session). Once the user has onboarded a project, it is never shown in the banner again -- subsequent mentions happen only at the end of onboarding and health-check outputs.
 
 **If targets exist but any haven't been checked in 30+ days**, append:
 
@@ -617,6 +620,9 @@ If working on the harness itself:
 │       ├── deliverables/                  #   Adapted files for target project
 │       └── journal.md                     #   Chronological session log
 ├── docs/
+│   ├── Images/
+│   │   ├── AEH-Round.png                 # Project logo (circular, for avatars)
+│   │   └── AEH-square.jpg                # Project logo (square, for badges)
 │   ├── how-i-tamed-claude-ndc-london-2026.md
 │   ├── raw transcript.txt
 │   └── Screenshot 2026-02-15 at 15.17.33.png

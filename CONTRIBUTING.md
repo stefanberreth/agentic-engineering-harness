@@ -89,6 +89,6 @@ Be professional. Be constructive. Assume good intent. If someone's contribution 
 ## Community
 
 - **Issues:** [GitLab Issues](https://gitlab.com/stefanberreth/agentic-engineering-harness/-/issues) for bugs, feature requests, and structured discussion
-- **Discord:** [AEH Discord](#) for real-time chat, show-and-tell, and help (link in README)
+- **Discord:** [AEH Discord](https://discord.gg/qnKVnJEuQz) for real-time chat, show-and-tell, and help
 
 Thank you for considering a contribution. Even a well-written bug report or a "this didn't work because..." story helps make AEH better.

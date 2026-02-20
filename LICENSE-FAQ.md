@@ -2,6 +2,8 @@
 
 AEH is licensed under the [GNU Affero General Public License v3.0](https://www.gnu.org/licenses/agpl-3.0.html) (AGPL-3.0). This FAQ clarifies what that means in practice.
 
+**The short version:** Use AEH freely -- on personal projects, in teams, across your entire organisation. No license to buy, no obligations triggered. The AGPL only applies if you host a modified AEH as a public service for others.
+
 ## Using AEH to transform your project
 
 **Q: Does running AEH on my project make my project AGPL?**
@@ -17,6 +19,24 @@ Yes. AEH reads your project and produces configuration artifacts. Your project's
 **Q: Do I need to credit AEH in my project?**
 
 No. Credit is appreciated but not required. The generated prompts and personas are yours to use without attribution.
+
+## Enterprise and team use
+
+**Q: Can my company use AEH internally without buying a license?**
+
+Yes. An organisation can clone AEH, run it on any number of internal projects, adapt the templates, train teams on the workflow, and use all generated artifacts -- all without any license obligation. Internal use is simply use. The AGPL does not trigger for software running on your own machines for your own teams.
+
+**Q: Can a consultant or contractor use AEH for client work?**
+
+Yes. A consultant running AEH locally to assess or transform a client's project is normal use. The generated artifacts (personas, prompts, assessments) belong to whoever commissioned the work. No AGPL obligation is triggered.
+
+**Q: Can we deploy AEH on an internal server for our engineering teams?**
+
+Yes. Hosting AEH internally (on your CI server, internal tooling platform, or shared development machine) for your own employees and contractors is not "offering it as a network service" under the AGPL. The AGPL's network clause applies when you make the software available to the public or to external users -- not to your own organisation.
+
+**Q: What if we modify AEH for our internal needs?**
+
+Entirely fine. You can fork, modify, and adapt AEH for internal use without sharing your modifications. The AGPL obligation to share source code only triggers when you **distribute** the modified version to others outside your organisation or **host** it as a service for external users.
 
 ## Modifying AEH
 
@@ -48,8 +68,12 @@ For organisations that need to embed AEH in proprietary tooling or offer it as a
 
 | Use case | License obligation |
 |----------|-------------------|
-| Run AEH on your project | None. Output is yours. |
-| Fork and modify AEH | AGPL applies to your modifications if distributed or hosted. |
-| Host AEH as a service | AGPL: make source available. Or: commercial license. |
-| Use AEH-generated artifacts | None. They're yours. |
+| Use AEH on your project (personal or commercial) | None. Output is yours. |
+| Use AEH across your organisation (any number of projects) | None. Internal use is just use. |
+| Modify AEH for internal use | None. Your modifications stay private. |
+| Consultant uses AEH for client work | None. Artifacts belong to the client. |
+| Host AEH internally for your team | None. Internal hosting is not a network service. |
+| Fork and distribute AEH publicly | AGPL: your modifications must be open-sourced. |
+| Host AEH as a public service | AGPL: make source available. Or: commercial license. |
+| Use AEH-generated artifacts | None. They're yours under any license. |
 | Contribute to AEH | Your contributions are licensed under AGPL (see CONTRIBUTING.md). |
