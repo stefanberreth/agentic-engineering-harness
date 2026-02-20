@@ -50,12 +50,13 @@ For each item, mark one of:
 
 | # | Item | Status | Notes |
 |---|---|---|---|
-| 4.1 | Analyst system prompt exists (or N/A if greenfield is done) | | |
+| 4.1 | Analyst system prompt exists | | |
 | 4.2 | Architect system prompt exists | | |
 | 4.3 | Developer system prompt exists | | |
 | 4.4 | Reviewer system prompt exists | | |
 | 4.5 | Prompts reference project-specific tech stack | | |
 | 4.6 | Prompts encode project-specific conventions | | |
+| 4.7 | Every role advertised in session banner has a matching persona file | | |
 
 ## 5. Development Practice
 

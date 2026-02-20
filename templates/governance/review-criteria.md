@@ -53,6 +53,7 @@ Use this rubric to evaluate the quality of the agentic engineering files in a ta
 | **Principle guidance**: Includes decision-making principles for ambiguous situations | | |
 | **Error handling**: Tells the persona what to do when stuck or uncertain | | |
 | **Tone**: Professional, specific, actionable -- not vague or aspirational | | |
+| **Banner-persona alignment**: Every role listed in CLAUDE.md session banner has a matching persona file | | |
 
 ### Signs of a good system prompt
 - You can give it to a different LLM and get similar behaviour.
@@ -66,6 +67,7 @@ Use this rubric to evaluate the quality of the agentic engineering files in a ta
 - Scope bleed: The developer prompt includes architectural decisions.
 - No error path: Doesn't say what to do when things go wrong.
 - Not project-specific: Generic template that wasn't adapted.
+- **Advertised but missing**: Session banner offers roles that have no persona file. This creates a broken user experience -- selecting the role loads nothing.
 
 ---
 
