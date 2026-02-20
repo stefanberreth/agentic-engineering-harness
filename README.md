@@ -1,5 +1,7 @@
 # AEH -- Agentic Engineering Harness
 
+[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+
 A meta-engineering toolkit for transforming software projects into structured agentic engineering setups -- where AI coding agents (Claude Code primarily) work within a reviewable, restartable, persona-driven workflow.
 
 ## The Problem
@@ -131,6 +133,9 @@ Ask Claude to explain the setup, help you create it, or verify an existing one. 
 ├── CLAUDE.md                              # Claude's instructions for this project
 ├── README.md                              # This file
 ├── CHANGELOG.md                           # Version history (Keep a Changelog format)
+├── LICENSE                                # AGPL-3.0
+├── LICENSE-FAQ.md                         # License clarifications (output ownership, SaaS, etc.)
+├── CONTRIBUTING.md                        # How to contribute (prompt-first, BDFL model)
 ├── templates/
 │   ├── personas/
 │   │   ├── analyst.md                     # Requirements gathering persona
@@ -186,6 +191,22 @@ AEH doesn't require you to adopt everything at once. Start where you are:
 | **5. Strategic layer** | Add a Strategist in an external LLM chat for business-level decision support. | When needed |
 
 Most projects get significant value at level 2. You don't need to reach level 5 to benefit.
+
+## Community
+
+- **Discord:** [Join the AEH Discord](#) -- chat, help, show-and-tell, feature ideas
+- **GitLab Issues:** [Report bugs and request features](https://gitlab.com/stefanberreth/agentic-engineering-harness/-/issues)
+- **Contributing:** See [CONTRIBUTING.md](CONTRIBUTING.md) -- we prefer prompts over patches
+
+## Supporting AEH
+
+AEH is free and open source. If it saves you time, consider supporting continued development:
+
+- **[Sponsor on GitHub](#)** -- recurring or one-time
+- **[Polar.sh](#)** -- fund specific features you want built
+- **Star the repo** -- visibility helps more than you'd think
+
+For organisations wanting commercial licensing (embed AEH in proprietary tooling without AGPL obligations), contact Stefan Berreth.
 
 ## Requirements
 
@@ -251,13 +272,24 @@ What's evolving:
 - Adapted per-project into context briefings that can be pasted into any chat
 - Kept deliberately lightweight -- discoverable but not required
 
-### v0.5 -- Tool Integration (Feb 2026)
+### v0.5 -- Tool Integration, Open Source, Regression Checks (Feb 2026)
 
 - Added optional tool integration system for OpenSpec, Context7, and Serena MCP servers
 - `/tools` playbook for setup, teardown, and repair -- runnable independently or during onboarding
 - Detection patterns for tools and functional equivalents (ADR directories, other MCP servers, etc.)
 - Tool health checking integrated into `/health` playbook
 - Every setup has a matching teardown -- fully reversible, per-project, never prescribed
+- Post-transformation regression checks verify builds, imports, and runtime after structural changes
+- AGPL-3.0 license with FAQ clarifying output ownership
+- Prompt-first contribution model -- submit the LLM prompt, not just the diff
+- Community: Discord + GitLab Issues + sponsor support
+- Second real-world transformation completed (React/Express/Supabase fintech platform, 36/36 governance pass)
+
+## License
+
+AGPL-3.0. See [LICENSE](LICENSE) and [LICENSE-FAQ.md](LICENSE-FAQ.md).
+
+**TL;DR:** Use AEH freely on any project (including proprietary). The output belongs to you. If you modify AEH itself and distribute it or host it as a service, the AGPL applies to your modifications.
 
 ## Contact
 

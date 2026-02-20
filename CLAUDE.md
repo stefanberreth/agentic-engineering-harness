@@ -550,6 +550,9 @@ If working on the harness itself:
 ├── CLAUDE.md                              # This file
 ├── README.md                              # Public-facing project description
 ├── CHANGELOG.md                           # Version history (Keep a Changelog format)
+├── LICENSE                                # AGPL-3.0
+├── LICENSE-FAQ.md                         # License clarifications (output ownership, SaaS, etc.)
+├── CONTRIBUTING.md                        # How to contribute (prompt-first, BDFL model)
 ├── templates/
 │   ├── personas/
 │   │   ├── analyst.md                     # Requirements gathering persona

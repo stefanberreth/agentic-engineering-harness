@@ -10,10 +10,11 @@ Target-project-specific work (prompts, deliverables, assessments, journal entrie
 
 ## [v0.5] - 2026-02-20
 
-### Fixed
-- Session init now requires user confirmation before adopting a carried-over persona. Previously, a role persisted from the last session was adopted silently. Updated in harness CLAUDE.md and `CLAUDE.md.template`.
-
 ### Added
+- **AGPL-3.0 license** with `LICENSE-FAQ.md` clarifying that AEH output (personas, prompts, CLAUDE.md sections) belongs to the user and is unencumbered
+- **CONTRIBUTING.md** -- prompt-first contribution model (submit the LLM prompt that produces the change, not just the diff), BDFL maintenance model, clear expectations for response times and scope
+- Community infrastructure: Discord + GitLab Issues, sponsor links (GitHub Sponsors, Polar.sh)
+- License badge in README
 - **Post-transformation regression check** (`templates/prompts/regression-check.md.template`) -- verifies builds, import integrity, config path references, and runtime behaviour after structural transformations. Auto-generated as the final prompt in every onboarding sequence. Also triggered in health-check remediation when fix prompts move or rename files.
 - `templates/prompts/` directory for reusable prompt templates
 - Onboarding Phase 6d generates a regression check prompt adapted to the target project
@@ -35,7 +36,11 @@ Target-project-specific work (prompts, deliverables, assessments, journal entrie
 - Onboarding Phase 6d: informational mention of `/tools` after harness setup
 - `CLAUDE.md.template`: optional "Development Tools" section with subsection templates for all three tools
 
+### Fixed
+- Session init now requires user confirmation before adopting a carried-over persona. Previously, a role persisted from the last session was adopted silently. Updated in harness CLAUDE.md and `CLAUDE.md.template`.
+
 ### Changed
+- README expanded with Community, Supporting AEH, and License sections
 - Onboarding Phase 2b detection targets table expanded with MCP, tool, and spec management rows
 - Health-check Phase 4 delta report includes tool drift as a category
 - Health-check Phase 5 remediation option 3 now includes tool repair
