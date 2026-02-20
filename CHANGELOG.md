@@ -11,6 +11,9 @@ Target-project-specific work (prompts, deliverables, assessments, journal entrie
 ## [Unreleased]
 
 ### Added
+- **Harness Reviewer persona** (`templates/personas/harness-reviewer.md`) -- dedicated self-review role for the harness itself, checking 7 dimensions: target detail leakage, prompt self-containment, documentation currency, template & persona consistency, isolation boundary integrity, governance completeness, and public-facing quality. Added to valid roles in CLAUDE.md, personas table in README, and project structure trees.
+- **Target detail leakage enforcement** -- "no target details in harness files" rule added to Working Rules, covers git commit messages, references harness-reviewer as systematic enforcement mechanism
+- **Git history cleaned** -- removed target-identifying details from commit messages and historical file content using git-filter-repo
 - **Agent permission governance** -- new `templates/agents/` directory for agent-specific reference knowledge, starting with Claude Code
 - `templates/agents/README.md` -- explains agents vs tools vs governance, lists known agents
 - `templates/agents/claude-code/permissions.md` -- full schema reference, file precedence, rule syntax, anti-pattern catalogue (CRITICAL→LOW), remediation patterns

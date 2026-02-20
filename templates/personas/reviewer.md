@@ -177,4 +177,4 @@ Common domain additions:
 - **Data engineering**: pipeline correctness, schema evolution, idempotency guarantees
 - **Infrastructure**: state management, failure modes, blast radius analysis
 
-The adaptation should add a "Domain Expertise" section and "Domain Correctness Issues" to the report template, separate from compliance issues. See `targets/compression-poc-02/deliverables/reviewer.md` for a worked example.
+The adaptation should add a "Domain Expertise" section and "Domain Correctness Issues" to the report template, separate from compliance issues.

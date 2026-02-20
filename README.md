@@ -22,7 +22,7 @@ AEH codifies a **persona-driven workflow** inspired by [Emmz Rendle's "How I Tam
 
 AEH provides:
 
-- **Persona templates** -- instruction files ("system prompts") for each role, encoding mature software engineering principles (TDD, small commits, retrospectives, spec-driven development). These are loaded into the AI agent at the start of a session and shape its behaviour. The four engineering personas run inside Claude Code; the optional Strategist runs in any LLM chat for higher-altitude decision-making.
+- **Persona templates** -- instruction files ("system prompts") for each role, encoding mature software engineering principles (TDD, small commits, retrospectives, spec-driven development). These are loaded into the AI agent at the start of a session and shape its behaviour. The four engineering personas run inside Claude Code; the Harness Reviewer audits AEH itself; the optional Strategist runs in any LLM chat for higher-altitude decision-making.
 - **Project templates** -- scaffolds for `CLAUDE.md` (Claude Code's project instruction file -- the single most important file for agentic engineering) and `agents.md` (cross-tool agent configuration), adapted per target project
 - **Governance criteria** -- checklists and rubrics to assess and improve agentic configuration quality, including agent permission audits
 - **Guided playbooks** -- step-by-step workflows for onboarding new projects, running health checks, and configuring development tools
@@ -81,9 +81,10 @@ AEH operates on a strict separation: the harness never directly modifies your pr
 | **Architect** | Claude Code (harness or target) | Designs solutions, defines boundaries |
 | **Developer** | Claude Code (target) | TDD implementation, follows conventions |
 | **Reviewer** | Claude Code (target) | Compliance checking, produces issue lists |
+| **Harness Reviewer** | Claude Code (harness) | Reviews harness quality, public-facing integrity, target detail leakage |
 | **Strategist** | Any LLM chat (optional) | Business strategy, priorities, trade-offs |
 
-The four engineering personas are the core workflow. The Strategist is an optional upstream role for users who want a strategic conversation partner (e.g. in Claude Web) to inform engineering priorities. See `templates/personas/strategist.md` for details.
+The four engineering personas are the core workflow. The Harness Reviewer is a self-review role that audits the harness itself for consistency, documentation currency, and target detail leakage -- the same discipline AEH prescribes for every target project, applied to itself. The Strategist is an optional upstream role for users who want a strategic conversation partner (e.g. in Claude Web) to inform engineering priorities. See `templates/personas/strategist.md` for details.
 
 ### The Workflow
 
@@ -154,6 +155,7 @@ Ask Claude to explain the setup, help you create it, or verify an existing one. 
 │   │   ├── analyst.md                     # Requirements gathering persona
 │   │   ├── architect.md                   # Solution design persona
 │   │   ├── developer.md                   # TDD implementation persona
+│   │   ├── harness-reviewer.md            # Harness self-review persona
 │   │   ├── reviewer.md                    # Code review persona
 │   │   └── strategist.md                  # Strategic advisor (optional, external sessions)
 │   ├── prompts/
@@ -232,11 +234,11 @@ For organisations wanting to embed AEH in proprietary tooling or host it as a se
 
 ## Current Status
 
-AEH is in active development. It has been used to transform two real projects end-to-end: a Python/PyTorch ML compression toolkit and a React/Express/Supabase fintech platform. The templates and governance criteria are refined through real-world usage.
+AEH is in active development. It has been used to transform real projects end-to-end across different tech stacks. The templates and governance criteria are refined through real-world usage.
 
 What's working:
 - Onboarding playbook (7-phase guided assessment)
-- Four engineering persona templates + optional Strategist
+- Four engineering persona templates + Harness Reviewer + optional Strategist
 - Assessment checklist (10 categories) and review criteria (6 rubrics)
 - Agent permission governance (schema reference, detection patterns, baselines)
 - Prompt generation and direct delivery
@@ -260,34 +262,13 @@ What's evolving:
 
 ## Mission Evolution
 
-### v0.1 -- Foundation (Feb 2026)
+### v0.1–v0.4 -- Foundation (Feb 2026)
 
-- Transcribed and structured the source talk as reference material
-- Created initial persona templates (Analyst, Architect, Developer, Reviewer)
-- Created project templates (`CLAUDE.md`, `agents.md`) and governance criteria
-- Established the transformation workflow: assess, plan, adapt, validate
-
-### v0.2 -- Target Project Isolation & Multi-Project Tracking (Feb 2026)
-
-- Established the Two-Project Model with strict isolation boundary
-- Created `targets/` workspace structure for per-project transformation state
-- Defined the prompt file format and five transformation phases
-- Open questions: stack adaptability, checklist granularity, MCP recommendations
-
-### v0.3 -- Guided Playbooks, Boundary Enforcement & Session Init (Feb 2026)
-
-- Created onboarding playbook (7-phase guided workflow with skip gates)
-- Created health-check playbook (recurring compliance checks with delta reports)
-- Established assessment-implementation boundary (onboarding never touches code)
-- Added session init, role selection, and merge-and-confirm rule
-- First real-world transformation completed (compression-poc-02)
-
-### v0.4 -- Strategist Persona (Feb 2026)
-
-- Added optional Strategist persona for upstream business/strategic decision support
-- Designed for use in external LLM sessions (Claude Web, etc.) without filesystem access
-- Adapted per-project into context briefings that can be pasted into any chat
-- Kept deliberately lightweight -- discoverable but not required
+- Persona templates, project templates, governance criteria, and assessment workflow
+- Two-project model with strict target isolation boundary
+- Onboarding and health-check playbooks with guided workflows
+- Session init, role selection, and assessment-implementation boundary
+- Two real-world transformations completed
 
 ### v0.5 -- Tool Integration, Open Source, Regression Checks (Feb 2026)
 
@@ -300,7 +281,7 @@ What's evolving:
 - AGPL-3.0 license with FAQ clarifying output ownership
 - Prompt-first contribution model -- submit the LLM prompt, not just the diff
 - Community: Discord + GitLab Issues + sponsor support
-- Second real-world transformation completed (React/Express/Supabase fintech platform, 36/36 governance pass)
+- Multiple real-world transformations completed across different tech stacks
 
 ## License
 

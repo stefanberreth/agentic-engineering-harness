@@ -38,7 +38,7 @@ Instead of (or in addition to) a code diff, **submit the LLM prompt that would p
 
 **Also welcome:**
 - Governance criteria refinements
-- Tool integration additions (new MCP servers following the existing pattern)
+- Tool integration additions (prefer skills over MCP servers where skills will do -- MCP servers should be avoided when a skill-based approach is sufficient)
 - Regression check improvements from real-world post-transformation issues
 
 **Probably won't accept:**
@@ -90,5 +90,6 @@ Be professional. Be constructive. Assume good intent. If someone's contribution 
 
 - **Issues:** [GitLab Issues](https://gitlab.com/stefanberreth/agentic-engineering-harness/-/issues) for bugs, feature requests, and structured discussion
 - **Discord:** [AEH Discord](https://discord.gg/qnKVnJEuQz) for real-time chat, show-and-tell, and help
+- **Support:** [Ko-fi](https://ko-fi.com/stefanberreth) -- if AEH saves you time, consider supporting continued development
 
 Thank you for considering a contribution. Even a well-written bug report or a "this didn't work because..." story helps make AEH better.

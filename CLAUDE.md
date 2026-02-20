@@ -6,7 +6,7 @@ This project is a **meta-engineering harness**. It does not implement software. 
 
 ## What This Project Contains
 
-- **Persona templates** (`templates/personas/`) -- system prompt files for the four core engineering roles (Analyst, Architect, Developer, Reviewer) plus the optional Strategist role. These are generic but principled starting points.
+- **Persona templates** (`templates/personas/`) -- system prompt files for the four core engineering roles (Analyst, Architect, Developer, Reviewer), the Harness Reviewer (self-review), and the optional Strategist role. These are generic but principled starting points.
 - **Project templates** (`templates/project/`) -- scaffold files (`CLAUDE.md`, `agents.md`, governance checklists) to be adapted for target projects.
 - **Governance criteria** (`templates/governance/`) -- assessment checklists and quality rubrics for evaluating and evolving the agentic configuration of a target project.
 - **Agent knowledge** (`templates/agents/`) -- agent-specific reference knowledge (permission schemas, detection patterns, baselines) for coding agent runtimes like Claude Code.
@@ -400,7 +400,7 @@ When the user says "commit" or "commit and push":
 
 When committing target-specific work (assessments, prompts, deliverables, journal entries):
 - Commit to the **targets repo**, not the harness repo.
-- Use descriptive messages: `<slug>: <what changed>` (e.g. `compression-poc-02: complete Phase 3 assessment`).
+- Use descriptive messages: `<slug>: <what changed>` (e.g. `my-project: complete Phase 3 assessment`).
 - Do NOT update CHANGELOG.md for target-specific work.
 
 When committing harness work (templates, governance, playbooks, CLAUDE.md):
@@ -445,6 +445,7 @@ If the targets repo has no remote configured, do not nag -- but if the user asks
 - **Templates are starting points, not gospel.** Always adapt to the target project's language, framework, team size and maturity.
 - **Update targets/index.md** whenever a target project's phase or status changes.
 - **Capture rules into files.** When a conversation produces a new rule or policy, write it into the correct instruction file immediately. (See "Rule Capture Principle" above.)
+- **No target project details in harness files.** Templates, personas, playbooks, governance criteria, CLAUDE.md, README, and CHANGELOG must never contain identifying details about specific target projects -- no project names, tech stacks, team details, scores, or any information that could identify a real project. Examples in these files must use generic placeholders (`my-project`, `<slug>`, `<project-name>`). Target-specific information belongs exclusively in `targets/<project>/` (the private repo). This protects client confidentiality and keeps the public harness generic. The `harness-reviewer` persona enforces this systematically -- run it before publishing or after significant harness changes. Git commit messages in the harness repo are also in scope: they must not reference real target project names, stacks, or scores.
 
 ## Screenshots
 
@@ -479,9 +480,11 @@ When a playbook is triggered, Claude must read the playbook file and follow its 
 
 The active persona is stored in `.claude/persona` as a single line (e.g. `reviewer`). This file is NOT tracked in git (add to `.gitignore`).
 
-Valid roles: `analyst`, `architect`, `developer`, `reviewer`
+Valid roles: `analyst`, `architect`, `developer`, `reviewer`, `harness-reviewer`
 
 Note: A `strategist` persona template also exists (`templates/personas/strategist.md`) but is not an active harness-side role. It is designed for use in external LLM sessions (Claude Web, etc.) where the human pastes an adapted briefing document. When users ask about roles or say `/role info`, mention the strategist as an available option for users who want a strategic conversation partner outside Claude Code. Don't push it -- just make it discoverable.
+
+The `harness-reviewer` role is special: it reviews the harness itself, not target projects. It checks for target detail leakage, documentation currency, template consistency, and public-facing quality. Use it before publishing or after significant harness changes. See `templates/personas/harness-reviewer.md`.
 
 An absent or empty file means no role is active.
 
@@ -495,7 +498,7 @@ An absent or empty file means no role is active.
 
 ```
 agentic-engineering-harness · reviewer (from last session)
-  Targets: compression-poc-02 (implementing)
+  Targets: my-project (implementing)
   Continue as reviewer, or /switch · /role info · /ignore role
 ```
 
@@ -503,7 +506,7 @@ agentic-engineering-harness · reviewer (from last session)
 
 ```
 agentic-engineering-harness · no active role
-  Roles: analyst · architect · developer · reviewer
+  Roles: analyst · architect · developer · reviewer · harness-reviewer
   Pick a role, or "no role" to work freestyle. /role info for details.
 ```
 
@@ -577,6 +580,7 @@ If working on the harness itself:
 │   │   ├── analyst.md                     # Requirements gathering persona
 │   │   ├── architect.md                   # Solution design persona
 │   │   ├── developer.md                   # TDD implementation persona
+│   │   ├── harness-reviewer.md            # Harness self-review persona
 │   │   ├── reviewer.md                    # Code review persona
 │   │   └── strategist.md                  # Strategic advisor (optional, for external LLM sessions)
 │   ├── prompts/

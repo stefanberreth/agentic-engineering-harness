@@ -62,4 +62,4 @@ The human pastes both into the web session. The role definition goes first, the 
 
 ### Staleness
 
-The briefing should include a `**Domain knowledge as of:**` date. Domain facts (parameter ranges, validated results, architectural constraints) go stale as experiments complete. When the project maintains a living spec (e.g. a compression program plan), the briefing should reference it by path and note that the spec is authoritative when fresher than the briefing.
+The briefing should include a `**Domain knowledge as of:**` date. Domain facts (parameter ranges, validated results, architectural constraints) go stale as experiments complete. When the project maintains a living spec (e.g. a program plan or roadmap document), the briefing should reference it by path and note that the spec is authoritative when fresher than the briefing.
