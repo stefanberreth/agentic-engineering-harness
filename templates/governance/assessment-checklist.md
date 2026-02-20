@@ -123,6 +123,22 @@ For each item, mark one of:
 
 ---
 
+## 10. Agent Permission Governance
+
+| # | Item | Status | Notes |
+|---|---|---|---|
+| 10.1 | Settings files exist and are intentionally configured (not just accumulated defaults) | | |
+| 10.2 | No secrets, passwords, or API keys embedded in permission rules | | |
+| 10.3 | Deny list blocks sensitive files (`.env`, credentials, SSH keys, `*.pem`, `*.key`) | | |
+| 10.4 | Allow list uses consolidated wildcard patterns (not sprawled one-off rules from "yes, don't ask again") | | |
+| 10.5 | Permission rules reference only paths and files that currently exist in the project | | |
+| 10.6 | `defaultMode` is appropriate for the project's risk profile (solo vs team vs public) | | |
+| 10.7 | Shared settings (`.claude/settings.json`) are version-controlled if present | | |
+| 10.8 | Local settings (`.claude/settings.local.json`) are gitignored | | |
+| 10.9 | Agent cannot read or write outside the project directory tree (filesystem scope enforcement) | | |
+
+---
+
 ## Summary
 
 **Overall readiness:** [Not Ready / Partially Ready / Ready with Gaps / Ready]

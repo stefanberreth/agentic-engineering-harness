@@ -185,6 +185,32 @@ Key capabilities (available as MCP tools):
 Config: `.serena/project.yml`
 Docs: https://oraios.github.io/serena
 
+## Permission Governance
+
+This project manages Claude Code permissions intentionally, not by accumulation.
+
+### Settings files
+
+| File | Purpose | Version-controlled? |
+|------|---------|---------------------|
+| `.claude/settings.json` | Shared team permissions baseline | Yes |
+| `.claude/settings.local.json` | Personal overrides (machine-specific paths, local tools) | No (gitignored) |
+
+### Current baseline
+
+- **Profile**: [solo / team / open-source]
+- **Default mode**: [default / acceptEdits]
+- **Allow rules**: [N] (consolidated wildcards, reviewed [DATE])
+- **Deny rules**: [N] (blocks .env, credentials, SSH keys, destructive commands, filesystem escape)
+
+### Rules
+
+- **No secrets in settings.** Never put passwords, API keys, or tokens in permission rules. Use `.pgpass`, env vars set outside Claude, or secret managers.
+- **Deny list is mandatory.** Every project must have an intentional deny list blocking sensitive files and destructive commands.
+- **Periodic sprawl audit.** When allow rules exceed 50, consolidate with wildcards. Review the allow list when it grows by 20+ rules since last review.
+- **Filesystem scope.** The agent must not read or write outside this project's directory tree. Deny rules enforce this boundary.
+- **Local overrides stay local.** `.claude/settings.local.json` is gitignored. Personal tool paths and machine-specific rules go there, not in shared settings.
+
 ## Context Management
 
 - Stay under 100k tokens. Run `/compact` frequently.

@@ -113,6 +113,23 @@ Use detection patterns from `templates/tools/tool-detection-patterns.md`.
 
 Report findings as tool drift items in the delta report (Phase 4).
 
+### 3h. Permission Health Check
+
+Check the target project's agent permission configuration for drift, sprawl, and security issues.
+
+1. **Read settings files**: `.claude/settings.json` and `.claude/settings.local.json` (if they exist).
+2. **Run detection patterns** from `templates/agents/claude-code/permission-detection-patterns.md`:
+   - All CRITICAL patterns (secrets, bypass mode, filesystem escape, harness isolation breach)
+   - All HIGH patterns (empty deny, no .env blocking, auto-enable MCP)
+   - All MEDIUM patterns (rule sprawl count, stale paths, home dir protection)
+3. **Compare against baseline**: If the previous assessment or review history records a permission snapshot (rule counts, mode, known issues), compare against it:
+   - New allow rules added since last check (count delta)
+   - Deny rules removed since last check
+   - Mode changes
+   - New secrets or filesystem escapes introduced
+4. **Check for harness isolation**: If the target is managed by AEH and the harness path is known (from `profile.md`), verify the deny list blocks reads from the harness directory.
+5. **Record findings** for inclusion in the delta report (Phase 4) under the Permission Health section.
+
 ---
 
 ## Phase 4: Delta Report
@@ -131,6 +148,7 @@ Compare the fresh assessment against the baseline. Categorise every finding:
 | **Unchanged** | Same status as baseline |
 | **Persona drift** | Persona files are out of sync with project reality |
 | **Tool drift** | Tool configured but stale, broken, or undocumented |
+| **Permission drift** | Permission config degraded, accumulated sprawl, or new security issues |
 | **Instruction leak** | New role-like content appeared outside AE structure |
 
 ### Report Format
@@ -153,6 +171,7 @@ Write to `targets/<slug>/health-check-<YYYY-MM-DD>.md`:
 | Unchanged | <N> |
 | Persona drift | <N> |
 | Tool drift | <N> |
+| Permission drift | <N> |
 | Instruction leaks | <N> |
 
 ## New Issues
@@ -187,6 +206,18 @@ Write to `targets/<slug>/health-check-<YYYY-MM-DD>.md`:
 | `CONTRIBUTING.md` (new) | Code review checklist | Integrate into reviewer persona |
 | `README.md` > New "Dev Setup" section | Build instructions | Merge into CLAUDE.md |
 
+## Permission Health
+
+| Check | Status | Finding | Recommendation |
+|-------|--------|---------|----------------|
+| Secrets in rules | pass/FAIL | [details] | [action] |
+| Deny list health | pass/FAIL | [details] | [action] |
+| Allow list hygiene | pass/WARN | [N] rules (was [N] at last check) | [action if sprawl detected] |
+| Filesystem scope | pass/FAIL | [details] | [action] |
+| Harness isolation | pass/FAIL/N/A | [details] | [action] |
+| Settings file separation | pass/WARN | [details] | [action] |
+| Mode appropriateness | pass/WARN | [current mode] | [action if inappropriate] |
+
 ## Tool Health
 
 | Tool | Status | Issue | Recommendation |
@@ -214,6 +245,7 @@ Baseline: <date> (<N> days ago)
   Regressions:       <N>
   Persona drift:     <N>
   Tool drift:        <N>
+  Permission drift:  <N>
   Instruction leaks: <N>
 
 Full report: targets/<slug>/health-check-<date>.md
@@ -229,7 +261,7 @@ Based on the delta report, offer to generate fix prompts:
 Found <N> actionable items. Generate fix prompts?
   [1] Fix all new CRITICAL and HIGH issues    (<N> prompts)
   [2] Fix all new issues                      (<N> prompts)
-  [3] Fix issues + update drifted personas + repair tools  (<N> prompts)
+  [3] Fix issues + update drifted personas + repair tools + fix permissions  (<N> prompts)
   [4] Skip -- I'll review the report first
 ```
 
@@ -238,6 +270,7 @@ If the user chooses to generate prompts:
 - For persona drift fixes, generate prompts that update the specific persona files with corrected references and new conventions.
 - For instruction leaks, generate prompts that integrate the leaked content into the appropriate AE-managed file and add a note to the source file pointing to the canonical location.
 - For tool drift fixes, use `templates/tools/<tool>-setup.md` as the reference for what a correct configuration looks like. Generate repair prompts that bring the existing config back into alignment rather than full reinstallation.
+- For permission drift fixes, reference `templates/agents/claude-code/permission-baselines.md` for the appropriate baseline. Generate prompts that consolidate sprawled rules, add missing deny entries, remove secrets, and enforce filesystem scope.
 - **If any fix prompts move, rename, or archive files**, also generate a regression check prompt (adapt `templates/prompts/regression-check.md.template`) as the final prompt in the batch. Structural changes can break builds and imports -- always verify after.
 
 ---
@@ -246,8 +279,14 @@ If the user chooses to generate prompts:
 
 1. Update `targets/<slug>/assessment.md` with the fresh assessment (replace the old one).
 2. Update `targets/<slug>/inconsistencies.md` with the current issue list.
-3. Append to `targets/<slug>/journal.md`.
-4. Update `targets/index.md` with last-active date.
+3. **Append to `targets/<slug>/review-history.md`**: Add a dated entry with the full findings snapshot (not just deltas). This file is append-only and serves as longitudinal memory across sessions. Each entry includes:
+   - Date and type (assessment / health-check / reviewer pass)
+   - Full findings by category (including permission health -- never omit)
+   - Comparison against the previous entry (new / resolved / unchanged / regressed)
+   - Permission-specific snapshot: rule counts, mode, deny list health, any CRITICAL/HIGH findings
+   - If the file grows beyond ~500 lines, summarise older entries (e.g. "Q1 2026: 4 checks, recurring issue: allow-list sprawl, resolved March")
+4. Append to `targets/<slug>/journal.md`.
+5. Update `targets/index.md` with last-active date.
 
 ---
 

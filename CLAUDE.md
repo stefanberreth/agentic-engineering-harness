@@ -9,6 +9,7 @@ This project is a **meta-engineering harness**. It does not implement software. 
 - **Persona templates** (`templates/personas/`) -- system prompt files for the four core engineering roles (Analyst, Architect, Developer, Reviewer) plus the optional Strategist role. These are generic but principled starting points.
 - **Project templates** (`templates/project/`) -- scaffold files (`CLAUDE.md`, `agents.md`, governance checklists) to be adapted for target projects.
 - **Governance criteria** (`templates/governance/`) -- assessment checklists and quality rubrics for evaluating and evolving the agentic configuration of a target project.
+- **Agent knowledge** (`templates/agents/`) -- agent-specific reference knowledge (permission schemas, detection patterns, baselines) for coding agent runtimes like Claude Code.
 - **Reference documentation** (`docs/`) -- source material, transcripts and curated resources.
 - **Target project workspaces** (`targets/`) -- per-project directories holding all planning, assessment, transformation artifacts and generated prompts. See below.
 
@@ -93,6 +94,7 @@ targets/
     ├── tasks.md                      # Task tracking for THIS transformation (not the target's dev tasks)
     ├── decisions.md                  # Key decisions made during transformation, with rationale
     ├── open-questions.md             # Unresolved questions requiring human input or investigation
+    ├── review-history.md                # Append-only longitudinal findings log
     ├── prompts/                      # Ready-to-paste prompts for execution in the TARGET project
     │   ├── 001-create-claude-md.md
     │   ├── 002-create-analyst-prompt.md
@@ -114,6 +116,7 @@ targets/
 | `tasks.md` | Granular task tracking for the transformation itself (not the target project's development tasks). | Updated every session. |
 | `decisions.md` | Records choices made and why (e.g. "use pytest not unittest because the project already has pytest fixtures"). | Append-only during sessions. |
 | `open-questions.md` | Questions that need human input, further investigation, or a decision before proceeding. | Updated every session. Cleared as questions are resolved. |
+| `review-history.md` | Append-only longitudinal log of all assessment/health-check/reviewer findings. Each dated entry includes full findings snapshot and comparison against previous. Serves as memory across sessions for pattern detection and drift tracking. | Appended every assessment, health-check, and reviewer pass. |
 | `prompts/` | Numbered, ordered, ready-to-paste prompt files. Each prompt is self-contained: it tells a Claude Code instance inside the target project exactly what to do. | Created as transformation plan is executed. |
 | `deliverables/` | Fully adapted files (persona prompts, `CLAUDE.md`, etc.) ready to be placed into the target project. | Created alongside prompts. |
 | `journal.md` | Chronological session log: what was done, what was learned, what's next. | Appended at end of each session. |
@@ -267,8 +270,9 @@ Every assessment produces these files in `targets/<project>/`:
 | File | Content |
 |---|---|
 | `profile.md` | Project identity, tech stack, prompt delivery policy, key structural features |
-| `assessment.md` | Completed checklist (7 categories) with status and notes per item |
+| `assessment.md` | Completed checklist (10 categories) with status and notes per item |
 | `inconsistencies.md` | Ranked report of all findings with severity, description, and recommendation |
+| `review-history.md` | First entry: full findings snapshot from initial assessment (append-only from here on) |
 | `transformation-plan.md` | Phased, ordered plan with task descriptions, priorities, and effort estimate |
 | `tasks.md` | Checklist view of all transformation tasks |
 | `decisions.md` | Decisions made during assessment + pending decisions needing human input |
@@ -582,15 +586,21 @@ If working on the harness itself:
 │   │   ├── onboarding.md                  # Guided assessment + transformation workflow
 │   │   ├── health-check.md               # Recurring compliance check workflow
 │   │   └── tools.md                       # Optional development tool configuration
-│   └── tools/
-│       ├── README.md                      # Tool integration overview
-│       ├── tool-detection-patterns.md     # Detection patterns for tools + equivalents
-│       ├── openspec-setup.md              # OpenSpec setup prompt template
-│       ├── openspec-teardown.md           # OpenSpec teardown prompt template
-│       ├── context7-setup.md              # Context7 setup prompt template
-│       ├── context7-teardown.md           # Context7 teardown prompt template
-│       ├── serena-setup.md                # Serena setup prompt template
-│       └── serena-teardown.md             # Serena teardown prompt template
+│   ├── tools/
+│   │   ├── README.md                      # Tool integration overview
+│   │   ├── tool-detection-patterns.md     # Detection patterns for tools + equivalents
+│   │   ├── openspec-setup.md              # OpenSpec setup prompt template
+│   │   ├── openspec-teardown.md           # OpenSpec teardown prompt template
+│   │   ├── context7-setup.md              # Context7 setup prompt template
+│   │   ├── context7-teardown.md           # Context7 teardown prompt template
+│   │   ├── serena-setup.md                # Serena setup prompt template
+│   │   └── serena-teardown.md             # Serena teardown prompt template
+│   └── agents/
+│       ├── README.md                      # Agent-specific knowledge overview
+│       └── claude-code/
+│           ├── permissions.md             # Permission schema reference + anti-patterns
+│           ├── permission-detection-patterns.md  # Glob/grep patterns for auditing
+│           └── permission-baselines.md    # Recommended configs by project archetype
 ├── targets/                               # Private nested repo (not tracked by public harness)
 │   ├── index.md                           # Registry of all target projects
 │   └── <project-slug>/                    # Per-project transformation workspace
@@ -600,6 +610,7 @@ If working on the harness itself:
 │       ├── tasks.md                       #   Task tracking for transformation
 │       ├── decisions.md                   #   Decisions and rationale
 │       ├── open-questions.md              #   Unresolved questions
+│       ├── review-history.md              #   Append-only longitudinal findings log
 │       ├── prompts/                       #   Ready-to-paste prompts for target
 │       ├── deliverables/                  #   Adapted files for target project
 │       └── journal.md                     #   Chronological session log

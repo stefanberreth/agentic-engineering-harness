@@ -8,6 +8,37 @@ Target-project-specific work (prompts, deliverables, assessments, journal entrie
 
 ---
 
+## [Unreleased]
+
+### Added
+- **Agent permission governance** -- new `templates/agents/` directory for agent-specific reference knowledge, starting with Claude Code
+- `templates/agents/README.md` -- explains agents vs tools vs governance, lists known agents
+- `templates/agents/claude-code/permissions.md` -- full schema reference, file precedence, rule syntax, anti-pattern catalogue (CRITICAL→LOW), remediation patterns
+- `templates/agents/claude-code/permission-detection-patterns.md` -- glob/grep patterns for auditing permission configs (secrets, bypass mode, filesystem escape, sprawl, stale rules, harness isolation breach)
+- `templates/agents/claude-code/permission-baselines.md` -- three recommended configs (solo/team/open-source) as embeddable JSON blocks with rationale
+- Assessment checklist **Category 10: Agent Permission Governance** -- 9 items covering settings hygiene, secrets, deny lists, sprawl, filesystem scope, and file separation
+- Review criteria **Rubric 6: Agent Permission Quality** -- 6 criteria with signs of good governance and common problems
+- **Mandatory permission review in reviewer persona** -- every review pass must include a Permission Health section in `comments.md`, never silently skipped
+- **Harness isolation check** -- CRITICAL detection pattern verifying target agent cannot read from the AEH harness directory (AP-04)
+- **Review history file** (`targets/<project>/review-history.md`) -- append-only longitudinal findings log for pattern detection across assessments, always includes permission snapshot
+- Health-check **Phase 3h: Permission Health Check** -- reads settings files, runs detection patterns, compares against baseline
+- Health-check **permission drift** as delta report category with dedicated Permission Health section in report format
+- Onboarding Phase 2b step 9: permission file detection in reconnaissance search strategy
+- Onboarding Phase 2c: "Permissions" line in summary output format
+- `CLAUDE.md.template`: Permission Governance section with settings file documentation, baseline reference, and maintenance rules
+
+### Changed
+- Assessment checklist now has 10 categories (was 9)
+- Review criteria now has 6 rubrics (was 5), plus "Agent permissions" row in Overall Assessment table
+- Health-check remediation option 3 includes permission fixes
+- Health-check Phase 5 references permission baselines for drift remediation
+- Health-check phase completion appends to `review-history.md` (append-only longitudinal record)
+- Onboarding Phase 3e workspace creation includes `review-history.md`
+- CLAUDE.md project structure tree includes `templates/agents/` and `review-history.md`
+- README project structure tree includes `templates/agents/`
+
+---
+
 ## [v0.5] - 2026-02-20
 
 ### Added

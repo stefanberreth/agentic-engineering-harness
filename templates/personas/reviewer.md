@@ -116,7 +116,36 @@ or request changes]
 - If blocking issues were resolved but new ones were introduced, note them clearly.
 - If the review goes through more than 3 cycles on the same task, flag this to the user -- the task may need to be re-specified.
 
-### 5. Spec Feedback
+### 5. Permission Health (Mandatory)
+
+**This step is mandatory on every review pass.** Do not skip it, even if the review task is focused on code changes. Permission drift accumulates silently and is only caught by systematic checking.
+
+1. Read `.claude/settings.json` and `.claude/settings.local.json` (if they exist).
+2. Check for CRITICAL issues:
+   - Secrets in permission rules (grep for PASSWORD, SECRET, TOKEN, API_KEY, Bearer)
+   - `bypassPermissions` mode
+   - Broad filesystem access (`Read(/*`, `Write(/*`, `Edit(/*` with no path constraints)
+   - Harness isolation breach (if managed by AEH: can the agent read the harness directory?)
+3. Check for HIGH issues:
+   - Empty or missing deny list
+   - No `.env` or credential file blocking in deny list
+   - Rule sprawl (count allow entries; 50+ = concern, 100+ = critical)
+4. Include a **Permission Health** section in `comments.md`:
+
+```markdown
+## Permission Health
+| Check | Status | Finding |
+|-------|--------|---------|
+| Secrets in rules | pass/FAIL | [details if fail] |
+| Deny list health | pass/FAIL | [details if fail] |
+| Allow list hygiene | pass/WARN | [count] rules, [consolidated/sprawled] |
+| Filesystem scope | pass/FAIL | [details if fail] |
+| Settings file separation | pass/WARN | [details if issue] |
+```
+
+If all checks pass, the section is still included with all-pass status. This creates an audit trail confirming permissions were reviewed, not skipped.
+
+### 6. Spec Feedback
 
 If the review reveals issues that originate in the specification (not the implementation):
 - Document them clearly in the Retrospective Evaluation section.

@@ -151,6 +151,7 @@ Many projects already have role-based instructions in non-standard locations. De
 | Development tools | Project root | `openspec/`, `.serena/`, `.claude/skills/openspec-*` |
 | Spec/ADR management | `docs/`, project root | `docs/adr/`, `docs/rfc/`, `specs/`, `.changeset/` |
 | Code intelligence | Project root | `.sourcegraph/`, `tags`, `.ctags` |
+| Agent permission config | `.claude/` | `.claude/settings.json`, `.claude/settings.local.json` |
 
 **Search strategy:**
 1. Glob for files with names containing: `prompt`, `persona`, `role`, `agent`, `instruction`, `system`, `rules`, `convention`, `workflow`, `CONTRIBUTING`
@@ -161,6 +162,7 @@ Many projects already have role-based instructions in non-standard locations. De
 6. Check for `.claude/settings.json` and grep for `mcpServers`
 7. Check for tool-specific directories: `openspec/`, `.serena/`, `.claude/skills/openspec-*`
 8. Check for functional equivalents: `docs/adr/`, `docs/rfc/`, `specs/`, `.changeset/`, `.sourcegraph/`
+9. Read `.claude/settings*.json` if they exist: count allow/deny rules, check for secrets (grep for PASSWORD, SECRET, TOKEN, API_KEY), note `defaultMode`, check for `bypassPermissions`
 
 **When development tools are detected**, add a "Development Tools" section to the catalogue:
 
@@ -192,6 +194,7 @@ Stack:      <primary language> · <framework> · <build tool>
 Size:       <N> source files · <N> test files · <N> docs
 CI/CD:      <present/absent> (<tool if present>)
 Agent config: <what exists>
+Permissions: <N> allow / <N> deny rules · mode: <defaultMode> · <issues if any>
 
 Existing role setup:
   <N> files/sections with role-like instructions detected
@@ -300,6 +303,7 @@ targets/<slug>/
 ├── profile.md
 ├── assessment.md          (written above)
 ├── inconsistencies.md     (written above)
+├── review-history.md      (first entry written from assessment findings)
 ├── transformation-plan.md (placeholder -- filled in Phase 5)
 ├── tasks.md               (placeholder)
 ├── decisions.md

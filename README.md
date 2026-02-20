@@ -17,6 +17,7 @@ AEH codifies a **persona-driven workflow** (Analyst, Architect, Developer, Revie
 - **Governance criteria** -- checklists and rubrics to assess and improve agentic configuration quality
 - **Guided playbooks** -- step-by-step workflows for onboarding new projects, running health checks, and configuring development tools
 - **Tool integration** -- optional MCP server setup/teardown for OpenSpec (specs), Context7 (docs), and Serena (code navigation), with detection of functional equivalents
+- **Agent permission governance** -- audit, assess, and maintain coding agent permission configurations (deny lists, allow list hygiene, filesystem scope, secret detection)
 - **Transformation process** -- a repeatable method for taking an existing project from zero agentic setup to a fully structured one
 
 ## Who Is This For
@@ -45,7 +46,7 @@ Then say `/onboard /path/to/your/project` to start the guided assessment.
 
 AEH will:
 1. Read your project's structure, README, and any existing AI agent configuration
-2. Run an assessment checklist across 9 categories
+2. Run an assessment checklist across 10 categories
 3. Produce a ranked inconsistency report (CRITICAL / HIGH / MEDIUM / LOW)
 4. Generate a phased transformation plan
 5. Create ready-to-execute prompts for setting up the agentic structure in your project
@@ -155,10 +156,13 @@ Ask Claude to explain the setup, help you create it, or verify an existing one. 
 │   │   ├── onboarding.md                  # Guided 7-phase onboarding workflow
 │   │   ├── health-check.md               # Recurring compliance check + delta report
 │   │   └── tools.md                       # Optional development tool configuration
-│   └── tools/
-│       ├── openspec-setup.md / teardown   # OpenSpec MCP server setup/removal
-│       ├── context7-setup.md / teardown   # Context7 MCP server setup/removal
-│       └── serena-setup.md / teardown     # Serena MCP server setup/removal
+│   ├── tools/
+│   │   ├── openspec-setup.md / teardown   # OpenSpec MCP server setup/removal
+│   │   ├── context7-setup.md / teardown   # Context7 MCP server setup/removal
+│   │   └── serena-setup.md / teardown     # Serena MCP server setup/removal
+│   └── agents/
+│       ├── README.md                      # Agent-specific knowledge overview
+│       └── claude-code/                   # Claude Code permission schema, patterns, baselines
 ├── targets/                               # Private nested repo (see "Managing Target Workspace History")
 │   └── index.md                           # Registry of target projects + status
 └── docs/
@@ -221,10 +225,11 @@ AEH is in active development. It has been used to transform two real projects en
 What's working:
 - Onboarding playbook (7-phase guided assessment)
 - Four engineering persona templates + optional Strategist
-- Assessment checklist (9 categories) and review criteria
+- Assessment checklist (10 categories) and review criteria (6 rubrics)
+- Agent permission governance (schema reference, detection patterns, baselines)
 - Prompt generation and direct delivery
 - Post-transformation regression checks (build, imports, runtime verification)
-- Health check playbook (delta reports + tool health)
+- Health check playbook (delta reports + tool health + permission health)
 - Tool integration playbook (OpenSpec, Context7, Serena -- optional, reversible)
 
 What's evolving:

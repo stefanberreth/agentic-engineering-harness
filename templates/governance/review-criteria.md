@@ -132,6 +132,37 @@ Use this rubric to evaluate the quality of the agentic engineering files in a ta
 
 ---
 
+## 6. Agent Permission Quality
+
+> Score this rubric for any project that has Claude Code settings files (`.claude/settings.json` or `.claude/settings.local.json`). If no settings files exist, note their absence as a finding rather than skipping the rubric -- unmanaged permissions are a governance gap.
+
+| Criterion | Score | Notes |
+|---|---|---|
+| **No secrets**: Permission rules contain no passwords, API keys, tokens, or credentials | | |
+| **Deny list health**: Deny list exists and blocks sensitive files (`.env`, credentials, SSH keys, `*.pem`, `*.key`) and destructive commands | | |
+| **Allow list hygiene**: Allow rules use consolidated wildcards, not sprawled individual entries (threshold: 50+ = concern, 100+ = critical) | | |
+| **Scope appropriateness**: `defaultMode` matches project risk profile; filesystem access doesn't extend beyond project root | | |
+| **Currency**: Permission rules reference paths and tools that currently exist (no stale entries) | | |
+| **File separation**: Shared settings (`.claude/settings.json`) version-controlled; local settings (`.claude/settings.local.json`) gitignored | | |
+
+### Signs of good permission governance
+- Deny list is intentionally constructed (not empty or default)
+- Allow list has been reviewed and consolidated at least once
+- `defaultMode` was a conscious choice, not the default left unchanged
+- No secrets have ever appeared in settings files (check git history)
+- Filesystem scope is enforced -- agent cannot read outside the project
+
+### Common problems
+- Empty deny list -- nothing is forbidden, agent can do anything it's allowed to by default mode
+- Secrets embedded in Bash rules (e.g. `PGPASSWORD=... psql`)
+- 100+ allow rules accumulated through "yes, don't ask again" clicks
+- `bypassPermissions` mode enabled (all safety prompts disabled)
+- Broad filesystem access: `Read` or `Write` with no path constraints
+- `.claude/settings.local.json` committed to git (personal overrides shared with team)
+- No gitignore entry for local settings
+
+---
+
 ## Overall Assessment
 
 | Aspect | Rating | Priority |
@@ -141,6 +172,7 @@ Use this rubric to evaluate the quality of the agentic engineering files in a ta
 | Specification | | |
 | Governance & process | | |
 | Tool integration (if applicable) | | |
+| Agent permissions | | |
 
 **Top recommendations:**
 1. [Most impactful improvement]
