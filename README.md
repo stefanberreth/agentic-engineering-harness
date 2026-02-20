@@ -6,7 +6,7 @@ A meta-engineering toolkit for transforming software projects into structured ag
 
 ## The Problem
 
-AI coding agents are powerful but undisciplined by default. Without structure, they produce unreviewable volumes of code, lose context between sessions, make silent assumptions, and resist being managed. Most developers either "vibe code" (no process, no review) or bolt an AI into their existing workflow without rethinking how work is organised.
+AI coding agents are powerful but undisciplined by default. Without structure, they produce unreviewable volumes of code, lose context between sessions, make silent assumptions, and resist being managed. Most people either "vibe code" (no process, no review) or bolt an AI into their existing workflow without rethinking how work is organised.
 
 ## The Solution
 
@@ -21,7 +21,7 @@ AEH codifies a **persona-driven workflow** (Analyst, Architect, Developer, Revie
 
 ## Who Is This For
 
-- **Solo developers** using Claude Code (or similar) who want structure without bureaucracy
+- **Solo practitioners** using Claude Code (or similar) who want structure without bureaucracy
 - **Small teams** introducing AI coding agents and needing a shared workflow
 - **Technical leads** evaluating how to integrate AI agents into existing processes
 - **Anyone** who has experienced the "100 files changed, no idea what happened" problem with AI coding

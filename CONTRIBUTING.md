@@ -1,6 +1,6 @@
 # Contributing to AEH
 
-AEH is maintained by a single developer. Contributions are welcome -- but the project operates under a benevolent dictator model. I review everything personally and make all design decisions. This isn't bureaucracy; it's how a solo-maintained project stays coherent.
+AEH is maintained by a single person. Contributions are welcome -- but the project operates under a benevolent dictator model. I review everything personally and make all design decisions. This isn't bureaucracy; it's how a solo-maintained project stays coherent.
 
 ## Before you contribute
 
