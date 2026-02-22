@@ -109,11 +109,17 @@ Reviewer-Implementer loop (Reviewer scans → produces issue list →
 Regression check (verify builds, imports, runtime still work)
     |
     v
+Domain deepening (spec reconciliation, convention extraction --
+  makes personas accurate, not just structurally correct)
+    |
+    v
 /health checks (periodic -- detect configuration drift, permission
   sprawl, persona staleness, tool breakage)
 ```
 
 Each step is human-approved. The harness generates prompts; you decide when and whether to execute them.
+
+**What is "domain deepening"?** Onboarding gives your project clean structure -- personas, session init, governance. But the personas start generic. They know your tech stack and conventions but don't deeply understand what your code actually does. Domain deepening is the post-onboarding phase where investigation prompts (spec reconciliation, convention extraction, architecture mapping) make the personas accurate. The harness designs the questions; your project's own agent investigates and reports back.
 
 **What is "drift"?** Over time, an AI agent's configuration gradually falls out of sync with the project's actual state. New dependencies get added but personas don't mention them. Permission rules accumulate. Documentation references point to files that moved. Drift is silent and cumulative -- the agent still runs, it just gets progressively less effective. Regular health checks catch it.
 
@@ -128,7 +134,8 @@ Each step is human-approved. The harness generates prompts; you decide when and 
    Read and execute docs/AE/prompts/000-run-all-foundation.md
    ```
 6. For code-level fixes, run the reviewer-implementer loop with human oversight
-7. Run `/health` periodically to check for drift
+7. Back in AEH, ask for domain deepening prompts (spec reconciliation, convention extraction) -- these make your personas accurate, not just structurally correct
+8. Run `/health` periodically to check for drift
 
 ### Managing Target Workspace History
 
@@ -245,6 +252,7 @@ What's working:
 - Tool integration playbook (OpenSpec, Context7, Serena -- optional, reversible)
 
 What's evolving:
+- Post-onboarding domain deepening (spec reconciliation, convention extraction, architecture mapping)
 - Templates are being refined based on real-world usage
 - Multi-agent coordination patterns are not yet documented
 - CI/CD integration templates are planned but not yet created

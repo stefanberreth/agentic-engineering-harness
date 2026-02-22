@@ -172,6 +172,30 @@ Each target project moves through these phases:
 - Update persona prompts and config as the target's stack or workflow changes
 - The target project's own retrospectives may trigger harness-side updates
 
+### Post-Onboarding: Domain Deepening
+
+Onboarding produces clean structure but domain-thin personas. The personas know the tech stack and conventions but don't deeply understand what the code actually does, what the specs get right or wrong, or what architectural decisions were made and why. Domain accuracy comes from post-onboarding investigation.
+
+**The pattern is always the same:**
+
+1. **Harness designs the question.** The harness-side agent generates a read-and-report prompt based on what needs investigation (spec accuracy, undocumented conventions, architecture decisions).
+2. **Target executes the investigation.** The target-side agent -- running inside the project with full CLAUDE.md context -- reads the code, compares against specs/docs, and writes findings to `docs/AE/` (e.g. `docs/AE/spec-reconciliation.md`).
+3. **Harness interprets the results.** The operator brings findings back to the harness. The harness-side agent reads the report and updates personas, deliverables, or harness templates based on what was learned.
+4. **Repeat.** Each round makes the personas more accurate and the specs more honest.
+
+**Investigation dimensions** (run as needed, not all at once):
+
+| Investigation | What it produces | When to run |
+|--------------|-----------------|-------------|
+| Spec reconciliation | Which specs match reality, which are stale or aspirational | After onboarding, before feature work |
+| Convention extraction | Undocumented patterns the code follows consistently | When personas feel generic |
+| Architecture decision mapping | Why things are built the way they are | Before major refactors |
+| Config consistency check | "Works by accident" configurations | After assessment flags config issues |
+
+Each investigation is a single prompt. The harness generates it; the target-side agent executes it. Results feed back into persona refinements and spec corrections.
+
+**Why the target-side agent, not the harness?** The target-side agent has the project's CLAUDE.md loaded, knows the conventions, and operates within the project's permission model. It will produce more accurate findings than an external agent reading the same files without that context. The harness can read target files for assessment, but domain-deep investigation belongs to the agent that lives in the codebase.
+
 ---
 
 ## Prompt File Format
