@@ -484,7 +484,7 @@ Wait for user confirmation before generating each prompt. If the user says `skip
 
 ### 6d. Generate Regression Check Prompt
 
-**Always generate a regression check prompt as the final prompt in the sequence.** Adapt `templates/prompts/regression-check.md.template` to the target project:
+**Always generate a regression check prompt as the second-to-last prompt in the sequence.** Adapt `templates/prompts/regression-check.md.template` to the target project:
 
 - Replace `[BUILD_COMMAND]` with the project's actual build command (from `package.json`, `Makefile`, etc.)
 - Replace `[DEV_SERVER_COMMAND]` with the project's dev server start command
@@ -493,9 +493,75 @@ Wait for user confirmation before generating each prompt. If the user says `skip
 
 This prompt verifies that the transformation didn't break builds, imports, config references, or runtime behaviour. The governance review checks structural correctness; the regression check verifies functional correctness.
 
-Number it as the **last prompt** in the sequence (after the governance review prompt).
+### 6e. Generate Retrospective Prompt
 
-### 6e. After Harness Setup Prompts
+**Always generate a retrospective prompt as the final prompt in the sequence.** This prompt must be run by the same target-side agent session that executed the other prompts -- that agent has the full mental model from having worked through the entire scope.
+
+The retrospective prompt is universal (not project-specific). Generate it with this content:
+
+```markdown
+# Prompt [NNN]: Post-Transformation Retrospective
+
+**Target project:** [name]
+**Target directory:** [absolute path]
+**Prerequisite prompts:** all previous prompts in this sequence
+**Phase:** reviewing
+
+## Context for the operator
+
+This must be run in the SAME session that executed the transformation
+prompts. The value comes from the agent's accumulated context -- a fresh
+session would just be re-reading files, not reflecting on experience.
+
+If the session that ran the prompts has already ended, skip this prompt.
+The insight is lost. (This is a lesson, not a failure -- note it in the
+journal and run a /health check instead.)
+
+## Prompt
+
+You have just completed the full onboarding transformation for this
+project. Before this session ends, reflect on what you learned by
+working through the entire scope.
+
+Answer these questions:
+
+1. What would you change about the CLAUDE.md you just created or modified?
+   Be specific -- which sections, what's missing, what's misleading.
+
+2. What conventions did you discover in the code that are not yet codified
+   in any instruction file? List each with a file path example.
+
+3. Where did you have to make assumptions because the instructions or
+   specs were ambiguous? List each assumption and what you assumed.
+
+4. What information would have saved you time if you had known it at the
+   start of this session?
+
+5. What is fragile? What will break first as this project evolves?
+
+6. If you started a fresh session right now with the current instruction
+   files, what would confuse you or lead you astray?
+
+Write your answers to docs/AE/retrospective.md. Be specific -- file paths,
+line numbers, concrete examples from this session. Do not fix anything.
+Report only.
+
+## Expected outcome
+
+A file `docs/AE/retrospective.md` with honest, specific observations.
+This file feeds back into the harness for persona and CLAUDE.md refinement.
+
+## If something goes wrong
+
+If the session has already lost context (restarted, compressed), the
+retrospective has limited value. Note this in the journal and move on.
+A health check will catch structural issues; the retrospective catches
+experiential insight that only exists in-session.
+```
+
+The retrospective prompt captures second-pass insight: things the agent only knows because it worked through the full scope. This is not a review of the files (the governance prompt does that). It is a reflection on the experience of using them.
+
+### 6f. After Harness Setup Prompts
 
 ```
 Harness setup complete.
@@ -507,8 +573,9 @@ Harness setup complete.
 These prompts set up the AE harness structure only.
 No application code, configs, or non-AE docs will be touched.
 
-The final prompt is a regression check -- run it last to verify
-no application functionality was broken by the transformation.
+The second-to-last prompt is a regression check -- verifies nothing broke.
+The final prompt is a retrospective -- captures what the agent learned.
+Run the retrospective in the SAME session as the other prompts.
 ```
 
 If existing setup was migrated, add:
@@ -654,6 +721,16 @@ After any phase completes (or the user says `stop`):
 1. Update `targets/<slug>/journal.md` with what was done this session.
 2. Update `targets/<slug>/tasks.md` with current progress.
 3. Update `targets/index.md` with current phase and status.
+
+### Close-out gate (before marking "maintaining")
+
+Do NOT mark a target as "maintaining" in `targets/index.md` until:
+
+1. **Open questions reviewed.** Every item in `targets/<slug>/open-questions.md` is either resolved (with date and outcome) or explicitly deferred (with rationale). No item may sit unmarked.
+2. **Retrospective received.** The target-side retrospective prompt has been executed and `docs/AE/retrospective.md` exists in the target project -- OR the user confirms the retrospective session was lost and a `/health` check will substitute.
+3. **Review history baseline created.** `targets/<slug>/review-history.md` exists with at least one entry from the initial assessment findings.
+
+If any of these are missing, the target stays in "reviewing" phase. This gate prevents the drift that comes from marking a project as done while loose ends remain untracked.
 
 ---
 
