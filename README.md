@@ -86,56 +86,74 @@ The four engineering personas are the core workflow. The Harness Reviewer is a s
 
 ### The Workflow
 
+You work in two Claude Code sessions: one in the AEH directory (the planner), one in your project (the practitioner). The harness designs; your project executes.
+
 ```
-/onboard your project
-    |
-    v
-Assessment (read-only, produces reports)
-    |
-    v
-Plan (phased, prioritised transformation tasks)
-    |
-    v
-Harness setup (personas, session init, CLAUDE.md sections)
-    |
-    v
-/tools (optional: configure OpenSpec, Context7, Serena)
-    |
-    v
-Reviewer-Implementer loop (Reviewer scans → produces issue list →
-  Implementer fixes top issues → Reviewer re-scans → repeat until clean)
-    |
-    v
-Regression check (verify builds, imports, runtime still work)
-    |
-    v
-Domain deepening (spec reconciliation, convention extraction --
-  makes personas accurate, not just structurally correct)
-    |
-    v
-/health checks (periodic -- detect configuration drift, permission
-  sprawl, persona staleness, tool breakage)
+IN AEH                              IN YOUR PROJECT
+──────                               ───────────────
+/onboard /path/to/project
+  → assessment (read-only)
+  → plan
+  → generates prompts
+                                     Run the prompts:
+                                       "Read and execute
+                                        docs/AE/prompts/001-..."
+                                       (one at a time, you review each)
+
+                                     Reviewer-Implementer loop:
+                                       reviewer scans → issue list →
+                                       implementer fixes → repeat
+
+Ask for domain deepening
+  → spec reconciliation prompt
+  → persona refinement prompts
+                                     Run deepening prompts:
+                                       reconcile specs vs code
+                                       update personas with findings
+
+/health (periodic)
+  → delta report
+  → fix prompts if needed
+                                     Run fix prompts
 ```
 
 Each step is human-approved. The harness generates prompts; you decide when and whether to execute them.
 
-**What is "domain deepening"?** Onboarding gives your project clean structure -- personas, session init, governance. But the personas start generic. They know your tech stack and conventions but don't deeply understand what your code actually does. Domain deepening is a three-phase post-onboarding process: (1) housekeeping -- close open questions and fix known issues, (2) ground truth -- map the codebase and reconcile specs against reality, (3) refine -- archive stale specs, inject verified domain knowledge into personas, fix documentation debt. The harness designs the questions; your project's own agent investigates and reports back. Three phases, typically 3-5 prompts, done in one session.
-
-**What is "drift"?** Over time, an AI agent's configuration gradually falls out of sync with the project's actual state. New dependencies get added but personas don't mention them. Permission rules accumulate. Documentation references point to files that moved. Drift is silent and cumulative -- the agent still runs, it just gets progressively less effective. Regular health checks catch it.
-
 ### Transforming a Project Step by Step
 
-1. Start Claude Code in the AEH directory
-2. Say `/onboard /path/to/your/project`
-3. The playbook runs 7 phases (you can skip ahead or stop at any point)
-4. At the end, you get assessment reports and ready-to-execute prompts
-5. Open Claude Code in your project and run the prompts:
-   ```
-   Read and execute docs/AE/prompts/000-run-all-foundation.md
-   ```
-6. For code-level fixes, run the reviewer-implementer loop with human oversight
-7. Back in AEH, ask for domain deepening prompts (spec reconciliation, convention extraction) -- these make your personas accurate, not just structurally correct
-8. Run `/health` periodically to check for drift
+**Phase 1: Onboard** (in AEH)
+
+1. `claude` in the AEH directory
+2. `/onboard /path/to/your/project`
+3. AEH reads your project, runs a 10-category assessment, produces a ranked report
+4. You approve a transformation plan
+5. AEH generates numbered prompts and delivers them to your project's `docs/AE/prompts/`
+
+**Phase 2: Apply** (in your project)
+
+6. `claude` in your project directory
+7. `Read and execute docs/AE/prompts/001-...` -- run each prompt in order
+8. The prompts set up personas, session init, CLAUDE.md sections -- structure, not code changes
+9. Optional: `/tools` in AEH to configure OpenSpec, Context7, or Serena
+10. For code-level fixes from the assessment, run the reviewer-implementer loop with human oversight
+
+**Phase 3: Deepen** (back and forth)
+
+11. Back in AEH, ask for domain deepening -- AEH generates investigation prompts
+12. In your project, run the spec reconciliation prompt -- it compares your specs against actual code and reports what's stale, what's accurate, what's missing
+13. Back in AEH, review the findings -- AEH generates persona refinement prompts
+14. In your project, run the refinement prompts -- they inject verified domain knowledge into your personas
+
+After this, your personas understand your codebase, not just your tech stack.
+
+**Ongoing: Health checks**
+
+15. `/health` in AEH periodically to detect drift -- configuration that's fallen out of sync with your evolving project
+
+**Key concepts:**
+
+- **Domain deepening** -- onboarding gives structure; deepening gives accuracy. Three sub-phases: (1) housekeeping -- close open questions, (2) ground truth -- reconcile specs against code, (3) refine -- fix stale specs, update personas. Typically 3-5 prompts, one session.
+- **Drift** -- agentic configuration silently degrades as your project evolves. New dependencies, accumulated permissions, moved files. The agent still runs but gets less effective. Health checks catch it.
 
 ### Managing Target Workspace History
 
@@ -209,11 +227,12 @@ AEH doesn't require you to adopt everything at once. Start where you are:
 |-------|-------------|--------|
 | **1. Assessment only** | Run `/onboard`, get a ranked report of your project's agentic readiness. No changes made. | 15 minutes |
 | **2. Harness setup** | Add AE structure (personas, session init, CLAUDE.md sections). Your code untouched. | 1 session |
-| **3. Reviewer-implementer loop** | Fix issues found in the assessment with human oversight. | 2-3 sessions |
-| **4. Full workflow** | All personas active, regular `/health` checks, continuous governance. | Ongoing |
-| **5. Strategic layer** | Add a Strategist in an external LLM chat for business-level decision support. | When needed |
+| **3. Reviewer-implementer loop** | Fix issues found in the assessment with human oversight. | 1-2 sessions |
+| **4. Domain deepening** | Reconcile specs against code, inject verified domain knowledge into personas. | 1 session |
+| **5. Full workflow** | All personas active, regular `/health` checks, continuous governance. | Ongoing |
+| **6. Strategic layer** | Add a Strategist in an external LLM chat for business-level decision support. | When needed |
 
-Most projects get significant value at level 2. You don't need to reach level 5 to benefit.
+Most projects get significant value at level 2. Domain deepening (level 4) is where personas go from generic to accurate. You don't need to reach level 6 to benefit.
 
 ## Community
 
