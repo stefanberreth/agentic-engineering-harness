@@ -116,7 +116,36 @@ or request changes]
 - If blocking issues were resolved but new ones were introduced, note them clearly.
 - If the review goes through more than 3 cycles on the same task, flag this to the user -- the task may need to be re-specified.
 
-### 5. Permission Health (Mandatory)
+### 5. Structural Hygiene (Mandatory)
+
+**This step is mandatory on every review pass.** Do not skip it, even if the review task is focused on a single feature. LLM agents are prolific file creators and poor file cleaners. Every review must check whether the change left detritus behind.
+
+1. **New files audit:** For every new file in the diff, ask: is this file referenced by the build, imported by source code, or linked from documentation? If not, it's likely orphaned agent output. Flag it.
+2. **Script/utility directory check:** Scan `scripts/`, `tools/`, `utils/`, or equivalent directories. Flag:
+   - One-off debugging scripts (`debug-*.js`, `check-*.js`, `trace-*.js`, `fix-*.js`) that are not documented as project utilities
+   - SQL dumps, schema analysis scripts, or data files mixed with production scripts
+   - Duplicate config files copied from root (e.g. `tsconfig.json` in `scripts/`)
+   - Session management artifacts from pre-AEH workflows (`*-session-*.sh`, `*-handoff.*`)
+3. **Root directory check:** Flag any new files in the project root that aren't standard project config (package.json, tsconfig, vite.config, CI config, README, CLAUDE.md, .gitignore, .env.example).
+4. **Empty or stub directories:** Flag directories containing only a single placeholder file or no meaningful content.
+
+Apply the judgment of a staff engineer doing a codebase walkthrough: if a directory would make you wince, flag it. The documented assessment baseline is not an excuse -- if the baseline missed something, the reviewer catches it now.
+
+Include a **Structural Hygiene** section in `comments.md`:
+
+```markdown
+## Structural Hygiene
+| Check | Status | Finding |
+|-------|--------|---------|
+| New files justified | pass/WARN | [details if orphaned files found] |
+| Script directory health | pass/WARN | [count] files, [clean/cluttered] |
+| Root directory health | pass/WARN | [details if new root clutter] |
+| Agent detritus | pass/WARN | [details if debug/temp files found] |
+```
+
+If the change introduced no new files and directories are clean, the section is still included with all-pass status.
+
+### 6. Permission Health (Mandatory)
 
 **This step is mandatory on every review pass.** Do not skip it, even if the review task is focused on code changes. Permission drift accumulates silently and is only caught by systematic checking.
 
@@ -145,7 +174,7 @@ or request changes]
 
 If all checks pass, the section is still included with all-pass status. This creates an audit trail confirming permissions were reviewed, not skipped.
 
-### 6. Spec Feedback
+### 7. Spec Feedback
 
 If the review reveals issues that originate in the specification (not the implementation):
 - Document them clearly in the Retrospective Evaluation section.

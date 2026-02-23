@@ -102,6 +102,8 @@ For each item, mark one of:
 | 8.6 | Documentation directory structure matches a clear taxonomy (not ad-hoc) | | |
 | 8.7 | No orphaned redirect/stub files pointing to moved or deleted content | | |
 | 8.8 | Config files are consolidated (not scattered across root and subdirectories) | | |
+| 8.9 | Key directories are internally well-organised (not used as dump bins) | | Check `scripts/`, `docs/`, `config/`, `tests/` etc. -- not just whether files are in the right directory, but whether each directory is coherent. Flag: one-off debugging scripts mixed with production utilities, duplicate configs copied into wrong dirs, SQL dumps alongside shell scripts. |
+| 8.10 | No agent-generated detritus left behind | | LLM agents generate files prolifically and forget them: ad-hoc test scripts, debug helpers, analysis outputs, session notes, temporary SQL, unused config variants. Check for files that smell like single-use agent output: `debug-*.js`, `check-*.js`, `fix-*.js`, `test-*.js` (not in a test suite), `*-analysis.*`, `*-check.*`, dump files, and any file not imported/referenced by the build or documentation. |
 
 ---
 

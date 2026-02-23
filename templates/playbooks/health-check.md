@@ -99,7 +99,24 @@ For each persona file in the target project (if they exist):
 - Are there new patterns in the codebase that the persona should know about? (New frameworks added, new test patterns, new directories)
 - Are there conventions encoded in the persona that the codebase no longer follows?
 
-### 3g. Tool Health Check
+### 3g. Structural Hygiene Scan (Independent)
+
+**This scan does NOT compare against the baseline.** It applies fresh engineering judgment to the current filesystem, regardless of what previous assessments found or missed. The baseline is irrelevant here -- if the project looks cluttered to a staff engineer, it's cluttered.
+
+1. **List root directory contents.** Flag anything that isn't standard project infrastructure (package.json, tsconfig, vite/webpack config, CI config, README, CLAUDE.md, .gitignore, .env.example, lockfiles). One-off scripts, data files, SQL, stale configs, and orphaned docs in root are all findings.
+
+2. **Audit key directories internally.** For each of `scripts/`, `tools/`, `utils/`, `docs/`, `config/`, and any other multi-file utility directory:
+   - Count the files. More than 20 files in a utility directory warrants closer inspection.
+   - Check for agent-generated detritus: `debug-*`, `check-*`, `fix-*`, `trace-*`, `test-*` (not in a test suite), `*-analysis.*`, `*-dump.*`, session management scripts, duplicate configs copied from root.
+   - Check for files that are clearly one-off (SQL queries, data dumps, ad-hoc scripts) mixed with production utilities.
+
+3. **Check for orphaned directories.** Directories with no files, only a README, or containing only outdated content that should have been archived.
+
+4. **Apply the smell test:** Would a senior engineer joining this project look at the filesystem and feel confident about its organisation? If not, flag what's wrong -- even if it was "resolved" in a previous assessment by being moved rather than cleaned.
+
+Report findings as structural hygiene items in the delta report (Phase 4). These are always "New issues" regardless of baseline, because they represent current state, not drift from a previous state.
+
+### 3h. Tool Health Check
 
 If `targets/<slug>/profile.md` records any configured development tools (under `## Development Tools`), verify each one:
 
@@ -113,7 +130,7 @@ Use detection patterns from `templates`tools`/tool-detection-patterns.md`.
 
 Report findings as tool drift items in the delta report (Phase 4).
 
-### 3h. Permission Health Check
+### 3i. Permission Health Check
 
 Check the target project's agent permission configuration for drift, sprawl, and security issues.
 
@@ -150,10 +167,11 @@ Compare the fresh assessment against the baseline. Categorise every finding:
 | **Tool drift** | Tool configured but stale, broken, or undocumented |
 | **Permission drift** | Permission config degraded, accumulated sprawl, or new security issues |
 | **Instruction leak** | New role-like content appeared outside AE structure |
+| **Structural hygiene** | Filesystem clutter, agent detritus, directory disorganisation (independent of baseline) |
 
 ### Report Format
 
-Write to `targets/<slug>`health`-check-<YYYY-MM-DD>.md`:
+Write to `targets/<slug>/health-check-<YYYY-MM-DD>.md`:
 
 ```markdown
 # Health Check: <project-name>
@@ -173,6 +191,7 @@ Write to `targets/<slug>`health`-check-<YYYY-MM-DD>.md`:
 | Tool drift | <N> |
 | Permission drift | <N> |
 | Instruction leaks | <N> |
+| Structural hygiene | <N> |
 
 ## New Issues
 
@@ -205,6 +224,16 @@ Write to `targets/<slug>`health`-check-<YYYY-MM-DD>.md`:
 |--------|----------------|-------------------|
 | `CONTRIBUTING.md` (new) | Code review checklist | Integrate into reviewer persona |
 | `README.md` > New "Dev Setup" section | Build instructions | Merge into CLAUDE.md |
+
+## Structural Hygiene
+
+| Location | Finding | Severity | Recommendation |
+|----------|---------|----------|----------------|
+| `scripts/` | [N] files, [N] appear to be one-off debug/analysis scripts | HIGH/MEDIUM | Triage: keep production utilities, archive or delete the rest |
+| `root` | [N] non-standard files in project root | HIGH/MEDIUM | Move to appropriate directories |
+| `docs/` | [Describe any internal disorganisation] | MEDIUM | Reorganise |
+
+_(These findings are independent of the baseline. They reflect current filesystem state as judged by engineering standards, not by comparison to a previous assessment.)_
 
 ## Permission Health
 
@@ -247,8 +276,9 @@ Baseline: <date> (<N> days ago)
   Tool drift:        <N>
   Permission drift:  <N>
   Instruction leaks: <N>
+  Structural hygiene: <N>
 
-Full report: targets/<slug>`health`-check-<date>.md
+Full report: targets/<slug>/health-check-<date>.md
 ```
 
 ---
