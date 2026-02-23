@@ -1,8 +1,8 @@
 # Playbook: Onboarding a Target Project
 
-This playbook drives the guided assessment and transformation of a new target project. Claude reads this file and follows it step-by-step when the user says `/onboard` or when no targets exist.
+This playbook drives the guided assessment and transformation of a new target project. Claude reads this file and follows it step-by-step when the user says `onboard` or when no targets exist.
 
-**Trigger:** `/onboard` or `/onboard <path>`
+**Trigger:** `onboard` or `onboard <path>`
 **Produces:** A fully populated `targets/<slug>/` workspace with assessment, plan, and ready-to-execute prompts.
 
 ---
@@ -25,7 +25,7 @@ The user can say any of these at any time:
 | `fast mode` | Suppress explanations, show only results and prompts |
 | `stop` | End the playbook, save progress to `targets/<slug>/journal.md` |
 
-Experienced users can bypass Phase 1 entirely: `/onboard /path/to/project`
+Experienced users can bypass Phase 1 entirely: `onboard /path/to/project`
 
 ---
 
@@ -35,7 +35,7 @@ Experienced users can bypass Phase 1 entirely: `/onboard /path/to/project`
 [1/7] Target Selection
 ```
 
-**If path was provided with `/onboard <path>`:** Skip to validation below.
+**If path was provided with `onboard <path>`:** Skip to validation below.
 
 **Otherwise, ask:**
 
@@ -67,7 +67,7 @@ transformation plan from scratch. This means:
 
 Options:
   [1] Continue where you left off (recommended)
-      Resume the existing plan. Say /health to check for new issues.
+      Resume the existing plan. Say `health` to check for new issues.
   [2] Run a health check instead
       Compares current state vs last assessment. Preserves all progress.
       Adds new tasks for new issues only.
@@ -515,7 +515,7 @@ session would just be re-reading files, not reflecting on experience.
 
 If the session that ran the prompts has already ended, skip this prompt.
 The insight is lost. (This is a lesson, not a failure -- note it in the
-journal and run a /health check instead.)
+journal and run a `health` check instead.)
 
 ## Prompt
 
@@ -589,7 +589,7 @@ Always add:
 
 ```
   Optional: Development tools (OpenSpec, Context7, Serena) can enhance
-  your agentic workflow. Say /tools to explore options.
+  your agentic workflow. Say `tools` to explore options.
 ```
 
 Proceed to Phase 7.
@@ -727,7 +727,7 @@ After any phase completes (or the user says `stop`):
 Do NOT mark a target as "maintaining" in `targets/index.md` until:
 
 1. **Open questions reviewed.** Every item in `targets/<slug>/open-questions.md` is either resolved (with date and outcome) or explicitly deferred (with rationale). No item may sit unmarked.
-2. **Retrospective received.** The target-side retrospective prompt has been executed and `docs/AE/retrospective.md` exists in the target project -- OR the user confirms the retrospective session was lost and a `/health` check will substitute.
+2. **Retrospective received.** The target-side retrospective prompt has been executed and `docs/AE/retrospective.md` exists in the target project -- OR the user confirms the retrospective session was lost and a `health` check will substitute.
 3. **Review history baseline created.** `targets/<slug>/review-history.md` exists with at least one entry from the initial assessment findings.
 
 If any of these are missing, the target stays in "reviewing" phase. This gate prevents the drift that comes from marking a project as done while loose ends remain untracked.
@@ -741,6 +741,6 @@ If any of these are missing, the target stays in "reviewing" phase. This gate pr
 | Path does not exist | Ask user to verify and re-enter |
 | Path is not readable | Inform user, suggest checking permissions |
 | Target already exists | Offer to re-assess, continue, or create a new slug |
-| Assessment finds no issues | Congratulate briefly, suggest running /health periodically |
+| Assessment finds no issues | Congratulate briefly, suggest running `health` periodically |
 | User wants to change scope mid-playbook | Allow it -- re-enter at the relevant phase |
 | Context getting large | Suggest saving progress and continuing in a new session |

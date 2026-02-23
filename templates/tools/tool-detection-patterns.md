@@ -99,6 +99,6 @@ For tools recorded as configured in `profile.md`:
 - Check that CLAUDE.md documents the tool
 - Check that config matches project reality (e.g. Serena's `project.yml` references the correct language)
 
-### During `/tools` playbook (Phase 2)
+### During `tools` playbook (Phase 2)
 
 Run all detection patterns to present a current-state table before offering setup/removal options.

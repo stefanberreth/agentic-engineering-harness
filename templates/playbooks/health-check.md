@@ -2,8 +2,8 @@
 
 A lighter-weight assessment for projects already under harness management. Compares current state against the last assessment, detects drift, and produces a delta report with actionable fix prompts.
 
-**Trigger:** `/health` or `/health <slug>`, or suggested automatically when a target hasn't been reviewed in 30+ days.
-**Produces:** A delta report in `targets/<slug>/health-check-<date>.md` and optional fix prompts.
+**Trigger:** `health` or `health <slug>`, or suggested automatically when a target hasn't been reviewed in 30+ days.
+**Produces:** A delta report in `targets/<slug>`health`-check-<date>.md` and optional fix prompts.
 
 ---
 
@@ -18,7 +18,7 @@ Same as onboarding playbook: concise, no emoji, progress indicators, detail on d
 - The target must already exist in `targets/index.md`.
 - `targets/<slug>/assessment.md` must exist (baseline to compare against).
 
-If these are missing, redirect the user to `/onboard` instead.
+If these are missing, redirect the user to `onboard` instead.
 
 ---
 
@@ -28,13 +28,13 @@ If these are missing, redirect the user to `/onboard` instead.
 [health] Target Selection
 ```
 
-**If slug provided with `/health <slug>`:** Validate it exists in `targets/index.md`, skip to Phase 2.
+**If slug provided with `health <slug>`:** Validate it exists in `targets/index.md`, skip to Phase 2.
 
 **If only one active target exists:** Use it automatically, confirm with user.
 
 **If multiple targets exist:** List them with last-active dates, ask user to pick.
 
-**If no targets exist:** Inform user and suggest `/onboard`.
+**If no targets exist:** Inform user and suggest `onboard`.
 
 ---
 
@@ -109,7 +109,7 @@ If `targets/<slug>/profile.md` records any configured development tools (under `
 4. **No orphaned config:** Are there tools in `.mcp.json` that are NOT documented in CLAUDE.md? (These are invisible to new sessions.)
 5. **No removed tools:** Are there tools documented in CLAUDE.md that are NOT in `.mcp.json`? (These are documented but non-functional.)
 
-Use detection patterns from `templates/tools/tool-detection-patterns.md`.
+Use detection patterns from `templates`tools`/tool-detection-patterns.md`.
 
 Report findings as tool drift items in the delta report (Phase 4).
 
@@ -153,7 +153,7 @@ Compare the fresh assessment against the baseline. Categorise every finding:
 
 ### Report Format
 
-Write to `targets/<slug>/health-check-<YYYY-MM-DD>.md`:
+Write to `targets/<slug>`health`-check-<YYYY-MM-DD>.md`:
 
 ```markdown
 # Health Check: <project-name>
@@ -224,7 +224,7 @@ Write to `targets/<slug>/health-check-<YYYY-MM-DD>.md`:
 |------|--------|-------|----------------|
 | OpenSpec | healthy | -- | -- |
 | Serena | drift | project.yml references Python but project migrated to TypeScript | Update .serena/project.yml |
-| Context7 | broken | In .mcp.json but not documented in CLAUDE.md | Run /tools to repair |
+| Context7 | broken | In .mcp.json but not documented in CLAUDE.md | Run `tools` to repair |
 
 ## Unchanged Issues
 
@@ -248,7 +248,7 @@ Baseline: <date> (<N> days ago)
   Permission drift:  <N>
   Instruction leaks: <N>
 
-Full report: targets/<slug>/health-check-<date>.md
+Full report: targets/<slug>`health`-check-<date>.md
 ```
 
 ---
@@ -269,7 +269,7 @@ If the user chooses to generate prompts:
 - Follow the same prompt generation process as onboarding Phase 6.
 - For persona drift fixes, generate prompts that update the specific persona files with corrected references and new conventions.
 - For instruction leaks, generate prompts that integrate the leaked content into the appropriate AE-managed file and add a note to the source file pointing to the canonical location.
-- For tool drift fixes, use `templates/tools/<tool>-setup.md` as the reference for what a correct configuration looks like. Generate repair prompts that bring the existing config back into alignment rather than full reinstallation.
+- For tool drift fixes, use `templates`tools`/<tool>-setup.md` as the reference for what a correct configuration looks like. Generate repair prompts that bring the existing config back into alignment rather than full reinstallation.
 - For permission drift fixes, reference `templates/agents/claude-code/permission-baselines.md` for the appropriate baseline. Generate prompts that consolidate sprawled rules, add missing deny entries, remove secrets, and enforce filesystem scope.
 - **If any fix prompts move, rename, or archive files**, also generate a regression check prompt (adapt `templates/prompts/regression-check.md.template`) as the final prompt in the batch. Structural changes can break builds and imports -- always verify after.
 
@@ -302,7 +302,7 @@ One line, end of output, no elaboration. Only show this once per health-check se
 When Claude starts a session and reads `targets/index.md`, check each active target's last-active date. If any target hasn't been checked in 30+ days, include in the banner:
 
 ```
-  <slug> last checked <N> days ago. /health to run a check.
+  <slug> last checked <N> days ago. `health` to run a check.
 ```
 
 This is a suggestion, not an automatic action. The user decides whether to run it.

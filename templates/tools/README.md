@@ -20,7 +20,7 @@ Optional MCP server and development tool configurations for target projects unde
 
 ## How Tools Are Managed
 
-Tools are managed through the `/tools` playbook (`templates/playbooks/tools.md`), which can be run at any time -- during onboarding or independently. The playbook:
+Tools are managed through the `tools` playbook (`templates/playbooks/tools.md`), which can be run at any time -- during onboarding or independently. The playbook:
 
 1. Detects which tools (and functional equivalents) are already present
 2. Presents each tool with a brief description and offers setup/skip/decline/remove

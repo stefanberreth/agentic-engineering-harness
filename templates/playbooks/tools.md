@@ -2,7 +2,7 @@
 
 Configure optional development tools (OpenSpec, Context7, Serena) for a target project. Can be run at any time -- during onboarding or independently.
 
-**Trigger:** `/tools` or `/tools <slug>`
+**Trigger:** `tools` or `tools <slug>`
 **Produces:** Setup/teardown prompts in `targets/<slug>/prompts/` and updated `profile.md`.
 
 ---
@@ -35,13 +35,13 @@ The user can say any of these at any time:
 [tools 1/5] Target Selection
 ```
 
-**If slug provided with `/tools <slug>`:** Validate it exists in `targets/index.md`, skip to Phase 2.
+**If slug provided with `tools <slug>`:** Validate it exists in `targets/index.md`, skip to Phase 2.
 
 **If only one active target exists:** Use it automatically, confirm with user.
 
 **If multiple targets exist:** List them with last-active dates, ask user to pick.
 
-**If no targets exist:** Inform user and suggest `/onboard`.
+**If no targets exist:** Inform user and suggest `onboard`.
 
 ---
 
@@ -57,7 +57,7 @@ Read `targets/<slug>/profile.md`. Check for an existing `## Development Tools` s
 
 ### 2b. Run Detection
 
-Run all detection patterns from `templates/tools/tool-detection-patterns.md` against the target project:
+Run all detection patterns from `templates`tools`/tool-detection-patterns.md` against the target project:
 
 1. **General MCP detection:** Read `.mcp.json`, `.claude/skills/`, `.claude/commands/`
 2. **OpenSpec detection:** Direct patterns + functional equivalents
@@ -152,7 +152,7 @@ For each accepted action, generate a prompt:
 
 ### Setup
 
-1. Read the relevant setup template from `templates/tools/<tool>-setup.md`
+1. Read the relevant setup template from `templates`tools`/<tool>-setup.md`
 2. Adapt it to the target project:
    - Use the correct tech stack for Serena's `project.yml`
    - Reference the correct CLAUDE.md section locations
@@ -162,7 +162,7 @@ For each accepted action, generate a prompt:
 
 ### Teardown (removal)
 
-1. Read the relevant teardown template from `templates/tools/<tool>-teardown.md`
+1. Read the relevant teardown template from `templates`tools`/<tool>-teardown.md`
 2. Adapt it to the target project
 3. Write the prompt to `targets/<slug>/prompts/NNN-teardown-<tool>.md`
 4. If `direct` delivery, also write to `<target-path>/docs/AE/prompts/`
@@ -239,8 +239,8 @@ Append to `targets/<slug>/journal.md` with a summary of what was done.
 
 | Situation | Action |
 |-----------|--------|
-| No targets exist | Suggest `/onboard` |
-| Target has no profile.md | Suggest `/onboard` or `/health` |
+| No targets exist | Suggest `onboard` |
+| Target has no profile.md | Suggest `onboard` or `health` |
 | `.mcp.json` has unexpected format | Warn user, ask how to proceed |
 | Serena requested but `uv` not available | Note prerequisite in the prompt, don't block |
 | Context7 requested but no API key | Note in prompt that user needs to set `CONTEXT7_API_KEY` |

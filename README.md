@@ -50,7 +50,7 @@ cd agentic-engineering-harness
 claude
 ```
 
-Then say `/onboard /path/to/your/project` to start the guided assessment.
+Then say `onboard /path/to/your/project` to start the guided assessment.
 
 AEH will:
 1. Read your project's structure, README, and any existing AI agent configuration
@@ -91,7 +91,7 @@ You work in two Claude Code sessions: one in the AEH directory (the planner), on
 ```
 IN AEH                              IN YOUR PROJECT
 ──────                               ───────────────
-/onboard /path/to/project
+onboard /path/to/project
   → assessment (read-only)
   → plan
   → generates prompts
@@ -111,7 +111,7 @@ Ask for domain deepening
                                        reconcile specs vs code
                                        update personas with findings
 
-/health (periodic)
+health (periodic)
   → delta report
   → fix prompts if needed
                                      Run fix prompts
@@ -124,7 +124,7 @@ Each step is human-approved. The harness generates prompts; you decide when and 
 **Phase 1: Onboard** (in AEH)
 
 1. `claude` in the AEH directory
-2. `/onboard /path/to/your/project`
+2. `onboard /path/to/your/project`
 3. AEH reads your project, runs a 10-category assessment, produces a ranked report
 4. You approve a transformation plan
 5. AEH generates numbered prompts and delivers them to your project's `docs/AE/prompts/`
@@ -134,7 +134,7 @@ Each step is human-approved. The harness generates prompts; you decide when and 
 6. `claude` in your project directory
 7. `Read and execute docs/AE/prompts/001-...` -- run each prompt in order
 8. The prompts set up personas, session init, CLAUDE.md sections -- structure, not code changes
-9. Optional: `/tools` in AEH to configure OpenSpec, Context7, or Serena
+9. Optional: say `tools` in AEH to configure OpenSpec, Context7, or Serena
 10. For code-level fixes from the assessment, run the reviewer-implementer loop with human oversight
 
 **Phase 3: Deepen** (back and forth)
@@ -148,7 +148,7 @@ After this, your personas understand your codebase, not just your tech stack.
 
 **Ongoing: Health checks**
 
-15. `/health` in AEH periodically to detect drift -- configuration that's fallen out of sync with your evolving project
+15. Say `health` in AEH periodically to detect drift -- configuration that's fallen out of sync with your evolving project
 
 **Key concepts:**
 
@@ -217,7 +217,7 @@ When you onboard a project, AEH creates a workspace under `targets/<your-project
 4. **Human in the loop.** The AI proposes; the human decides. Every code-touching change requires explicit approval (or explicit pre-approval for experienced users).
 5. **Assessment before implementation.** Onboarding reads and reports. It never modifies your code. Implementation is a separate, conscious step.
 6. **Preserve what works.** When your project already has good instructions or conventions, AEH builds on them. Templates fill gaps -- they don't replace what's working.
-7. **Governance is continuous.** Agentic configuration degrades over time as the project evolves and permissions accumulate. Regular `/health` checks detect the drift before it causes problems.
+7. **Governance is continuous.** Agentic configuration degrades over time as the project evolves and permissions accumulate. Regular `health` checks detect the drift before it causes problems.
 
 ## Maturity Model
 
@@ -225,11 +225,11 @@ AEH doesn't require you to adopt everything at once. Start where you are:
 
 | Level | What you get | Effort |
 |-------|-------------|--------|
-| **1. Assessment only** | Run `/onboard`, get a ranked report of your project's agentic readiness. No changes made. | 15 minutes |
+| **1. Assessment only** | Run `onboard`, get a ranked report of your project's agentic readiness. No changes made. | 15 minutes |
 | **2. Harness setup** | Add AE structure (personas, session init, CLAUDE.md sections). Your code untouched. | 1 session |
 | **3. Reviewer-implementer loop** | Fix issues found in the assessment with human oversight. | 1-2 sessions |
 | **4. Domain deepening** | Reconcile specs against code, inject verified domain knowledge into personas. | 1 session |
-| **5. Full workflow** | All personas active, regular `/health` checks, continuous governance. | Ongoing |
+| **5. Full workflow** | All personas active, regular `health` checks, continuous governance. | Ongoing |
 | **6. Strategic layer** | Add a Strategist in an external LLM chat for business-level decision support. | When needed |
 
 Most projects get significant value at level 2. Domain deepening (level 4) is where personas go from generic to accurate. You don't need to reach level 6 to benefit.
@@ -298,9 +298,9 @@ What's evolving:
 ### v0.5 -- Tool Integration, Open Source, Regression Checks (Feb 2026)
 
 - Added optional tool integration system for OpenSpec, Context7, and Serena MCP servers
-- `/tools` playbook for setup, teardown, and repair -- runnable independently or during onboarding
+- `tools` playbook for setup, teardown, and repair -- runnable independently or during onboarding
 - Detection patterns for tools and functional equivalents (ADR directories, other MCP servers, etc.)
-- Tool health checking integrated into `/health` playbook
+- Tool health checking integrated into `health` playbook
 - Every setup has a matching teardown -- fully reversible, per-project, never prescribed
 - Post-transformation regression checks verify builds, imports, and runtime after structural changes
 - AGPL-3.0 license with FAQ clarifying output ownership

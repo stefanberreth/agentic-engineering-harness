@@ -337,7 +337,7 @@ Each choice generates its own prompt in `targets/<slug>/prompts/`.
 
 ### 3. Add tool checks to health-check playbook
 
-The `/health` playbook should include:
+The `health` playbook should include:
 - **OpenSpec health:** Are specs present? When was the last change archived? Are any changes stale (open >30 days)? Run `/opsx:verify` equivalent check.
 - **Serena health:** Is `.serena/project.yml` current with declared languages? Is cache populated? Any language server errors in recent sessions?
 - **Context7 health:** Is it configured? What scope? Is the API key valid? Approaching rate limits?

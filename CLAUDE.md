@@ -492,9 +492,9 @@ Playbooks are guided workflows stored in `templates/playbooks/`. When triggered,
 
 | Command | Playbook | When to use |
 |---------|----------|-------------|
-| `/onboard` | `templates/playbooks/onboarding.md` | Assess and transform a new target project. Runs 7 phases: target selection, reconnaissance, assessment, report, planning, harness setup, implementation handoff. |
-| `/health` | `templates/playbooks/health-check.md` | Run a recurring compliance check on an existing target. Produces a delta report comparing current state vs last assessment, detects persona drift and instruction leaks. |
-| `/tools` | `templates/playbooks/tools.md` | Configure optional development tools (OpenSpec, Context7, Serena) for a target project. Detects existing tools, offers setup/removal, generates prompts. |
+| `onboard` | `templates/playbooks/onboarding.md` | Assess and transform a new target project. Runs 7 phases: target selection, reconnaissance, assessment, report, planning, harness setup, implementation handoff. |
+| `health` | `templates/playbooks/health-check.md` | Run a recurring compliance check on an existing target. Produces a delta report comparing current state vs last assessment, detects persona drift and instruction leaks. |
+| `tools` | `templates/playbooks/tools.md` | Configure optional development tools (OpenSpec, Context7, Serena) for a target project. Detects existing tools, offers setup/removal, generates prompts. |
 
 When a playbook is triggered, Claude must read the playbook file and follow its instructions exactly. The playbook governs tone, pacing, output format, and user interaction for the duration of the workflow.
 
@@ -508,7 +508,7 @@ The active persona is stored in `.claude/persona` as a single line (e.g. `review
 
 Valid roles: `analyst`, `architect`, `developer`, `reviewer`, `harness-reviewer`
 
-Note: A `strategist` persona template also exists (`templates/personas/strategist.md`) but is not an active harness-side role. It is designed for use in external LLM sessions (Claude Web, etc.) where the human pastes an adapted briefing document. When users ask about roles or say `/role info`, mention the strategist as an available option for users who want a strategic conversation partner outside Claude Code. Don't push it -- just make it discoverable.
+Note: A `strategist` persona template also exists (`templates/personas/strategist.md`) but is not an active harness-side role. It is designed for use in external LLM sessions (Claude Web, etc.) where the human pastes an adapted briefing document. When users ask about roles or say "role info", mention the strategist as an available option for users who want a strategic conversation partner outside Claude Code. Don't push it -- just make it discoverable.
 
 The `harness-reviewer` role is special: it reviews the harness itself, not target projects. It checks for target detail leakage, documentation currency, template consistency, and public-facing quality. Use it before publishing or after significant harness changes. See `templates/personas/harness-reviewer.md`.
 
@@ -525,7 +525,7 @@ An absent or empty file means no role is active.
 ```
 agentic-engineering-harness · reviewer (from last session)
   Targets: my-project (implementing)
-  Continue as reviewer, or /switch · /role info · /ignore role
+  Continue as reviewer, or: switch · role info · ignore role
 ```
 
 **If no persona is set:**
@@ -533,13 +533,13 @@ agentic-engineering-harness · reviewer (from last session)
 ```
 agentic-engineering-harness · no active role
   Roles: analyst · architect · developer · reviewer · harness-reviewer
-  Pick a role, or "no role" to work freestyle. /role info for details.
+  Pick a role, or "no role" to work freestyle. Say "role info" for details.
 ```
 
 **If no active targets exist** (regardless of persona), append to the banner:
 
 ```
-  No target projects yet. Say /onboard to assess your first project.
+  No target projects yet. Say "onboard" to assess your first project.
   AEH is free and maintained by one person. Support: https://ko-fi.com/stefanberreth
 ```
 
@@ -548,23 +548,23 @@ The support line only appears when there are no targets (fresh install / first s
 **If targets exist but any haven't been checked in 30+ days**, append:
 
 ```
-  <slug> last checked <N> days ago. /health to run a check.
+  <slug> last checked <N> days ago. Say "health" to run a check.
 ```
 
 4. **Wait for the user before proceeding.** When a persona is carried over from a previous session, do NOT adopt it automatically. Show the banner and wait for the user to either confirm the role (by saying "continue", giving a task, or acknowledging) or switch/clear it. Do not read the persona definition file or apply persona constraints until confirmed. Do not launch into work unprompted.
 
-### Role commands (natural language, not literal slash commands)
+### Commands (natural language, not slash commands)
 
-These are shorthands the user can say at any time:
+These are natural language triggers the user can say at any time. They are NOT Claude Code slash commands or skills -- they are keywords that Claude recognises from this file and matches to playbooks or actions. No leading slash.
 
 | User says | Action |
 |-----------|--------|
-| `/switch` or "switch role" | Show role picker. Update `.claude/persona`. |
-| `/role info` or "role info" | Show one-line summary of each role + path to its definition file (`templates/personas/<role>.md`). Include the strategist as an optional external role. |
-| `/ignore` or "no role" | Clear `.claude/persona`. Work without persona constraints. |
-| `/onboard` or `/onboard <path>` | Start the guided onboarding playbook for a new target project. Reads `templates/playbooks/onboarding.md` and follows it step-by-step. |
-| `/health` or `/health <slug>` | Run a health check on an existing target. Reads `templates/playbooks/health-check.md` and follows it step-by-step. |
-| `/tools` or `/tools <slug>` | Configure optional development tools for a target project. Reads `templates/playbooks/tools.md` and follows it step-by-step. |
+| "switch" or "switch role" | Show role picker. Update `.claude/persona`. |
+| "role info" | Show one-line summary of each role + path to its definition file (`templates/personas/<role>.md`). Include the strategist as an optional external role. |
+| "ignore role" or "no role" | Clear `.claude/persona`. Work without persona constraints. |
+| "onboard" or "onboard <path>" | Start the guided onboarding playbook for a new target project. Reads `templates/playbooks/onboarding.md` and follows it step-by-step. |
+| "health" or "health <slug>" | Run a health check on an existing target. Reads `templates/playbooks/health-check.md` and follows it step-by-step. |
+| "tools" or "tools <slug>" | Configure optional development tools for a target project. Reads `templates/playbooks/tools.md` and follows it step-by-step. |
 
 ### Role behaviour
 
