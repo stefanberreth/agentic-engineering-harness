@@ -206,13 +206,15 @@ Every file in `targets/<project>/prompts/` should follow this structure:
 
 **Target project:** [name]
 **Target directory:** [absolute path]
+**Execute in:** [target project Claude Code session / AEH harness session / external LLM session]
 **Prerequisite prompts:** [list of prompt numbers that must be executed first, or "none"]
 **Phase:** [assessment / planning / implementing / reviewing]
 
 ## Context for the operator
 
-[Brief explanation of what this prompt does and why, for the human
-who will paste it into the target project's Claude Code session.]
+[Brief explanation of what this prompt does and why, WHO should
+execute it and WHERE. Never assume this is obvious -- the human
+operates multiple agent contexts simultaneously.]
 
 ## Prompt
 
@@ -468,6 +470,7 @@ If the targets repo has no remote configured, do not nag -- but if the user asks
 - **Templates are starting points, not gospel.** Always adapt to the target project's language, framework, team size and maturity.
 - **Update targets/index.md** whenever a target project's phase or status changes.
 - **Capture rules into files.** When a conversation produces a new rule or policy, write it into the correct instruction file immediately. (See "Rule Capture Principle" above.)
+- **Always state execution context explicitly.** When presenting prompts, instructions, or next steps to the user, always state WHERE each action should be executed: "in the AEH harness session", "in the target project's Claude Code session (e.g. a target project)", or "in an external LLM session (e.g. Claude Web for the strategist)". Never assume the human knows which agent instance should run a given prompt. This applies to all communication: prompt handoff instructions, health check remediation, next-step summaries, and conversational suggestions. The human operates multiple concurrent agent contexts -- ambiguity about which context to act in causes errors.
 - **No target project details in harness files.** Templates, personas, playbooks, governance criteria, CLAUDE.md, README, and CHANGELOG must never contain identifying details about specific target projects -- no project names, tech stacks, team details, scores, or any information that could identify a real project. Examples in these files must use generic placeholders (`my-project`, `<slug>`, `<project-name>`). Target-specific information belongs exclusively in `targets/<project>/` (the private repo). This protects client confidentiality and keeps the public harness generic. The `harness-reviewer` persona enforces this systematically -- run it before publishing or after significant harness changes. Git commit messages in the harness repo are also in scope: they must not reference real target project names, stacks, or scores.
 
 ## Screenshots

@@ -16,6 +16,7 @@ Target-project-specific work (prompts, deliverables, assessments, journal entrie
 - **Post-onboarding domain deepening** -- new section in CLAUDE.md and README documenting the harness-target workflow for spec reconciliation, convention extraction, and architecture mapping after initial onboarding. Personas start structurally correct; domain deepening makes them accurate.
 - **Retrospective prompt** -- onboarding playbook now generates a universal retrospective prompt as the final prompt in every sequence, capturing second-pass insight from the agent that just completed the work
 - **Close-out gate** -- onboarding playbook enforces OQ review, retrospective, and review-history baseline before a target can be marked as "maintaining"
+- **Explicit execution context rule** -- all prompts, instructions, and next steps must state WHERE they should be executed (AEH harness, target project Claude Code, or external LLM session). Prompt file format template now includes `Execute in:` field. Added to Working Rules in CLAUDE.md.
 - **Git history cleaned** -- removed target-identifying details from commit messages and historical file content using git-filter-repo
 - **Agent permission governance** -- new `templates/agents/` directory for agent-specific reference knowledge, starting with Claude Code
 - `templates/agents/README.md` -- explains agents vs tools vs governance, lists known agents
