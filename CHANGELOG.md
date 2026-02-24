@@ -11,6 +11,7 @@ Target-project-specific work (prompts, deliverables, assessments, journal entrie
 ## [Unreleased]
 
 ### Added
+- **Orchestrator persona** (`templates/personas/orchestrator.md`) -- pipeline management role that tracks prompt execution, assesses agent output quality, maintains outcome metrics, and generates next actions. Persists state in `targets/<slug>/orchestrator-state.md` for cold-start reconstruction. Supports auto-drive and step-by-step modes with configurable quality gates. Added to valid roles in CLAUDE.md, personas table in README, workspace structure, and project structure trees.
 - **Harness Reviewer persona** (`templates/personas/harness-reviewer.md`) -- dedicated self-review role for the harness itself, checking 7 dimensions: target detail leakage, prompt self-containment, documentation currency, template & persona consistency, isolation boundary integrity, governance completeness, and public-facing quality. Added to valid roles in CLAUDE.md, personas table in README, and project structure trees.
 - **Target detail leakage enforcement** -- "no target details in harness files" rule added to Working Rules, covers git commit messages, references harness-reviewer as systematic enforcement mechanism
 - **Post-onboarding domain deepening** -- new section in CLAUDE.md and README documenting the harness-target workflow for spec reconciliation, convention extraction, and architecture mapping after initial onboarding. Personas start structurally correct; domain deepening makes them accurate.

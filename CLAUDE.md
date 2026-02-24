@@ -95,6 +95,7 @@ targets/
     ├── decisions.md                  # Key decisions made during transformation, with rationale
     ├── open-questions.md             # Unresolved questions requiring human input or investigation
     ├── review-history.md                # Append-only longitudinal findings log
+    ├── orchestrator-state.md             # Pipeline position, execution log, outcome scorecard
     ├── prompts/                      # Ready-to-paste prompts for execution in the TARGET project
     │   ├── 001-create-claude-md.md
     │   ├── 002-create-analyst-prompt.md
@@ -117,6 +118,7 @@ targets/
 | `decisions.md` | Records choices made and why (e.g. "use pytest not unittest because the project already has pytest fixtures"). | Append-only during sessions. |
 | `open-questions.md` | Questions that need human input, further investigation, or a decision before proceeding. | Updated every session. Cleared as questions are resolved. |
 | `review-history.md` | Append-only longitudinal log of all assessment/health-check/reviewer findings. Each dated entry includes full findings snapshot and comparison against previous. Serves as memory across sessions for pattern detection and drift tracking. | Appended every assessment, health-check, and reviewer pass. |
+| `orchestrator-state.md` | Pipeline position, prompt execution log, outcome scorecard, and session handoff notes. Created by the orchestrator persona on first engagement. Execution log and quality gate history are append-only. | Read and updated every orchestrator session. |
 | `prompts/` | Numbered, ordered, ready-to-paste prompt files. Each prompt is self-contained: it tells a Claude Code instance inside the target project exactly what to do. | Created as transformation plan is executed. |
 | `deliverables/` | Fully adapted files (persona prompts, `CLAUDE.md`, etc.) ready to be placed into the target project. | Created alongside prompts. |
 | `journal.md` | Chronological session log: what was done, what was learned, what's next. | Appended at end of each session. |
@@ -471,6 +473,7 @@ If the targets repo has no remote configured, do not nag -- but if the user asks
 - **Update targets/index.md** whenever a target project's phase or status changes.
 - **Capture rules into files.** When a conversation produces a new rule or policy, write it into the correct instruction file immediately. (See "Rule Capture Principle" above.)
 - **Always state execution context explicitly.** When presenting prompts, instructions, or next steps to the user, always state WHERE each action should be executed: "in the AEH harness session", "in the target project's Claude Code session (e.g. a target project)", or "in an external LLM session (e.g. Claude Web for the strategist)". Never assume the human knows which agent instance should run a given prompt. This applies to all communication: prompt handoff instructions, health check remediation, next-step summaries, and conversational suggestions. The human operates multiple concurrent agent contexts -- ambiguity about which context to act in causes errors.
+- **Orchestrator state is append-friendly.** The Prompt Execution Log and quality gate history in `orchestrator-state.md` are append-only -- never rewrite or reorder past entries. Configuration, Pipeline Position, and Session Handoff Notes are mutable and updated each session.
 - **No target project details in harness files.** Templates, personas, playbooks, governance criteria, CLAUDE.md, README, and CHANGELOG must never contain identifying details about specific target projects -- no project names, tech stacks, team details, scores, or any information that could identify a real project. Examples in these files must use generic placeholders (`my-project`, `<slug>`, `<project-name>`). Target-specific information belongs exclusively in `targets/<project>/` (the private repo). This protects client confidentiality and keeps the public harness generic. The `harness-reviewer` persona enforces this systematically -- run it before publishing or after significant harness changes. Git commit messages in the harness repo are also in scope: they must not reference real target project names, stacks, or scores.
 
 ## Screenshots
@@ -506,11 +509,13 @@ When a playbook is triggered, Claude must read the playbook file and follow its 
 
 The active persona is stored in `.claude/persona` as a single line (e.g. `reviewer`). This file is NOT tracked in git (add to `.gitignore`).
 
-Valid roles: `analyst`, `architect`, `developer`, `reviewer`, `harness-reviewer`
+Valid roles: `analyst`, `architect`, `developer`, `reviewer`, `harness-reviewer`, `orchestrator`
 
 Note: A `strategist` persona template also exists (`templates/personas/strategist.md`) but is not an active harness-side role. It is designed for use in external LLM sessions (Claude Web, etc.) where the human pastes an adapted briefing document. When users ask about roles or say "role info", mention the strategist as an available option for users who want a strategic conversation partner outside Claude Code. Don't push it -- just make it discoverable.
 
 The `harness-reviewer` role is special: it reviews the harness itself, not target projects. It checks for target detail leakage, documentation currency, template consistency, and public-facing quality. Use it before publishing or after significant harness changes. See `templates/personas/harness-reviewer.md`.
+
+The `orchestrator` role manages the agentic pipeline for a single target project. It tracks prompt execution, assesses agent output quality, maintains outcome metrics, and generates the next action. Unlike other roles that do work, the orchestrator manages the flow of work across roles. It persists state in `targets/<slug>/orchestrator-state.md` so any session can reconstruct the full pipeline position. See `templates/personas/orchestrator.md`.
 
 An absent or empty file means no role is active.
 
@@ -532,7 +537,7 @@ agentic-engineering-harness · reviewer (from last session)
 
 ```
 agentic-engineering-harness · no active role
-  Roles: analyst · architect · developer · reviewer · harness-reviewer
+  Roles: analyst · architect · developer · reviewer · harness-reviewer · orchestrator
   Pick a role, or "no role" to work freestyle. Say "role info" for details.
 ```
 
@@ -607,6 +612,7 @@ If working on the harness itself:
 │   │   ├── architect.md                   # Solution design persona
 │   │   ├── developer.md                   # TDD implementation persona
 │   │   ├── harness-reviewer.md            # Harness self-review persona
+│   │   ├── orchestrator.md               # Pipeline management persona
 │   │   ├── reviewer.md                    # Code review persona
 │   │   └── strategist.md                  # Strategic advisor (optional, for external LLM sessions)
 │   ├── prompts/
@@ -646,6 +652,7 @@ If working on the harness itself:
 │       ├── decisions.md                   #   Decisions and rationale
 │       ├── open-questions.md              #   Unresolved questions
 │       ├── review-history.md              #   Append-only longitudinal findings log
+│       ├── orchestrator-state.md         #   Pipeline position, execution log, scorecard
 │       ├── prompts/                       #   Ready-to-paste prompts for target
 │       ├── deliverables/                  #   Adapted files for target project
 │       └── journal.md                     #   Chronological session log

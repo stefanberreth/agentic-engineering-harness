@@ -20,7 +20,7 @@ AEH codifies a **persona-driven workflow** inspired by [Emmz Rendle's "How I Tam
 
 AEH provides:
 
-- **Persona templates** -- instruction files ("system prompts") for each role, encoding mature software engineering principles (TDD, small commits, retrospectives, spec-driven development). These are loaded into the AI agent at the start of a session and shape its behaviour. The four engineering personas run inside Claude Code; the Harness Reviewer audits AEH itself; the optional Strategist runs in any LLM chat for higher-altitude decision-making.
+- **Persona templates** -- instruction files ("system prompts") for each role, encoding mature software engineering principles (TDD, small commits, retrospectives, spec-driven development). These are loaded into the AI agent at the start of a session and shape its behaviour. The four engineering personas run inside Claude Code; the Harness Reviewer audits AEH itself; the Orchestrator manages prompt execution pipelines; the optional Strategist runs in any LLM chat for higher-altitude decision-making.
 - **Project templates** -- scaffolds for `CLAUDE.md` (Claude Code's project instruction file -- the single most important file for agentic engineering) and `agents.md` (cross-tool agent configuration), adapted per target project
 - **Governance criteria** -- checklists and rubrics to assess and improve agentic configuration quality, including agent permission audits
 - **Guided playbooks** -- step-by-step workflows for onboarding new projects, running health checks, and configuring development tools
@@ -80,9 +80,10 @@ AEH operates on a strict separation: the harness never directly modifies your pr
 | **Developer** | Claude Code (target) | TDD implementation, follows conventions |
 | **Reviewer** | Claude Code (target) | Compliance checking, produces issue lists |
 | **Harness Reviewer** | Claude Code (harness) | Reviews harness quality, public-facing integrity, target detail leakage |
+| **Orchestrator** | Claude Code (harness) | Pipeline manager. Tracks prompt execution, assesses agent output, generates next actions |
 | **Strategist** | Any LLM chat (optional) | Business strategy, priorities, trade-offs |
 
-The four engineering personas are the core workflow. The Harness Reviewer is a self-review role that audits the harness itself for consistency, documentation currency, and target detail leakage -- the same discipline AEH prescribes for every target project, applied to itself. The Strategist is an optional upstream role for users who want a strategic conversation partner (e.g. in Claude Web) to inform engineering priorities. See `templates/personas/strategist.md` for details.
+The four engineering personas are the core workflow. The Harness Reviewer is a self-review role that audits the harness itself for consistency, documentation currency, and target detail leakage -- the same discipline AEH prescribes for every target project, applied to itself. The Orchestrator manages the execution pipeline -- tracking which prompts have been run, assessing agent output quality, and generating the next action. It persists state across sessions so the user always knows where things stand. The Strategist is an optional upstream role for users who want a strategic conversation partner (e.g. in Claude Web) to inform engineering priorities. See `templates/personas/strategist.md` for details.
 
 ### The Workflow
 
@@ -179,6 +180,7 @@ Ask Claude to explain the setup, help you create it, or verify an existing one. 
 │   │   ├── architect.md                   # Solution design persona
 │   │   ├── developer.md                   # TDD implementation persona
 │   │   ├── harness-reviewer.md            # Harness self-review persona
+│   │   ├── orchestrator.md               # Pipeline management persona
 │   │   ├── reviewer.md                    # Code review persona
 │   │   └── strategist.md                  # Strategic advisor (optional, external sessions)
 │   ├── prompts/
@@ -262,7 +264,7 @@ AEH is in active development. It has been used to transform real projects end-to
 
 What's working:
 - Onboarding playbook (7-phase guided assessment)
-- Four engineering persona templates + Harness Reviewer + optional Strategist
+- Four engineering persona templates + Harness Reviewer + Orchestrator + optional Strategist
 - Assessment checklist (10 categories) and review criteria (6 rubrics)
 - Agent permission governance (schema reference, detection patterns, baselines)
 - Prompt generation and direct delivery
@@ -273,7 +275,7 @@ What's working:
 What's evolving:
 - Post-onboarding domain deepening (spec reconciliation, convention extraction, architecture mapping)
 - Templates are being refined based on real-world usage
-- Multi-agent coordination patterns are not yet documented
+- Multi-agent coordination beyond orchestrator pipeline tracking
 - CI/CD integration templates are planned but not yet created
 
 ## Key Resources

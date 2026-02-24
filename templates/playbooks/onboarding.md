@@ -691,7 +691,18 @@ Only generate the auto-prompt if the user confirms with that exact phrase or equ
 **Option 4:**
 Save progress, update journal, end the playbook. The user can return at any time to continue.
 
-### 7e. Mention the Strategist (informational only)
+### 7e. Mention the Orchestrator (informational only)
+
+After presenting the options, add one line:
+
+```
+Tip: Switch to the orchestrator role to manage prompt execution with
+continuous state tracking. It picks up where you left off across sessions.
+```
+
+Do not elaborate unless the user asks. This is a pointer, not a pitch.
+
+### 7f. Mention the Strategist (informational only)
 
 After presenting the options, add one line:
 
@@ -702,7 +713,7 @@ research context) outside Claude Code, see templates/personas/strategist.md.
 
 Do not elaborate unless the user asks. This is a pointer, not a pitch.
 
-### 7f. Support mention (informational only)
+### 7g. Support mention (informational only)
 
 After ALL other output for Phase 7 is complete, add one line:
 
