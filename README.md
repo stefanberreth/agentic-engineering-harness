@@ -20,7 +20,7 @@ AEH codifies a **persona-driven workflow** inspired by [Emmz Rendle's "How I Tam
 
 AEH provides:
 
-- **Persona templates** -- instruction files ("system prompts") for each role, encoding mature software engineering principles (TDD, small commits, retrospectives, spec-driven development). These are loaded into the AI agent at the start of a session and shape its behaviour. The four engineering personas run inside Claude Code; the Harness Reviewer audits AEH itself; the Orchestrator manages prompt execution pipelines; the optional Strategist runs in any LLM chat for higher-altitude decision-making.
+- **Persona templates** -- instruction files ("system prompts") for each engineering role, encoding mature software engineering principles (TDD, small commits, retrospectives, spec-driven development). These are loaded into the AI agent at the start of a session and shape its behaviour. Four engineering personas run inside Claude Code; an optional Strategist runs in any LLM chat for higher-altitude decision-making.
 - **Project templates** -- scaffolds for `CLAUDE.md` (Claude Code's project instruction file -- the single most important file for agentic engineering) and `agents.md` (cross-tool agent configuration), adapted per target project
 - **Governance criteria** -- checklists and rubrics to assess and improve agentic configuration quality, including agent permission audits
 - **Guided playbooks** -- step-by-step workflows for onboarding new projects, running health checks, and configuring development tools
@@ -79,11 +79,9 @@ AEH operates on a strict separation: the harness never directly modifies your pr
 | **Architect** | Claude Code (harness or target) | Designs solutions, defines boundaries |
 | **Developer** | Claude Code (target) | TDD implementation, follows conventions |
 | **Reviewer** | Claude Code (target) | Compliance checking, produces issue lists |
-| **Harness Reviewer** | Claude Code (harness) | Reviews harness quality, public-facing integrity, target detail leakage |
-| **Orchestrator** | Claude Code (harness) | Pipeline manager. Tracks prompt execution, assesses agent output, generates next actions |
 | **Strategist** | Any LLM chat (optional) | Business strategy, priorities, trade-offs |
 
-The four engineering personas are the core workflow. The Harness Reviewer is a self-review role that audits the harness itself for consistency, documentation currency, and target detail leakage -- the same discipline AEH prescribes for every target project, applied to itself. The Orchestrator manages the execution pipeline -- tracking which prompts have been run, assessing agent output quality, and generating the next action. It persists state across sessions so the user always knows where things stand. The Strategist is an optional upstream role for users who want a strategic conversation partner (e.g. in Claude Web) to inform engineering priorities. See `templates/personas/strategist.md` for details.
+The four engineering personas are the core workflow. The Strategist is an optional upstream role for users who want a strategic conversation partner (e.g. in Claude Web) to inform engineering priorities. See `templates/personas/strategist.md` for details.
 
 ### The Workflow
 
@@ -221,6 +219,17 @@ When you onboard a project, AEH creates a workspace under `targets/<your-project
 6. **Preserve what works.** When your project already has good instructions or conventions, AEH builds on them. Templates fill gaps -- they don't replace what's working.
 7. **Governance is continuous.** Agentic configuration degrades over time as the project evolves and permissions accumulate. Regular `health` checks detect the drift before it causes problems.
 
+## How AEH Governs Itself
+
+AEH prescribes structured governance for target projects -- so it applies the same discipline to itself. Two additional personas exist for harness-internal use only. They are not part of the target project workflow.
+
+| Persona | What it does |
+|---------|--------------|
+| **Harness Reviewer** | Audits AEH's own quality: documentation currency, template consistency, target detail leakage into public files, public-facing integrity |
+| **Orchestrator** | Manages the prompt execution pipeline for a target transformation. Tracks which prompts have been run, assesses agent output quality, persists state across sessions so nothing is lost between restarts |
+
+These roles exist because a tool that helps others structure their agentic engineering should not be unstructured itself. They are a second-order concern -- useful once you're familiar with the core workflow, not something to worry about when getting started.
+
 ## Maturity Model
 
 AEH doesn't require you to adopt everything at once. Start where you are:
@@ -264,7 +273,7 @@ AEH is in active development. It has been used to transform real projects end-to
 
 What's working:
 - Onboarding playbook (7-phase guided assessment)
-- Four engineering persona templates + Harness Reviewer + Orchestrator + optional Strategist
+- Four engineering persona templates + optional Strategist
 - Assessment checklist (10 categories) and review criteria (6 rubrics)
 - Agent permission governance (schema reference, detection patterns, baselines)
 - Prompt generation and direct delivery
