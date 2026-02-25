@@ -159,13 +159,29 @@ Check whether the user's global Claude config has MCP entries that could conflic
 
 **What to flag:** User-level MCP entries that duplicate or conflict with project-level `.mcp.json` entries. These can cause confusing behaviour where the wrong server version runs, or duplicate servers compete. Status: `WARN`.
 
+### Functional Smoke Tests
+
+Static checks verify configuration. Smoke tests verify the server actually works. These are **operator-executed** — the harness generates the test prompt, the operator runs it in the target project's Claude Code session and reports pass/fail.
+
+Each test is designed to produce an unambiguous result: either meaningful output (pass) or an error (fail).
+
+| Tool | Test prompt (run in target session) | Pass | Fail |
+|------|-------------------------------------|------|------|
+| Context7 | `Use the Context7 MCP server to look up documentation for React useState. Show the top result.` | Returns documentation content | Auth error, timeout, or empty response |
+| Serena | `Use the Serena MCP server to list the symbols in the project's main entry file.` | Returns symbol list | Connection error or "no symbols found" on a file that clearly has them |
+| Supabase | `Use the Supabase MCP server to list the tables in the database.` | Returns table list | Auth error or connection refused |
+
+**When to run:** Only when static checks are inconclusive — e.g. a server shows "connected" in `/mcp` but has env var warnings, or when the operator wants to confirm a "degraded" server actually works.
+
+**Reporting:** Record the result in the Tool Health table's Status column. A passing smoke test overrides a static "degraded" status to "healthy". A failing smoke test confirms "broken" regardless of static check results.
+
 ### Health Status Values
 
 Combine the results of all checks into a per-server status:
 
 | Status | Meaning |
 |--------|---------|
-| `healthy` | Config present, package resolves (if applicable), env vars defined, no hardcoded credentials |
-| `degraded` | Config present but env vars missing or documented-only, or minor warnings |
-| `broken` | Package does not exist (404), or server cannot possibly start |
+| `healthy` | Config present, package resolves (if applicable), env vars defined, no hardcoded credentials. Or: static checks inconclusive but smoke test passes. |
+| `degraded` | Config present but env vars missing or documented-only, or minor warnings. No smoke test run to confirm. |
+| `broken` | Package does not exist (404), server cannot possibly start, or smoke test fails |
 | `orphaned` | Entry exists in user-level config but not in project `.mcp.json`, or vice versa |

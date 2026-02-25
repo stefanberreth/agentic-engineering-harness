@@ -279,7 +279,7 @@ _(These findings are independent of the baseline. They reflect current filesyste
 
 _Status: healthy / degraded / broken / orphaned. See Phase 3h for check details._
 
-**Operator action required:** If any server shows `broken` or `degraded`, verify via `/mcp` diagnostic screen in the target project's Claude Code session.
+**Operator action required:** If any server shows `broken` or `degraded`, run the functional smoke test from `templates/tools/tool-detection-patterns.md` in the target project's Claude Code session. A passing smoke test overrides `degraded` to `healthy`; a failing smoke test confirms `broken`.
 
 ## Unchanged Issues
 
