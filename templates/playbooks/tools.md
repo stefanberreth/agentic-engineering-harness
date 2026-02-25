@@ -99,8 +99,9 @@ For each tool, present a brief description and the current status. Offer actions
 ### Tool not found (never offered)
 
 ```
-OpenSpec -- specification-driven development via MCP
-  Manages specs and change proposals alongside code.
+OpenSpec -- specification-driven development
+  Manages specs and change proposals as markdown files alongside code.
+  Note: No MCP server needed for CLI agents (Claude Code) -- specs are read directly.
   Docs: https://openspec.dev/
   [set up / skip / decline]
 ```
@@ -108,8 +109,9 @@ OpenSpec -- specification-driven development via MCP
 If functional equivalents were detected:
 
 ```
-OpenSpec -- specification-driven development via MCP
-  Manages specs and change proposals alongside code.
+OpenSpec -- specification-driven development
+  Manages specs and change proposals as markdown files alongside code.
+  Note: No MCP server needed for CLI agents (Claude Code) -- specs are read directly.
   Note: ADR directory detected at docs/adr/ -- this may already serve a similar purpose.
   Docs: https://openspec.dev/
   [set up / skip / decline]
@@ -179,8 +181,8 @@ Generate a prompt that:
 
 ```
 Prompt generated: targets/<slug>/prompts/NNN-setup-openspec.md
-  Action: Set up OpenSpec
-  Files affected: .mcp.json, CLAUDE.md, openspec/ directory
+  Action: Set up OpenSpec (directory structure + CLAUDE.md, no MCP server)
+  Files affected: CLAUDE.md, openspec/ directory
 ```
 
 ---

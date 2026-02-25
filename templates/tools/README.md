@@ -14,7 +14,7 @@ Optional MCP server and development tool configurations for target projects unde
 
 | Tool | What it does | Setup | Teardown |
 |------|-------------|-------|----------|
-| **OpenSpec** | Specification-driven development via MCP. Manages specs and change proposals alongside code. | `openspec-setup.md` | `openspec-teardown.md` |
+| **OpenSpec** | Specification-driven development. Manages specs and change proposals as markdown files alongside code. **No MCP server needed for CLI agents** -- they read spec files directly. MCP server only for sandboxed environments without filesystem access. | `openspec-setup.md` | `openspec-teardown.md` |
 | **Context7** | Documentation lookup via MCP. Provides up-to-date library docs in Claude's context without manual searching. | `context7-setup.md` | `context7-teardown.md` |
 | **Serena** | Language-aware code navigation via MCP. Provides semantic code understanding (go-to-definition, find-references, symbol search). | `serena-setup.md` | `serena-teardown.md` |
 

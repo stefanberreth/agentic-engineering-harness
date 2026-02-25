@@ -155,12 +155,9 @@ This project uses a persona-driven agentic engineering workflow:
 
 ### OpenSpec
 
-Specification-driven development via MCP. Specs live in `openspec/specs/`, change proposals in `openspec/changes/`.
+Specification-driven development. Specs live in `openspec/specs/`, change proposals in `openspec/changes/`.
 
-Key commands (available as MCP tools):
-- `create_spec` -- create a new specification document
-- `propose_change` -- propose a change to an existing spec
-- `list_specs` -- list all specifications
+Read spec files directly -- no MCP server needed. Create new specs by writing markdown files to the appropriate directory.
 
 Docs: https://openspec.dev/
 

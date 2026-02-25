@@ -6,7 +6,7 @@
 
 ## What Gets Removed
 
-- OpenSpec entry from `.mcp.json`
+- OpenSpec entry from `.mcp.json` (if present -- CLI agents should not have one)
 - OpenSpec skills from `.claude/skills/`
 - OpenSpec subsection from CLAUDE.md
 
@@ -23,9 +23,11 @@ The user may choose to delete these manually, but the teardown prompt should not
 
 The generated prompt should instruct the target-side Claude to:
 
-### 1. Remove OpenSpec from `.mcp.json`
+### 1. Remove OpenSpec from `.mcp.json` (if present)
 
 Remove the `openspec` entry from the `mcpServers` object. If `.mcp.json` becomes empty (`"mcpServers": {}`), delete the file.
+
+Note: CLI agents (Claude Code, etc.) should not have an OpenSpec MCP entry -- they read spec files directly. If one exists, it was set up unnecessarily and removing it is correct.
 
 ### 2. Remove OpenSpec skills
 
