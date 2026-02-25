@@ -120,13 +120,35 @@ Report findings as structural hygiene items in the delta report (Phase 4). These
 
 If `targets/<slug>/profile.md` records any configured development tools (under `## Development Tools`), verify each one:
 
+**Static checks:**
+
 1. **Config present:** Is the tool's entry still in `.mcp.json`?
 2. **Documented:** Is the tool still documented in the target's CLAUDE.md under a Development Tools section?
 3. **Config matches reality:** For Serena, does `.serena/project.yml` reference languages the project still uses? For Context7, is the transport config valid?
 4. **No orphaned config:** Are there tools in `.mcp.json` that are NOT documented in CLAUDE.md? (These are invisible to new sessions.)
 5. **No removed tools:** Are there tools documented in CLAUDE.md that are NOT in `.mcp.json`? (These are documented but non-functional.)
 
-Use detection patterns from `templates`tools`/tool-detection-patterns.md`.
+**Functional verification** (for each server in `.mcp.json`):
+
+6. **Package resolution** (npx-based servers): Run `npm view <package> version 2>&1`. A 404 means the package does not exist and the server will fail on every invocation. Skip for non-npx servers (http, stdio with local binaries).
+7. **Environment variable check:** Extract all `${VAR}` references from the server's config. Verify each is defined in `.env`, `.env.local`, or `.env.development`. Flag missing variables with severity based on whether they're documented elsewhere.
+8. **Credential scan:** Grep the server's config block in `.mcp.json` for hardcoded secret patterns: common prefixes (`sk-`, `ctx7sk-`, `sbp_`, `ghp_`, `xoxb-`, `eyJ`), 32+ character alphanumeric strings not wrapped in `${...}`, and credentials embedded in URLs (`://user:pass@`).
+9. **User-level config conflict:** Check `~/.claude.json` for `mcpServers` entries that duplicate or shadow servers configured in the project's `.mcp.json`. Flag any overlap.
+10. **Connection status (operator verification):** If any of checks 6-9 raise concerns, flag the server for operator verification via the `/mcp` diagnostic screen. Note: the harness cannot run `/mcp` directly -- this is a manual check item for the operator.
+
+Use detection patterns from `templates/tools/tool-detection-patterns.md` (both static detection and MCP Health Verification Patterns sections).
+
+**Report format for Phase 4 Tool Health section:**
+
+| Tool | Config | Documented | Package | Env Vars | Credentials | Status |
+|------|--------|------------|---------|----------|-------------|--------|
+| _name_ | present/missing | yes/no | ok / FAIL (404) / N/A | ok / WARN (missing) / N/A | clean / FAIL (hardcoded) | healthy / degraded / broken / orphaned |
+
+Status values:
+- `healthy` -- all checks pass
+- `degraded` -- config present but env vars missing or minor warnings
+- `broken` -- package does not exist (404) or server cannot start
+- `orphaned` -- entry in user-level config but not in project `.mcp.json`, or vice versa
 
 Report findings as tool drift items in the delta report (Phase 4).
 
@@ -249,11 +271,15 @@ _(These findings are independent of the baseline. They reflect current filesyste
 
 ## Tool Health
 
-| Tool | Status | Issue | Recommendation |
-|------|--------|-------|----------------|
-| OpenSpec | healthy | -- | -- |
-| Serena | drift | project.yml references Python but project migrated to TypeScript | Update .serena/project.yml |
-| Context7 | broken | In .mcp.json but not documented in CLAUDE.md | Run `tools` to repair |
+| Tool | Config | Documented | Package | Env Vars | Credentials | Status |
+|------|--------|------------|---------|----------|-------------|--------|
+| OpenSpec | present | yes | FAIL (404) | N/A | clean | broken |
+| Context7 | present | yes | N/A | WARN (missing CONTEXT7_API_KEY) | clean | degraded |
+| Serena | present | yes | N/A | ok | clean | healthy |
+
+_Status: healthy / degraded / broken / orphaned. See Phase 3h for check details._
+
+**Operator action required:** If any server shows `broken` or `degraded`, verify via `/mcp` diagnostic screen in the target project's Claude Code session.
 
 ## Unchanged Issues
 

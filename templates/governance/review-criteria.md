@@ -123,12 +123,27 @@ Use this rubric to evaluate the quality of the agentic engineering files in a ta
 | **Maintainability**: Tool configs reference correct tech stack (Serena's `project.yml` matches actual languages) | | |
 | **Reversibility**: Setup was done via harness prompts and can be undone via teardown prompts | | |
 
+### Verification method
+
+When scoring **Config accuracy**, perform these checks for each server in `.mcp.json`:
+
+1. **Package resolution** (npx-based servers): Run `npm view <package> version 2>&1`. A 404 means the package does not exist -- the server is broken regardless of other config. Score: **Poor** if any package fails.
+2. **Environment variable presence**: Extract all `${VAR}` references from `.mcp.json`. Cross-check each against `.env`, `.env.local`, `.env.development`. Missing variables mean the server will fail or degrade at runtime. Score: **Adequate** if documented but not in `.env*`; **Poor** if undocumented and missing.
+3. **Credential pattern scan**: Grep `.mcp.json` for common secret prefixes (`sk-`, `ctx7sk-`, `sbp_`, `ghp_`, `xoxb-`, `eyJ`) and any 32+ character alphanumeric strings not wrapped in `${...}`. Any match is a hardcoded credential. Score: **Poor** (security issue).
+4. **User-level config conflicts**: Check `~/.claude.json` for `mcpServers` entries scoped to the project path. Duplicates or conflicts cause confusing runtime behaviour. Score: **Adequate** if present but harmless; **Poor** if conflicting.
+
+See `templates/tools/tool-detection-patterns.md` § "MCP Health Verification Patterns" for detailed detection patterns.
+
 ### Common problems
 - Tool in `.mcp.json` but not documented in CLAUDE.md (invisible to new sessions)
 - Serena's `project.yml` references a language server for a language the project no longer uses
 - Context7 configured but `CONTEXT7_API_KEY` never set (silent failure)
 - Tool configured during onboarding but never actually used -- dead config weight
 - Multiple overlapping tools for the same function (e.g. Serena + Sourcegraph)
+- **Non-existent npm package** in npx-based MCP entry (server fails on every invocation, error only visible in `/mcp` diagnostics)
+- **Missing environment variables** for MCP servers that require API keys or config (server starts but returns errors)
+- **Hardcoded credentials** in `.mcp.json` (secrets committed to version control)
+- **User-level config shadows project config** (`~/.claude.json` has MCP entries that duplicate or conflict with `.mcp.json`)
 
 ---
 

@@ -102,3 +102,70 @@ For tools recorded as configured in `profile.md`:
 ### During `tools` playbook (Phase 2)
 
 Run all detection patterns to present a current-state table before offering setup/removal options.
+
+---
+
+## MCP Health Verification Patterns
+
+Static detection (above) confirms configuration exists. These patterns verify that configured MCP servers are **functional** -- packages resolve, environment variables are set, and no credentials are exposed.
+
+### Hardcoded Credential Detection
+
+Scan `.mcp.json` for values that look like secrets rather than environment variable references.
+
+| What | Pattern | Tool | Severity |
+|------|---------|------|----------|
+| Common API key prefixes | Grep `.mcp.json` for `sk-\|ctx7sk-\|sbp_\|ghp_\|xoxb-\|eyJ` | Grep | CRITICAL |
+| Long alphanumeric strings not in `${...}` | Grep `.mcp.json` for values matching `[A-Za-z0-9_-]{32,}` that are NOT wrapped in `${...}` | Grep | CRITICAL |
+| Inline URLs with credentials | Grep `.mcp.json` for `://[^@]+@` (credentials in URL) | Grep | CRITICAL |
+
+**What to flag:** Any match means a credential is hardcoded in a file that is typically version-controlled. The value should be moved to an environment variable and referenced as `${VAR_NAME}`.
+
+### Environment Variable Resolution
+
+Extract all `${VAR}` references from `.mcp.json` and verify they are defined.
+
+| Step | Action | Tool |
+|------|--------|------|
+| 1. Extract references | Grep `.mcp.json` for `\$\{[A-Z_][A-Z0-9_]*\}` -- collect all variable names | Grep |
+| 2. Check `.env` files | For each variable, grep `.env`, `.env.local`, `.env.development` for the variable name | Grep |
+| 3. Check documentation | If not in `.env*`, check CLAUDE.md and README for setup instructions mentioning the variable | Grep |
+
+**What to flag:** Any `${VAR}` reference where the variable is not defined in any `.env*` file and not documented as requiring manual setup. Status: `WARN` (missing but documented) or `FAIL` (missing and undocumented).
+
+### Package Existence Check
+
+For MCP servers launched via `npx`, verify the npm package actually exists.
+
+| Step | Action | Tool |
+|------|--------|------|
+| 1. Identify npx servers | Read `.mcp.json`, find entries where `command` is `npx` or contains `npx` | Read |
+| 2. Extract package name | The first argument after `npx` (or after `-y`) that doesn't start with `-` is the package name | -- |
+| 3. Verify package | Run `npm view <package> version 2>&1` | Bash |
+
+**What to flag:** If `npm view` returns a 404 or `ERR!`, the package does not exist in the npm registry. This means the MCP server will fail on every invocation. Status: `FAIL`.
+
+**Note:** This check requires network access. If running offline, skip and note as `SKIP (offline)`.
+
+### User-Level Config Conflict Detection
+
+Check whether the user's global Claude config has MCP entries that could conflict with or shadow project-level config.
+
+| Step | Action | Tool |
+|------|--------|------|
+| 1. Read user config | Read `~/.claude.json` (if it exists) | Read |
+| 2. Check for mcpServers | Look for `mcpServers` entries in the user config | Grep |
+| 3. Check for project scoping | If MCP entries exist, check whether any are scoped to paths matching or overlapping the target project | Read |
+
+**What to flag:** User-level MCP entries that duplicate or conflict with project-level `.mcp.json` entries. These can cause confusing behaviour where the wrong server version runs, or duplicate servers compete. Status: `WARN`.
+
+### Health Status Values
+
+Combine the results of all checks into a per-server status:
+
+| Status | Meaning |
+|--------|---------|
+| `healthy` | Config present, package resolves (if applicable), env vars defined, no hardcoded credentials |
+| `degraded` | Config present but env vars missing or documented-only, or minor warnings |
+| `broken` | Package does not exist (404), or server cannot possibly start |
+| `orphaned` | Entry exists in user-level config but not in project `.mcp.json`, or vice versa |

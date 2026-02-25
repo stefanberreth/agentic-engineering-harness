@@ -122,6 +122,10 @@ For each item, mark one of:
 | 9.6 | Functional equivalents: ADR/RFC/spec management exists | | |
 | 9.7 | Functional equivalents: alternative doc/code intelligence servers | | |
 | 9.8 | Tool configuration consistent (`.mcp.json` entries match CLAUDE.md documentation) | | |
+| 9.9 | MCP servers resolve and start (no 404 packages, no connection failures) | | `npm view <package> version` for npx-based servers |
+| 9.10 | All environment variables referenced in `.mcp.json` are defined in `.env*` files or documented | | Extract `${VAR}` refs, cross-check against `.env*` |
+| 9.11 | No credentials hardcoded in `.mcp.json` (values use `${VAR}` syntax, not raw keys) | | Scan for `sk-`, `ghp_`, `eyJ`, and 32+ char alphanumeric strings |
+| 9.12 | No orphaned MCP entries in user-level config (`~/.claude.json`) for this project | | Check for project-scoped mcpServers in user config |
 
 ---
 
