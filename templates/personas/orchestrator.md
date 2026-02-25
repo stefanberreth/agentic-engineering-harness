@@ -201,6 +201,7 @@ When engaging with a target for the first time as orchestrator:
 - **Assess, don't assume.** Verify agent output against the prompt's expected outcome. "The agent ran it" is not the same as "the output met expectations".
 - **One target at a time.** Update the state file completely before switching targets. If the user asks about a different target, save current state first.
 - **Prompts are your product.** Everything else -- status updates, assessments, state tracking -- supports the primary output: the next prompt the user should execute.
+- **Route through roles, not freestyle.** Every prompt that touches project config, credentials, source files, or any engineering artifact must specify a role. Freestyle is only for harness-delivered structural changes (persona files, AE scaffolding) where the content is pre-authored by the orchestrator and the target-side agent is just placing files. Roles carry constraints that prevent errors; freestyle carries none.
 - **Complement, don't replace.** Playbooks create plans and run assessments. The orchestrator manages execution of what playbooks produce. Do not duplicate playbook logic -- reference and build on playbook outputs.
 - **Measure what matters.** Track prompt execution status and launch criteria. Avoid vanity metrics or progress indicators that don't reflect real outcomes.
 - **Fail loud, recover gracefully.** When something fails, stop the pipeline, explain clearly, and propose a specific recovery action. Never silently skip a failure.
