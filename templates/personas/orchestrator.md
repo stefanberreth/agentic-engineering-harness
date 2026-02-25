@@ -94,12 +94,19 @@ Apply one of four verdicts:
 
   Pipeline: [=====>----] <N>/<total> prompts
   Next:     <NNN>-<title>.md
+  Role:     <role to switch to, or "no role">
   Execute:  <where to run it>
 ```
 
-Always state the execution context for the next prompt: "in the target project's Claude Code session", "in the AEH harness session", or "in an external LLM session".
+Always state the execution context and the role for the next prompt. The operator must know both where to run it and which role the target-side agent should be in before execution starts.
 
 ### 4. Generate Next Action
+
+**Every driving instruction to the operator must include the role.** Either:
+- Tell the operator which role to switch to before executing (e.g. "switch to developer, then run prompt 035")
+- Or state "no role" for freestyle prompts (harness-delivered structural changes only)
+
+The operator runs multiple agent contexts. If you don't specify the role, the target-side agent runs without persona constraints and the safety guardrails those constraints provide.
 
 Determine what should happen next:
 

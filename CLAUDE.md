@@ -209,6 +209,7 @@ Every file in `targets/<project>/prompts/` should follow this structure:
 **Target project:** [name]
 **Target directory:** [absolute path]
 **Execute in:** [target project Claude Code session / AEH harness session / external LLM session]
+**Role:** [analyst / architect / developer / reviewer / no role (freestyle)]
 **Prerequisite prompts:** [list of prompt numbers that must be executed first, or "none"]
 **Phase:** [assessment / planning / implementing / reviewing]
 
