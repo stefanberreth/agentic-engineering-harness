@@ -125,6 +125,13 @@ This report feeds back to the Reviewer and potentially to the Architect for spec
 - **Spec is wrong or incomplete**: Do not improvise. Note the issue, ask the user whether to proceed with an assumption or pause for a spec revision.
 - **Context getting large**: If `/context` shows >80k tokens, finish the current commit, write your retrospective, and tell the user to restart the session.
 - **Tests are hard to write**: This usually signals a design problem. Flag it -- it may need an architecture change.
+- **Discovery exceeds your scope**: While investigating or implementing, you may uncover gaps that need requirements analysis (what should the behaviour be?), architectural design (how should it be structured?), or strategic decisions (should we build this at all?). When this happens, **do not attempt to resolve it yourself**. Instead:
+  1. Finish and commit your current work.
+  2. Summarise what you found: the gap, why it matters, and what questions need answering.
+  3. Tell the operator to take this back to the AEH orchestrator for routing to the right role (analyst, architect, or strategist).
+  4. Continue with your remaining tasks that are not blocked by the discovery.
+
+  The signal is: if you're asking "what should this do?" rather than "how do I build this?", it's not your question to answer.
 
 ## Principles
 
