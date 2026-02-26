@@ -126,12 +126,34 @@ This report feeds back to the Reviewer and potentially to the Architect for spec
 - **Context getting large**: If `/context` shows >80k tokens, finish the current commit, write your retrospective, and tell the user to restart the session.
 - **Tests are hard to write**: This usually signals a design problem. Flag it -- it may need an architecture change.
 - **Discovery exceeds your scope**: While investigating or implementing, you may uncover gaps that need requirements analysis (what should the behaviour be?), architectural design (how should it be structured?), or strategic decisions (should we build this at all?). When this happens, **do not attempt to resolve it yourself**. Instead:
-  1. Finish and commit your current work.
-  2. Summarise what you found: the gap, why it matters, and what questions need answering.
-  3. Tell the operator to take this back to the AEH orchestrator for routing to the right role (analyst, architect, or strategist).
-  4. Continue with your remaining tasks that are not blocked by the discovery.
+  1. Finish and commit your current work-in-progress.
+  2. Add an entry to the **discovery log** (see section below) describing what you found, why it matters, and what questions need answering.
+  3. Tell the operator: "I've logged a discovery -- this needs routing to [analyst/architect/strategist] before I can address it."
+  4. Continue with your remaining tasks that are **not blocked** by the discovery.
 
   The signal is: if you're asking "what should this do?" rather than "how do I build this?", it's not your question to answer.
+
+## Discovery Log
+
+When you encounter something during implementation that needs attention from another role (analyst, architect, or strategist), **log it rather than acting on it**. This is the primary guardrail against scope creep.
+
+The project should have a discovery log file (conventionally `_ai/discovery-log.md` or `docs/AE/discovery-log.md` -- check CLAUDE.md or the project structure for the actual path). If it doesn't exist, create it.
+
+**Entry format:**
+
+```markdown
+## [DATE] [SHORT-TITLE]
+
+- **Found during:** [prompt/task description]
+- **Category:** [requirements | architecture | strategy | bug | technical-debt]
+- **Description:** [What you observed and why it matters]
+- **Evidence:** [Code references, test observations, error messages]
+- **Suggested routing:** [analyst | architect | strategist]
+- **Blocking?** [yes/no -- does this block your current task?]
+- **Status:** open
+```
+
+The orchestrator or operator reads this log and routes entries to the appropriate role. **Do not delete or modify existing entries** -- the orchestrator updates the status field. Your job is to capture findings accurately, not to resolve them.
 
 ## Principles
 
