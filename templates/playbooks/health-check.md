@@ -169,6 +169,18 @@ Check the target project's agent permission configuration for drift, sprawl, and
 4. **Check for harness isolation**: If the target is managed by AEH and the harness path is known (from `profile.md`), verify the deny list blocks reads from the harness directory.
 5. **Record findings** for inclusion in the delta report (Phase 4) under the Permission Health section.
 
+### 3j. OpenSpec Specification Health
+
+**Only run when `openspec/specs/` exists in the target project.** If OpenSpec is not configured, skip this step entirely.
+
+1. **Spec inventory:** Count spec files in `openspec/specs/` and proposals in `openspec/changes/`. Compare to baseline if a previous health check recorded counts. Flag significant growth or shrinkage.
+2. **Frontmatter audit:** Read each spec file's frontmatter. Check for required fields: `id`, `title`, `status`, `created`, `updated`. Flag specs missing any of these.
+3. **Staleness detection:** Flag active specs (status not `deprecated` or `superseded`) with an `updated` date more than 90 days old. These may be accurate but warrant verification.
+4. **Abandoned proposals:** Check `openspec/changes/` for proposals that have `proposal.md` but are missing `design.md` or `tasks.md`. These are incomplete change proposals that were started but not finished.
+5. **Spec-code drift (light):** For a sample of active specs, check whether the features they describe exist in the codebase (directory names, module names, API endpoints). Flag specs that describe things that clearly don't exist. This is a light check -- deep reconciliation belongs to the domain-deepening phase.
+
+Report findings for inclusion in the delta report (Phase 4) under the Spec Health section.
+
 ---
 
 ## Phase 4: Delta Report
@@ -189,6 +201,7 @@ Compare the fresh assessment against the baseline. Categorise every finding:
 | **Tool drift** | Tool configured but stale, broken, or undocumented |
 | **Permission drift** | Permission config degraded, accumulated sprawl, or new security issues |
 | **Instruction leak** | New role-like content appeared outside AE structure |
+| **Spec drift** | OpenSpec specs are stale, orphaned, incomplete, or missing frontmatter |
 | **Structural hygiene** | Filesystem clutter, agent detritus, directory disorganisation (independent of baseline) |
 
 ### Report Format
@@ -213,6 +226,7 @@ Write to `targets/<slug>/health-check-<YYYY-MM-DD>.md`:
 | Tool drift | <N> |
 | Permission drift | <N> |
 | Instruction leaks | <N> |
+| Spec drift | <N> |
 | Structural hygiene | <N> |
 
 ## New Issues
@@ -246,6 +260,18 @@ Write to `targets/<slug>/health-check-<YYYY-MM-DD>.md`:
 |--------|----------------|-------------------|
 | `CONTRIBUTING.md` (new) | Code review checklist | Integrate into reviewer persona |
 | `README.md` > New "Dev Setup" section | Build instructions | Merge into CLAUDE.md |
+
+## Spec Health
+
+_(Only present when OpenSpec is configured. Omit this section if `openspec/specs/` does not exist.)_
+
+| Check | Status | Finding |
+|-------|--------|---------|
+| Spec inventory | <N> specs, <N> proposals (was <N>/<N>) | [growth/shrinkage/stable] |
+| Frontmatter completeness | pass/WARN | [N] specs missing required fields |
+| Stale specs | pass/WARN | [N] active specs with updated >90 days ago |
+| Abandoned proposals | pass/WARN | [N] proposals missing design.md or tasks.md |
+| Spec-code drift | pass/WARN | [N] specs describe features not found in code |
 
 ## Structural Hygiene
 
@@ -302,6 +328,7 @@ Baseline: <date> (<N> days ago)
   Tool drift:        <N>
   Permission drift:  <N>
   Instruction leaks: <N>
+  Spec drift:        <N>
   Structural hygiene: <N>
 
 Full report: targets/<slug>/health-check-<date>.md

@@ -193,6 +193,9 @@ Include a **Spec Currency** section in `comments.md`:
 | Spec deltas applied | pass/WARN | [details if deltas pending] |
 | Implementation matches spec | pass/WARN | [details if drift found] |
 | Spec dates current | pass/WARN | [details if stale] |
+| Frontmatter complete | pass/WARN | [details if specs touched by this change are missing id/title/status/created/updated] |
+| Orphaned specs | pass/WARN | [details if any active spec describes a feature that clearly doesn't exist] |
+| Abandoned proposals | pass/WARN | [details if any proposal in openspec/changes/ is missing design.md or tasks.md] |
 ```
 
 If OpenSpec is not configured, skip this section.

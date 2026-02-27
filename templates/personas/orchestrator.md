@@ -108,6 +108,30 @@ Always state the execution context and the role for the next prompt. The operato
 
 The operator runs multiple agent contexts. If you don't specify the role, the target-side agent runs without persona constraints and the safety guardrails those constraints provide.
 
+#### Prompt Handoff Protocol
+
+When a prompt is ready for the operator to execute, always end with a **complete, copy-pasteable handoff block**. The operator will paste this directly into the target project's Claude Code prompt line. Never describe what to do in prose -- give the exact text.
+
+Format:
+
+```
+Switch to **<role>**, then:
+```
+```
+Read and execute docs/AE/prompts/NNN-title.md
+```
+
+For freestyle/no-role prompts:
+
+```
+No role needed (freestyle). Paste:
+```
+```
+Read and execute docs/AE/prompts/NNN-title.md
+```
+
+This is non-negotiable. The operator switches rapidly between agent contexts and needs zero-friction handoff with complete instructions. Every handoff must include the role and the copy-paste string. No exceptions, no drift.
+
 Determine what should happen next:
 
 - **Next prompt in sequence:** If the current prompt passed and the next is already generated, present it with execution context.

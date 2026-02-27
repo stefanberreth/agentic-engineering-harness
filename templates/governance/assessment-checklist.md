@@ -117,15 +117,19 @@ For each item, mark one of:
 | 9.1 | `.mcp.json` exists and is well-formed | | |
 | 9.2 | MCP servers documented in CLAUDE.md (if any configured) | | |
 | 9.3 | OpenSpec: directory structure and MCP config present | | |
-| 9.4 | Context7: MCP config present with valid transport | | |
-| 9.5 | Serena: `.serena/project.yml` present and matches tech stack | | |
-| 9.6 | Functional equivalents: ADR/RFC/spec management exists | | |
-| 9.7 | Functional equivalents: alternative doc/code intelligence servers | | |
-| 9.8 | Tool configuration consistent (`.mcp.json` entries match CLAUDE.md documentation) | | |
-| 9.9 | MCP servers resolve and start (no 404 packages, no connection failures) | | `npm view <package> version` for npx-based servers |
-| 9.10 | All environment variables referenced in `.mcp.json` are defined in `.env*` files or documented | | Extract `${VAR}` refs, cross-check against `.env*` |
-| 9.11 | No credentials hardcoded in `.mcp.json` (values use `${VAR}` syntax, not raw keys) | | Scan for `sk-`, `ghp_`, `eyJ`, and 32+ char alphanumeric strings |
-| 9.12 | No orphaned MCP entries in user-level config (`~/.claude.json`) for this project | | Check for project-scoped mcpServers in user config |
+| 9.4 | OpenSpec: spec files have valid frontmatter (`id`, `title`, `status`, `created`, `updated`) | | Only when `openspec/specs/` exists |
+| 9.5 | OpenSpec: no orphaned or stale specs (active status but clearly outdated content or >90 days since `updated`) | | Only when `openspec/specs/` exists |
+| 9.6 | OpenSpec: change proposals are resolved or actively in progress (no abandoned `proposal.md` without `design.md`/`tasks.md`) | | Only when `openspec/changes/` exists |
+| 9.7 | OpenSpec: spec acceptance criteria are testable (not vague or subjective) | | Only when `openspec/specs/` exists |
+| 9.8 | Context7: MCP config present with valid transport | | |
+| 9.9 | Serena: `.serena/project.yml` present and matches tech stack | | |
+| 9.10 | Functional equivalents: ADR/RFC/spec management exists | | |
+| 9.11 | Functional equivalents: alternative doc/code intelligence servers | | |
+| 9.12 | Tool configuration consistent (`.mcp.json` entries match CLAUDE.md documentation) | | |
+| 9.13 | MCP servers resolve and start (no 404 packages, no connection failures) | | `npm view <package> version` for npx-based servers |
+| 9.14 | All environment variables referenced in `.mcp.json` are defined in `.env*` files or documented | | Extract `${VAR}` refs, cross-check against `.env*` |
+| 9.15 | No credentials hardcoded in `.mcp.json` (values use `${VAR}` syntax, not raw keys) | | Scan for `sk-`, `ghp_`, `eyJ`, and 32+ char alphanumeric strings |
+| 9.16 | No orphaned MCP entries in user-level config (`~/.claude.json`) for this project | | Check for project-scoped mcpServers in user config |
 
 ---
 

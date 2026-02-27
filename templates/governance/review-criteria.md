@@ -97,6 +97,36 @@ Use this rubric to evaluate the quality of the agentic engineering files in a ta
 
 ---
 
+## 3a. OpenSpec Specification Quality (Conditional)
+
+> Only score this rubric when `openspec/specs/` exists in the target project. If the project uses a different spec format (e.g. a single `spec.md`), Section 3 applies instead. If both exist, score both.
+
+| Criterion | Score | Notes |
+|---|---|---|
+| **Frontmatter completeness**: Every spec file has `id`, `title`, `status`, `created`, and `updated` fields | | |
+| **Spec currency**: `updated` dates reflect reality; no active specs with dates >90 days stale | | |
+| **Acceptance criteria quality**: Acceptance criteria are testable and specific (not "it should work well") | | |
+| **Change proposal hygiene**: Active proposals have all required files; no abandoned proposals (proposal.md without design.md/tasks.md) | | |
+| **Spec-code traceability**: Implementations reference spec IDs in commits or code; specs reference code paths where implemented | | |
+| **Orphan detection**: No active specs for features that were never built; no significant features without specs | | |
+| **Evolution evidence**: Specs revise over time; change proposals exist; version history is visible | | |
+
+### Signs of good OpenSpec usage
+- Specs and code tell the same story -- you can trace from requirement to spec to implementation.
+- Change proposals are the normal mechanism for spec evolution, not ad-hoc edits.
+- Stale or superseded specs are marked with appropriate status, not left as `active`.
+- Frontmatter is consistent and machine-parseable across all spec files.
+
+### Common problems
+- Specs written during planning but never updated as implementation revealed differences.
+- Missing frontmatter fields (especially `updated`) making it impossible to detect staleness.
+- Abandoned change proposals: `proposal.md` exists but was never completed or rejected.
+- Active specs for features that were descoped or never started (orphans that mislead agents).
+- No traceability: code has no reference to spec IDs, specs have no reference to code paths.
+- Acceptance criteria that are subjective ("user-friendly", "performant") rather than testable.
+
+---
+
 ## 4. Governance & Process Quality
 
 | Criterion | Score | Notes |

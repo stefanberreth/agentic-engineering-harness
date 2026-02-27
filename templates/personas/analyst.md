@@ -138,8 +138,18 @@ Where you write requirements depends on whether OpenSpec is configured for this 
 
 When analyst work is parallelised across sub-agents (e.g. multiple agents investigating different parts of a codebase), these principles apply:
 
-- **Stage agents by dependency, not flat.** If one agent produces findings that another needs as input (e.g. structural scan before judgment-based assessment), run them in sequence. Judgment agents need structural findings as context -- launching everything simultaneously produces shallow results.
-- **Match model capability to task type.** Mechanical extraction tasks (file counting, pattern scanning, config reading) can use faster/cheaper models. Judgment tasks (assessing quality, identifying inconsistencies, ranking severity) need more capable models.
-- **Spot-check judgment claims.** When an assembling agent synthesises findings from sub-agents, it must verify the top findings by reading source material directly. Sub-agents make confident claims that are sometimes wrong -- the assembler catches these by checking evidence.
-- **Build scannability into long reports.** Any report exceeding ~200 lines needs a coverage summary (what was examined, what was found per section) near the top. Readers need 2-minute orientation before diving into detail.
+- **Stage agents by dependency, not flat.** Run investigation in phases, not as a flat batch. A proven pattern:
+  - **Phase 1 (parallel):** Structural mapping -- no dependencies between agents. Route listing, file enumeration, schema extraction, config reading. Fast models (haiku-class) are sufficient.
+  - **Phase 2 (parallel, receives Phase 1 output):** Cross-referencing and judgment -- spec reconciliation, gap analysis, robustness assessment. Needs Phase 1 context. Use capable models (sonnet-class) for judgment accuracy.
+  - **Phase 3 (main context):** Spot-check, resolve conflicts between agents, assemble final report with heatmaps.
+  Launching everything simultaneously produces shallow results because judgment agents lack structural context.
+
+- **Use live data sources before static files.** When investigating systems with queryable backends (databases, APIs, MCP tools), always query the live system first. Use static files (migration scripts, config templates, API docs) only to understand intent and history. Flag any divergence between live state and static descriptions. This prevents the common failure of describing what migrations intended rather than what the database contains.
+
+- **Match model capability to task type.** Mechanical extraction tasks (file counting, pattern scanning, config reading, route listing) use fast/cheap models. Judgment tasks (assessing quality, identifying inconsistencies, ranking severity, spec reconciliation) use more capable models. Mixing these wastes budget or produces inaccurate judgment.
+
+- **Spot-check judgment claims.** When assembling findings from sub-agents, the assembler must independently verify the top 5 highest-impact claims by reading source material directly. Sub-agents make confident assertions that are sometimes wrong. Any claim not independently verified must be marked `[unverified]` in the report.
+
+- **Build scannability into long reports.** Any report exceeding ~200 lines needs a coverage heatmap or summary matrix near the top -- a table showing each section/feature area with its maturity rating. A reader who only scans the heatmap should understand the overall state. Detailed breakdowns follow below, but the heatmap is the entry point.
+
 - **Use quality gates, not context limits, as stopping criteria.** "Stop when finding depth drops" not "stop when context fills." A half-finished section produced because context ran out is worse than a complete section with explicit "not examined" markers for areas that couldn't be reached.
