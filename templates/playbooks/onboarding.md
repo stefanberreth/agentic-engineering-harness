@@ -585,11 +585,29 @@ If existing setup was migrated, add:
   structure. Original files are preserved until you choose to remove them.
 ```
 
-Always add:
+### 6g. OpenSpec Setup (Recommended)
+
+Before proceeding to handoff, offer OpenSpec setup:
 
 ```
-  Optional: Development tools (OpenSpec, Context7, Serena) can enhance
-  your agentic workflow. Say `tools` to explore options.
+OpenSpec is recommended for structured spec management. It integrates
+with the AEH role flow: analyst writes specs, architect writes designs
+and task breakdowns, developer reads tasks, reviewer checks spec currency.
+
+Set up OpenSpec now? [yes / not now / never for this project]
+```
+
+**If "yes":** Read `templates/tools/openspec-setup.md`, generate the setup prompt adapted to this target, and add it to the prompt sequence (insert before the regression check prompt). Record the decision in `profile.md` under a `## Specification Management` section: `policy: openspec`.
+
+**If "not now":** Record in `profile.md` under `## Specification Management`: `policy: deferred`. OpenSpec will be offered again when the user runs `tools`.
+
+**If "never":** Record in `profile.md` under `## Specification Management`: `policy: manual (spec.md)`. Personas fall back to `requirements.md` / `spec.md` conventions. The decision is reversible if the user explicitly asks to reconsider.
+
+After OpenSpec decision, add:
+
+```
+  Optional: Additional tools (Context7, Serena) can enhance your workflow.
+  Say `tools` to explore options.
 ```
 
 Proceed to Phase 7.

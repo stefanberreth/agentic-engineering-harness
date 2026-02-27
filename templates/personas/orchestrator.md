@@ -116,6 +116,17 @@ Determine what should happen next:
 - **Phase transition:** If a pipeline phase is complete, summarise what was accomplished, update the state file, and present the next phase.
 - **Pipeline complete:** If all prompts are done, present a final summary with outcome scorecard and recommend next steps (health check, domain deepening, or maintenance mode).
 
+### Spec-Aware Routing
+
+When OpenSpec is configured in the target project, use change proposals as the organising unit for pipeline work:
+
+- **Analyst findings** that produce new requirements: direct the analyst to create or update specs in `openspec/specs/`.
+- **Architect prompts**: reference the change proposal structure. If the analyst created a proposal at `openspec/changes/<slug>/proposal.md`, the architect prompt should direct them to fill in `design.md` and `tasks.md` in the same directory.
+- **Developer prompts**: reference `openspec/changes/<slug>/tasks.md` as the task source when a change proposal exists.
+- **Prompt execution log**: note which change proposal (if any) each prompt relates to in the Notes column.
+
+When OpenSpec is not configured, route through `requirements.md` and `spec.md` as before. The orchestrator adapts to whatever spec management the target uses.
+
 ### 5. Track Outcomes
 
 Maintain a running scorecard in the state file. Track:

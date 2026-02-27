@@ -102,7 +102,7 @@ When no persona is active:
   - `src/` -- [what's in here]
   - `tests/` -- [test organisation]
   - `docs/` -- [documentation]
-- See `spec.md` for full architectural documentation.
+- See `spec.md` (or `openspec/specs/` if configured) for full architectural documentation.
 
 ## Workflow
 
@@ -135,6 +135,25 @@ This project uses a persona-driven agentic engineering workflow:
 - Coverage target: [COVERAGE_TARGET, e.g. "80% line coverage, never decreasing"]
 - [Any special testing conventions or fixtures]
 
+## Specification Management
+
+> Delete this section if OpenSpec is not configured. See `## Development Tools > OpenSpec` for setup.
+
+Specs and change proposals are managed through OpenSpec. This is the single source of truth for what the system should do and how it should be built.
+
+| Location | Contents |
+|----------|----------|
+| `openspec/specs/` | Active specifications -- one per feature area. Each has YAML frontmatter (`id`, `title`, `status`, `created`, `updated`). |
+| `openspec/changes/` | Change proposals -- one directory per change (`<slug>/`), containing `proposal.md`, `design.md`, `tasks.md`, and spec deltas. |
+
+**Role conventions:**
+- **Analyst** writes new specs to `openspec/specs/` and creates change proposals (`proposal.md`) when updating existing specs.
+- **Architect** fills in `design.md` and `tasks.md` within a change proposal, and produces spec deltas.
+- **Developer** reads tasks from `openspec/changes/<slug>/tasks.md`, applies spec deltas after implementation.
+- **Reviewer** checks spec currency: are deltas applied, does the implementation match the spec?
+
+When no change proposal exists (ad-hoc work), specs in `openspec/specs/` are still the reference for requirements and architecture.
+
 ## Key Files
 
 | File | Purpose |
@@ -142,6 +161,8 @@ This project uses a persona-driven agentic engineering workflow:
 | `CLAUDE.md` | This file -- project instructions for Claude |
 | `docs/AE/personas/` | Role-specific persona prompts |
 | `docs/AE/discovery-log.md` | Developer findings that need routing to analyst/architect |
+| `openspec/specs/` | Specification documents (if OpenSpec configured) |
+| `openspec/changes/` | Change proposals with designs and tasks (if OpenSpec configured) |
 | `_ai/todo.md` | Active issue tracker |
 | `_ai/reports/` | Audit and review reports |
 

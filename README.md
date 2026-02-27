@@ -24,7 +24,8 @@ AEH provides:
 - **Project templates** -- scaffolds for `CLAUDE.md` (Claude Code's project instruction file -- the single most important file for agentic engineering) and `agents.md` (cross-tool agent configuration), adapted per target project
 - **Governance criteria** -- checklists and rubrics to assess and improve agentic configuration quality, including agent permission audits
 - **Guided playbooks** -- step-by-step workflows for onboarding new projects, running health checks, and configuring development tools
-- **Tool integration** -- optional setup/teardown for MCP servers (Model Context Protocol -- a standard for giving AI agents access to external tools and data sources): OpenSpec (specs), Context7 (docs), and Serena (code navigation)
+- **Specification management** -- [OpenSpec](https://openspec.dev/) manages specs and change proposals as structured markdown files alongside your code (`openspec/specs/` for specifications, `openspec/changes/` for proposed changes with designs and task breakdowns). No MCP server, no dependencies -- just a directory convention that CLI agents read and write directly. AEH recommends it because spec drift is the most common source of agent confusion: specs living in ad-hoc locations (`spec.md`, `docs/specs/`, `requirements.md`) without structured update processes silently go stale, and agents make confident decisions based on outdated information. With OpenSpec integrated into the role flow, each persona knows where to read and write: Analyst creates specs, Architect fills in designs and tasks, Developer reads tasks and applies spec updates, Reviewer checks that specs match what was built. Optional but recommended; projects can opt out during onboarding and personas gracefully fall back to `spec.md`
+- **Tool integration** -- optional setup/teardown for MCP servers (Model Context Protocol -- a standard for giving AI agents access to external tools and data sources): Context7 (docs) and Serena (code navigation)
 - **Agent permission governance** -- AI coding agents accumulate permissions transactionally ("yes, don't ask again") with no systematic review. AEH audits these configurations: detecting secrets leaked into permission rules, flagging missing safety boundaries, consolidating sprawled allow lists, and enforcing filesystem scope
 - **Transformation process** -- a repeatable method for taking an existing project from zero agentic setup to a fully structured one
 
@@ -133,7 +134,8 @@ Each step is human-approved. The harness generates prompts; you decide when and 
 6. `claude` in your project directory
 7. `Read and execute docs/AE/prompts/001-...` -- run each prompt in order
 8. The prompts set up personas, session init, CLAUDE.md sections -- structure, not code changes
-9. Optional: say `tools` in AEH to configure OpenSpec, Context7, or Serena
+9. Onboarding offers OpenSpec setup for structured spec management (recommended, opt-out available)
+9a. Optional: say `tools` in AEH to configure Context7 or Serena
 10. For code-level fixes from the assessment, run the reviewer-implementer loop with human oversight
 
 **Phase 3: Deepen** (back and forth)
@@ -194,7 +196,7 @@ Ask Claude to explain the setup, help you create it, or verify an existing one. 
 │   │   ├── health-check.md               # Recurring compliance check + delta report
 │   │   └── tools.md                       # Optional development tool configuration
 │   ├── tools/
-│   │   ├── openspec-setup.md / teardown   # OpenSpec MCP server setup/removal
+│   │   ├── openspec-setup.md / teardown   # OpenSpec setup/removal (with role integration)
 │   │   ├── context7-setup.md / teardown   # Context7 MCP server setup/removal
 │   │   └── serena-setup.md / teardown     # Serena MCP server setup/removal
 │   └── agents/
@@ -279,7 +281,8 @@ What's working:
 - Prompt generation and direct delivery
 - Post-transformation regression checks (build, imports, runtime verification)
 - Health check playbook (delta reports + tool health + permission health)
-- Tool integration playbook (OpenSpec, Context7, Serena -- optional, reversible)
+- OpenSpec role integration (recommended spec management, opt-out available, graceful degradation)
+- Tool integration playbook (Context7, Serena -- optional, reversible)
 
 What's evolving:
 - Post-onboarding domain deepening (spec reconciliation, convention extraction, architecture mapping)

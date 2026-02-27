@@ -11,7 +11,7 @@ Configure optional development tools (OpenSpec, Context7, Serena) for a target p
 
 Same as onboarding playbook: concise, no emoji, progress indicators, detail on demand.
 
-**Critical framing rule:** Tool absence is never a deficiency. Present tools as options, not recommendations. If the user declines a tool, record it and move on -- no persuasion.
+**Framing rule:** OpenSpec is recommended by default for structured spec management. Context7 and Serena remain purely optional -- their absence is never a deficiency. If the user declines any tool, record it and move on -- no persuasion.
 
 ---
 
@@ -98,22 +98,37 @@ For each tool, present a brief description and the current status. Offer actions
 
 ### Tool not found (never offered)
 
+**For OpenSpec** (recommended):
+
 ```
-OpenSpec -- specification-driven development
+OpenSpec -- specification-driven development (recommended)
   Manages specs and change proposals as markdown files alongside code.
-  Note: No MCP server needed for CLI agents (Claude Code) -- specs are read directly.
+  Integrates with AEH roles: analyst writes specs, architect writes designs,
+  developer reads tasks, reviewer checks spec currency.
+  No MCP server needed for CLI agents (Claude Code) -- specs are read directly.
   Docs: https://openspec.dev/
-  [set up / skip / decline]
+  [set up / not now / never for this project]
 ```
+
+"not now" records a deferral -- OpenSpec is offered again on the next `tools` run. "never for this project" records a permanent decline. Both are reversible if the user explicitly asks to reconsider.
 
 If functional equivalents were detected:
 
 ```
-OpenSpec -- specification-driven development
+OpenSpec -- specification-driven development (recommended)
   Manages specs and change proposals as markdown files alongside code.
-  Note: No MCP server needed for CLI agents (Claude Code) -- specs are read directly.
-  Note: ADR directory detected at docs/adr/ -- this may already serve a similar purpose.
+  Note: ADR directory detected at docs/adr/ -- OpenSpec complements rather
+  than replaces this (ADRs track decisions, OpenSpec tracks specs and changes).
   Docs: https://openspec.dev/
+  [set up / not now / never for this project]
+```
+
+**For other tools** (optional):
+
+```
+Context7 -- documentation lookup via MCP
+  Provides up-to-date library docs in context.
+  Docs: https://context7.com/
   [set up / skip / decline]
 ```
 

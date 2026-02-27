@@ -9,7 +9,9 @@ Review the code changes on the current feature branch, produce a structured `com
 ## Before You Start
 
 1. Read `CLAUDE.md` for project conventions and code style rules.
-2. Read `spec.md` to understand what the task was supposed to deliver, including its acceptance criteria.
+2. Read the specification to understand what the task was supposed to deliver:
+   - If `openspec/specs/` exists: read the relevant spec(s) and check `openspec/changes/` for the active change proposal and its acceptance criteria.
+   - Otherwise: read `spec.md`.
 3. Read the Developer's retrospective (`reports/task-[N]-retrospective.md`) if it exists.
 4. Check the current git state and identify the branch/commits to review.
 
@@ -174,7 +176,28 @@ If the change introduced no new files and directories are clean, the section is 
 
 If all checks pass, the section is still included with all-pass status. This creates an audit trail confirming permissions were reviewed, not skipped.
 
-### 7. Spec Feedback
+### 7. Spec Currency
+
+**This check is mandatory when OpenSpec is configured.** If `openspec/specs/` exists:
+
+1. Check whether any spec deltas from the active change proposal were applied to `openspec/specs/`.
+2. Compare the implementation against the specs: does the code match what the spec says? Flag any drift.
+3. Check that the spec's `updated` frontmatter date is current if changes were made.
+
+Include a **Spec Currency** section in `comments.md`:
+
+```markdown
+## Spec Currency
+| Check | Status | Finding |
+|-------|--------|---------|
+| Spec deltas applied | pass/WARN | [details if deltas pending] |
+| Implementation matches spec | pass/WARN | [details if drift found] |
+| Spec dates current | pass/WARN | [details if stale] |
+```
+
+If OpenSpec is not configured, skip this section.
+
+### 8. Spec Feedback
 
 If the review reveals issues that originate in the specification (not the implementation):
 - Document them clearly in the Retrospective Evaluation section.

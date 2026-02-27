@@ -96,10 +96,51 @@ Key commands (available as MCP tools):
 
 ---
 
+## Role Integration
+
+OpenSpec integrates with the four AEH personas. The generated prompt should explain these conventions so the target-side agent understands the workflow:
+
+| Role | Reads | Writes |
+|------|-------|--------|
+| **Analyst** | Existing specs in `openspec/specs/` | New specs; change proposals (`openspec/changes/<slug>/proposal.md`) |
+| **Architect** | Specs + change proposals | `design.md`, `tasks.md`, and spec deltas within change proposals |
+| **Developer** | Specs for context; `tasks.md` for work items | Applies spec deltas to `openspec/specs/` after implementation |
+| **Reviewer** | Specs + change proposals | Flags spec drift, verifies deltas were applied |
+
+### Example spec frontmatter
+
+```yaml
+---
+id: user-auth
+title: User Authentication
+status: active
+created: 2026-02-27
+updated: 2026-02-27
+---
+```
+
+Valid `status` values: `draft`, `active`, `deprecated`.
+
+### Example change proposal structure
+
+```
+openspec/changes/add-oauth-support/
+├── proposal.md      # What is changing and why (analyst)
+├── design.md        # Architecture and decisions (architect)
+├── tasks.md         # Ordered implementation tasks (architect)
+└── spec-deltas.md   # Changes to apply to parent spec (architect)
+```
+
+### Graceful Degradation
+
+If OpenSpec is removed from a project (directories deleted), the AEH personas automatically fall back to `requirements.md` / `spec.md` conventions. No persona changes needed -- each persona checks for the presence of `openspec/specs/` and adapts. The Specification Management section in CLAUDE.md can be deleted when OpenSpec is removed.
+
+---
+
 ## Verification
 
 After setup, verify:
 - [ ] `openspec/specs/` directory exists
 - [ ] `openspec/changes/` directory exists
-- [ ] CLAUDE.md has an OpenSpec subsection under Development Tools
+- [ ] CLAUDE.md has a Specification Management section (and/or OpenSpec subsection under Development Tools)
 - [ ] (Sandboxed environments only) `.mcp.json` contains the `openspec` entry and server connects
