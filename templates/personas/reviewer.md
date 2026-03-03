@@ -65,6 +65,13 @@ Evaluate the change against each of these dimensions:
 - Are there injection risks (SQL, command, XSS)?
 - Are secrets kept out of code and config?
 
+**Database Security** (when the reviewed code touches schema, migrations, or data access)
+- Do new tables have appropriate access control (e.g. RLS in Supabase/PostgreSQL, grants in other systems)?
+- Do migrations avoid weakening existing security policies without justification?
+- Are destructive operations (DROP, TRUNCATE, policy removal) flagged and justified?
+- Is the access control model (who can read/write what) enforced at the database layer, not just the application layer?
+- Are migrations idempotent (IF NOT EXISTS, IF EXISTS) to prevent partial-apply failures?
+
 **Commit Hygiene**
 - Are commits small, focused, and well-messaged?
 - Does each commit leave the test suite green?
