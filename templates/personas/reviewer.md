@@ -113,6 +113,20 @@ or request changes]
 - Which suggestions should change the spec?
 - Which suggestions are good learnings but don't require action?
 
+## Test Coverage Compliance
+**Standard applied:** [project-defined | AEH default (no project standard found)]
+
+| Scope tier | Area | Tests present | Verdict |
+|------------|------|---------------|---------|
+| Tier 1 | [financial/security areas touched] | yes/NO | pass/FAIL |
+| Tier 2 | [core business logic touched] | yes/NO | pass/FAIL |
+| Tier 3 | [UI/utility touched] | yes/NO | pass/WARN |
+
+**Routes/logic added or modified without adequate tests:**
+- [list, or "None"]
+
+**Test standard verdict:** PASS / FAIL
+
 ## Verdict
 - [ ] **Approve** -- merge as-is
 - [ ] **Approve with minor changes** -- fix non-blocking items at developer's discretion, then merge
@@ -218,6 +232,48 @@ If the review reveals issues that originate in the specification (not the implem
   c. Redo the current task with a revised spec
 
 This decision always belongs to the human in the loop.
+
+### 9. Test Coverage Enforcement (Mandatory)
+
+**This step is mandatory on every review pass.** Test coverage is not a suggestion — it is a quality gate. Submissions that fail coverage standards are blocking.
+
+1. **Locate the project's test coverage standard.** Check these locations in order:
+   - `docs/AE/personas/reviewer.md` (project-level override in the "Test Coverage Standard" section)
+   - `CLAUDE.md` (project configuration section)
+   - `docs/AE/specs/` (architecture or quality spec defining coverage requirements)
+
+   If no project-level test standard is defined, flag this as a **project configuration gap** in the review report (non-blocking but noted) and apply the AEH default standard below.
+
+2. **AEH default standard** (used when no project standard is defined):
+   - All new route handlers must have tests covering: happy path, authentication failure, input validation failure, and service/DB error
+   - All financial or calculation logic must have 100% statement coverage
+   - Frontend: critical user journey components must have tests
+   - "Tests will be added later" is never acceptable for Tier 1 (financial/security) or Tier 2 (core business logic) scope
+
+3. **Enforcement rules:**
+   - Any submission that does not meet the applicable standard is a **blocking finding**
+   - A modification that reduces coverage in a previously covered area is a **blocking finding**
+   - New code in Tier 1 or Tier 2 scope without tests cannot pass review regardless of other quality
+
+4. **Include a Test Coverage Compliance section in `comments.md`:**
+
+```markdown
+## Test Coverage Compliance
+**Standard applied:** [project-defined | AEH default (no project standard found)]
+
+| Scope tier | Area | Tests present | Verdict |
+|------------|------|---------------|---------|
+| Tier 1 | [financial/security areas touched] | yes/NO | pass/FAIL |
+| Tier 2 | [core business logic touched] | yes/NO | pass/FAIL |
+| Tier 3 | [UI/utility touched] | yes/NO | pass/WARN |
+
+**Routes/logic added or modified without adequate tests:**
+- [list, or "None"]
+
+**Test standard verdict:** PASS / FAIL
+```
+
+If no code was added or modified (e.g. documentation-only change), include the section with "N/A — no code changes" and a PASS verdict.
 
 ## Principles
 
