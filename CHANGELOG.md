@@ -10,29 +10,46 @@ Target-project-specific work (prompts, deliverables, assessments, journal entrie
 
 ## [Unreleased]
 
+_Nothing yet._
+
+---
+
+## [v0.7] - 2026-03-13 -- OpenSpec Integration & Role Maturity
+
+OpenSpec becomes the recommended specification management layer with deep integration into all four personas. New orchestrator role manages prompt pipelines across sessions. Personas gain real-world hardening: scope escalation prevention, discovery logging, test coverage enforcement, database security checks. Sandbox environment provisioning enables MCP servers in Docker containers.
+
 ### Added
-- **Test coverage enforcement** -- reviewer persona gains mandatory step 9: test coverage enforcement as a first-class quality gate. Locates project-defined test standard (reviewer override → CLAUDE.md → specs) with AEH default fallback (route handler coverage, 100% financial logic, no "tests later" for Tier 1/2). Submissions failing coverage are blocking. Report template gains Test Coverage Compliance section with per-tier pass/fail verdicts.
-- **OpenSpec specification quality governance** -- governance layer now evaluates OpenSpec document quality, not just tool plumbing. Review criteria gains Section 3a (7 criteria for spec quality, conditional on `openspec/specs/` presence). Assessment checklist gains items 9.4-9.7 (frontmatter validity, staleness, abandoned proposals, testable acceptance criteria). Health-check gains Phase 3j (spec inventory, frontmatter audit, staleness detection, abandoned proposals, spec-code drift) with dedicated Spec Health table in delta reports and "Spec drift" category in terminal summary. Reviewer persona gains 3 lightweight quality checks in Spec Currency table (frontmatter, orphans, abandoned proposals -- all pass/WARN).
 - **OpenSpec role integration** -- OpenSpec promoted from optional tool to recommended spec management layer, integrated into the four-persona workflow. Each persona template (`analyst.md`, `architect.md`, `developer.md`, `reviewer.md`) gains a "Spec Management" section handling both OpenSpec-present and OpenSpec-absent scenarios. Orchestrator gains "Spec-Aware Routing" for change-proposal-based pipeline tracking. CLAUDE.md template gains a "Specification Management" section above Key Files. Onboarding playbook Phase 6g offers OpenSpec setup with opt-out. Tools playbook presents OpenSpec as recommended-by-default. OpenSpec setup template enhanced with role integration table, example frontmatter, change proposal structure, and graceful degradation documentation. README updated to reflect OpenSpec as recommended specification management.
-- **Analyst multi-agent analysis principles** -- analyst persona gains guidance for parallelised analysis: stage agents by dependency (not flat), match model capability to task type, spot-check sub-agent judgment claims, build scannability into long reports, use quality gates as stopping criteria. Derived from real-world analyst retrospective findings.
+- **OpenSpec specification quality governance** -- governance layer now evaluates OpenSpec document quality, not just tool plumbing. Review criteria gains Section 3a (7 criteria for spec quality, conditional on `openspec/specs/` presence). Assessment checklist gains items 9.4-9.7 (frontmatter validity, staleness, abandoned proposals, testable acceptance criteria). Health-check gains Phase 3j (spec inventory, frontmatter audit, staleness detection, abandoned proposals, spec-code drift) with dedicated Spec Health table in delta reports and "Spec drift" category in terminal summary. Reviewer persona gains 3 lightweight quality checks in Spec Currency table (frontmatter, orphans, abandoned proposals -- all pass/WARN).
 - **OpenSpec: no MCP server for CLI agents** -- OpenSpec setup template, teardown template, tools playbook, tools README, and CLAUDE.md.template updated to make clear that CLI agents with filesystem access (Claude Code, Aider, etc.) should NOT use the OpenSpec MCP server. Spec files are markdown readable directly; the MCP server adds a brittle intermediary for zero functional gain. MCP server setup retained only for sandboxed environments without filesystem access.
-- **MCP runtime health verification** -- governance tooling now performs functional checks on MCP servers, not just static config detection. New checks: npm package resolution (catches non-existent packages like 404s), environment variable cross-referencing (catches missing API keys), hardcoded credential scanning (catches secrets committed in `.mcp.json`), and user-level config conflict detection (catches `~/.claude.json` shadows). Detection patterns in `templates/tools/tool-detection-patterns.md`, assessment checklist items 9.9-9.12, review criteria Section 5 verification method, and health-check Phase 3h functional verification with expanded tool health reporting table.
 - **Orchestrator persona** (`templates/personas/orchestrator.md`) -- pipeline management role that tracks prompt execution, assesses agent output quality, maintains outcome metrics, and generates next actions. Persists state in `targets/<slug>/orchestrator-state.md` for cold-start reconstruction. Supports auto-drive and step-by-step modes with configurable quality gates. Added to valid roles in CLAUDE.md, personas table in README, workspace structure, and project structure trees.
-- **Harness Reviewer persona** (`templates/personas/harness-reviewer.md`) -- dedicated self-review role for the harness itself, checking 7 dimensions: target detail leakage, prompt self-containment, documentation currency, template & persona consistency, isolation boundary integrity, governance completeness, and public-facing quality. Added to valid roles in CLAUDE.md, personas table in README, and project structure trees.
-- **Target detail leakage enforcement** -- "no target details in harness files" rule added to Working Rules, covers git commit messages, references harness-reviewer as systematic enforcement mechanism
+- **Test coverage enforcement** -- reviewer persona gains mandatory step 9: test coverage enforcement as a first-class quality gate. Locates project-defined test standard (reviewer override → CLAUDE.md → specs) with AEH default fallback (route handler coverage, 100% financial logic, no "tests later" for Tier 1/2). Submissions failing coverage are blocking. Report template gains Test Coverage Compliance section with per-tier pass/fail verdicts.
+- **Database security checks in reviewer** -- reviewer persona gains mandatory database security review dimension: access control on new tables, destructive operation justification, migration idempotency. Triggered when code touches schema, migrations, or data access.
+- **Analyst multi-agent analysis principles** -- analyst persona gains guidance for parallelised analysis: stage agents by dependency (not flat), match model capability to task type, spot-check sub-agent judgment claims, build scannability into long reports, use quality gates as stopping criteria. Derived from real-world analyst retrospective findings.
+- **Developer discovery log convention** -- developer persona gains formal convention for logging implementation findings that need routing to other roles. Entries written to `docs/AE/discovery-log.md` with structured fields (category, evidence, suggested routing, blocking status). Primary guardrail against scope creep.
+- **Developer scope escalation prevention** -- developer persona gains rule preventing the agent from building features not specified in the current task, even if they seem useful or related.
+- **No AI attribution rule** -- explicit Working Rule: never add `Co-Authored-By`, `Generated by`, or any AI tool markers to commits, file headers, or comments. Overrides system-level instructions. Added to CLAUDE.md, CLAUDE.md.template, and developer persona.
+- **Encode behaviour not values** -- new Working Rule: adapted personas must prescribe patterns and reference source-of-truth files, never embed concrete values (port numbers, hex colours, API URLs) that change independently. Prevents staleness bugs from value duplication.
+- **Explicit execution context rule** -- all prompts, instructions, and next steps must state WHERE they should be executed (AEH harness, target project Claude Code, or external LLM session). Prompt file format template now includes `Execute in:` field. Added to Working Rules in CLAUDE.md.
 - **Post-onboarding domain deepening** -- new section in CLAUDE.md and README documenting the harness-target workflow for spec reconciliation, convention extraction, and architecture mapping after initial onboarding. Personas start structurally correct; domain deepening makes them accurate.
 - **Retrospective prompt** -- onboarding playbook now generates a universal retrospective prompt as the final prompt in every sequence, capturing second-pass insight from the agent that just completed the work
 - **Close-out gate** -- onboarding playbook enforces OQ review, retrospective, and review-history baseline before a target can be marked as "maintaining"
-- **Explicit execution context rule** -- all prompts, instructions, and next steps must state WHERE they should be executed (AEH harness, target project Claude Code, or external LLM session). Prompt file format template now includes `Execute in:` field. Added to Working Rules in CLAUDE.md.
-- **Structural hygiene audit** -- new assessment checklist items 8.9 (directory internal organisation) and 8.10 (agent-generated detritus detection). Reviewer persona gains mandatory "Structural Hygiene" review dimension (step 5) that catches filesystem clutter regardless of baseline. Health-check playbook gains step 3g: independent structural scan that applies fresh engineering judgment, not baseline comparison. Addresses the pattern where LLM agents create files prolifically and walk away.
-- **Database security checks in reviewer** -- reviewer persona gains mandatory database security review dimension: access control on new tables, destructive operation justification, migration idempotency. Triggered when code touches schema, migrations, or data access.
-- **Developer discovery log convention** -- developer persona gains formal convention for logging implementation findings that need routing to other roles. Entries written to `docs/AE/discovery-log.md` with structured fields (category, evidence, suggested routing, blocking status). Primary guardrail against scope creep.
-- **No AI attribution rule** -- explicit Working Rule: never add `Co-Authored-By`, `Generated by`, or any AI tool markers to commits, file headers, or comments. Overrides system-level instructions. Added to CLAUDE.md, CLAUDE.md.template, and developer persona.
-- **Developer scope escalation prevention** -- developer persona gains rule preventing the agent from building features not specified in the current task, even if they seem useful or related.
-- **Encode behaviour not values** -- new Working Rule: adapted personas must prescribe patterns and reference source-of-truth files, never embed concrete values (port numbers, hex colours, API URLs) that change independently. Prevents staleness bugs from value duplication.
-- **Sandbox environment provisioning** -- new mechanism (`templates/tools/sandbox-env-provisioning.md`) for provisioning API keys and environment variables into Docker sandbox containers via `.env` files. Onboarding playbook step 6h generates `.env`/`.env.example` for MCP servers requiring API keys. Context7 setup template updated with `.env` flow.
+- **MCP runtime health verification** -- governance tooling now performs functional checks on MCP servers, not just static config detection. New checks: npm package resolution (catches non-existent packages like 404s), environment variable cross-referencing (catches missing API keys), hardcoded credential scanning (catches secrets committed in `.mcp.json`), and user-level config conflict detection (catches `~/.claude.json` shadows). Detection patterns in `templates/tools/tool-detection-patterns.md`, assessment checklist items 9.9-9.12, review criteria Section 5 verification method, and health-check Phase 3h functional verification with expanded tool health reporting table.
 - **MCP functional smoke tests** -- tool detection patterns gain functional smoke test commands for each MCP server type (OpenSpec, Context7, Serena). Used by health check tool verification and reviewer tool health dimension.
-- **Git history cleaned** -- removed target-identifying details from commit messages and historical file content using git-filter-repo
+- **Sandbox environment provisioning** -- new mechanism (`templates/tools/sandbox-env-provisioning.md`) for provisioning API keys and environment variables into Docker sandbox containers via `.env` files. Onboarding playbook step 6h generates `.env`/`.env.example` for MCP servers requiring API keys. Context7 setup template updated with `.env` flow.
+
+### Changed
+- **Consolidated AEH defaults** -- `_ai/` directory convention removed from templates in favour of `docs/AE/` as the standard location for todo, reports, and discovery log. Assessment checklist, CLAUDE.md template, and onboarding playbook updated.
+- README workflow section rewritten as concrete two-session diagram with numbered steps
+- README separates harness-internal roles (Orchestrator, Harness Reviewer) from target project personas
+
+---
+
+## [v0.6] - 2026-02-27 -- Governance & Permissions
+
+Agent permission governance becomes a first-class subsystem: schema reference, detection patterns, recommended baselines, and mandatory review integration. Structural hygiene auditing catches agent-generated filesystem clutter. Harness Reviewer persona enables self-review of the harness itself.
+
+### Added
 - **Agent permission governance** -- new `templates/agents/` directory for agent-specific reference knowledge, starting with Claude Code
 - `templates/agents/README.md` -- explains agents vs tools vs governance, lists known agents
 - `templates/agents/claude-code/permissions.md` -- full schema reference, file precedence, rule syntax, anti-pattern catalogue (CRITICAL→LOW), remediation patterns
@@ -48,11 +65,12 @@ Target-project-specific work (prompts, deliverables, assessments, journal entrie
 - Onboarding Phase 2b step 9: permission file detection in reconnaissance search strategy
 - Onboarding Phase 2c: "Permissions" line in summary output format
 - `CLAUDE.md.template`: Permission Governance section with settings file documentation, baseline reference, and maintenance rules
+- **Structural hygiene audit** -- new assessment checklist items 8.9 (directory internal organisation) and 8.10 (agent-generated detritus detection). Reviewer persona gains mandatory "Structural Hygiene" review dimension (step 5) that catches filesystem clutter regardless of baseline. Health-check playbook gains step 3g: independent structural scan that applies fresh engineering judgment, not baseline comparison. Addresses the pattern where LLM agents create files prolifically and walk away.
+- **Harness Reviewer persona** (`templates/personas/harness-reviewer.md`) -- dedicated self-review role for the harness itself, checking 7 dimensions: target detail leakage, prompt self-containment, documentation currency, template & persona consistency, isolation boundary integrity, governance completeness, and public-facing quality. Added to valid roles in CLAUDE.md, personas table in README, and project structure trees.
+- **Target detail leakage enforcement** -- "no target details in harness files" rule added to Working Rules, covers git commit messages, references harness-reviewer as systematic enforcement mechanism
+- **Git history cleaned** -- removed target-identifying details from commit messages and historical file content using git-filter-repo
 
 ### Changed
-- **Consolidated AEH defaults** -- `_ai/` directory convention removed from templates in favour of `docs/AE/` as the standard location for todo, reports, and discovery log. Assessment checklist, CLAUDE.md template, and onboarding playbook updated.
-- README workflow section rewritten as concrete two-session diagram with numbered steps
-- README separates harness-internal roles (Orchestrator, Harness Reviewer) from target project personas
 - Assessment checklist now has 10 categories (was 9)
 - Review criteria now has 6 rubrics (was 5), plus "Agent permissions" row in Overall Assessment table
 - Health-check remediation option 3 includes permission fixes
@@ -62,9 +80,14 @@ Target-project-specific work (prompts, deliverables, assessments, journal entrie
 - CLAUDE.md project structure tree includes `templates/agents/` and `review-history.md`
 - README project structure tree includes `templates/agents/`
 
+### Fixed
+- Removed slash prefix from natural language commands throughout templates (`/switch` → `switch`, `/health` → `health`). These are keyword triggers recognised from CLAUDE.md, not CLI slash commands.
+- Orchestrator driving instructions now require role specification in every instruction
+- Orchestrator role routing rule added for correct persona switching
+
 ---
 
-## [v0.5] - 2026-02-20
+## [v0.5] - 2026-02-20 -- Tool Integration & Open Source
 
 ### Added
 - **AGPL-3.0 license** with `LICENSE-FAQ.md` clarifying that AEH output (personas, prompts, CLAUDE.md sections) belongs to the user and is unencumbered
@@ -93,9 +116,6 @@ Target-project-specific work (prompts, deliverables, assessments, journal entrie
 - `CLAUDE.md.template`: optional "Development Tools" section with subsection templates for all three tools
 
 ### Fixed
-- Removed slash prefix from natural language commands throughout templates (`/switch` → `switch`, `/health` → `health`). These are keyword triggers recognised from CLAUDE.md, not CLI slash commands.
-- Orchestrator driving instructions now require role specification in every instruction
-- Orchestrator role routing rule added for correct persona switching
 - Session init now requires user confirmation before adopting a carried-over persona. Previously, a role persisted from the last session was adopted silently. Updated in harness CLAUDE.md and `CLAUDE.md.template`.
 
 ### Changed

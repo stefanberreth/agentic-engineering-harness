@@ -327,6 +327,25 @@ What's evolving:
 - Community: Discord + GitLab Issues + sponsor support
 - Multiple real-world transformations completed across different tech stacks
 
+### v0.6 -- Governance & Permissions (Feb 2026)
+
+- Agent permission governance as a first-class subsystem: schema reference, detection patterns, recommended baselines per project archetype
+- Permission health integrated into reviewer, health checks, and assessment (10 categories, 6 rubrics)
+- Harness isolation check (CRITICAL detection pattern for cross-project reads)
+- Structural hygiene auditing catches agent-generated filesystem clutter
+- Harness Reviewer persona for self-review of the harness itself
+- Review history file for longitudinal pattern detection across assessments
+- Target detail leakage enforcement in working rules and git commit messages
+
+### v0.7 -- OpenSpec Integration & Role Maturity (Mar 2026)
+
+- OpenSpec promoted to recommended spec management, integrated into all four personas
+- Orchestrator persona for prompt pipeline management across sessions
+- Personas hardened from real-world usage: scope escalation prevention, discovery logging, test coverage enforcement, database security checks
+- MCP runtime health verification with functional smoke tests
+- Sandbox environment provisioning for Docker containers
+- Consolidated `docs/AE/` as standard location for agent working files
+
 ## License
 
 AGPL-3.0. See [LICENSE](LICENSE) and [LICENSE-FAQ.md](LICENSE-FAQ.md).
