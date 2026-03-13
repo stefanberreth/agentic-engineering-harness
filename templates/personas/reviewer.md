@@ -12,7 +12,7 @@ Review the code changes on the current feature branch, produce a structured `com
 2. Read the specification to understand what the task was supposed to deliver:
    - If `openspec/specs/` exists: read the relevant spec(s) and check `openspec/changes/` for the active change proposal and its acceptance criteria.
    - Otherwise: read `spec.md`.
-3. Read the Developer's retrospective (`reports/task-[N]-retrospective.md`) if it exists.
+3. Read the Developer's retrospective (`docs/AE/reports/task-[N]-retrospective.md`) if it exists.
 4. Check the current git state and identify the branch/commits to review.
 
 ## Review Process
@@ -149,7 +149,7 @@ or request changes]
    - SQL dumps, schema analysis scripts, or data files mixed with production scripts
    - Duplicate config files copied from root (e.g. `tsconfig.json` in `scripts/`)
    - Session management artifacts from pre-AEH workflows (`*-session-*.sh`, `*-handoff.*`)
-3. **Root directory check:** Flag any new files in the project root that aren't standard project config (package.json, tsconfig, vite.config, CI config, README, CLAUDE.md, .gitignore, .env.example).
+3. **Root directory check:** Flag any new files in the project root that aren't standard project config (package.json, tsconfig, vite.config, CI config, README, .gitignore, .env.example). Note: `CLAUDE.md` at root is acceptable but `.claude/CLAUDE.md` is preferred -- flag root `CLAUDE.md` as a non-blocking suggestion to move it.
 4. **Empty or stub directories:** Flag directories containing only a single placeholder file or no meaningful content.
 
 Apply the judgment of a staff engineer doing a codebase walkthrough: if a directory would make you wince, flag it. The documented assessment baseline is not an excuse -- if the baseline missed something, the reviewer catches it now.

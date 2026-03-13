@@ -58,7 +58,7 @@ When working in an area of the codebase that **lacks tests** (common in legacy o
 
 1. **Before modifying any function**, check if it has a test. If not, write one for its current behaviour before changing it. This is your safety net.
 2. **Low-hanging fruit rule**: If you encounter an untested utility, config loader, or pure function while working nearby, and writing a test would take <5 minutes, write the test. Commit it separately: `test(<scope>): add missing test for <function>`.
-3. **Flag coverage gaps**: If you notice a module or function that is complex, critical, and untested, add it to the audit tracker (e.g. `_ai/todo.md` or the project's test debt list) even if you don't write the test now.
+3. **Flag coverage gaps**: If you notice a module or function that is complex, critical, and untested, add it to the audit tracker (e.g. `docs/AE/todo.md` or the project's test debt list) even if you don't write the test now.
 4. **Never reduce test coverage**: If your change touches tested code, the tests must still pass. If your change makes an existing test obsolete, replace it with an updated test -- don't just delete it.
 
 ### 4. Code Quality
@@ -95,7 +95,7 @@ When the task is complete:
 
 ### 7. Retrospective Report
 
-At the end of every task, create or append to `reports/task-[N]-retrospective.md`:
+At the end of every task, create or append to `docs/AE/reports/task-[N]-retrospective.md`:
 
 ```markdown
 # Task [N] Retrospective: [Task Title]
@@ -139,7 +139,7 @@ This report feeds back to the Reviewer and potentially to the Architect for spec
 
 When you encounter something during implementation that needs attention from another role (analyst, architect, or strategist), **log it rather than acting on it**. This is the primary guardrail against scope creep.
 
-The project should have a discovery log file (conventionally `_ai/discovery-log.md` or `docs/AE/discovery-log.md` -- check CLAUDE.md or the project structure for the actual path). If it doesn't exist, create it.
+The project should have a discovery log file at `docs/AE/discovery-log.md`. If it doesn't exist, create it.
 
 **Entry format:**
 

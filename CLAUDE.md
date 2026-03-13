@@ -42,41 +42,7 @@ When producing deliverables, always write them to `targets/<project>/deliverable
 
 ### Selective exception: Direct Prompt Delivery
 
-There is **one narrow, optional exception** to the isolation rule: the harness may write prompt files directly into a target project's designated prompt inbox directory (conventionally `docs/AE/prompts/` within the target project). This allows the target-side Claude Code instance to simply reference and execute prompts by file path instead of requiring the human to copy-paste prompt text.
-
-**This is a per-target-project policy decision.** It must be:
-
-1. **Asked explicitly** when a new target project is onboarded. The question is:
-
-   > "Would you like the harness to deliver prompt files directly into this target project's `docs/AE/prompts/` directory? This means the harness will create/update/delete files ONLY in that specific directory -- nowhere else in the target project. The alternative is that all prompts stay in the harness and you copy-paste them manually."
-
-2. **Recorded in the target's `profile.md`** under a `## Prompt Delivery Policy` section, with one of:
-   - `direct` -- harness writes prompts to `<target-path>/docs/AE/prompts/`
-   - `manual` -- all prompts stay in `targets/<project>/prompts/`, human copy-pastes
-
-3. **Respected strictly.** If the policy is `direct`:
-   - The harness may ONLY write to `<target-path>/docs/AE/prompts/` -- no other target directory.
-   - Files written there are prompt files only (numbered `.md` files following the standard prompt format).
-   - The harness still writes its own copy to `targets/<project>/prompts/` as well (single source of truth stays in the harness).
-   - Deliverables (adapted `CLAUDE.md`, persona files, etc.) are NEVER written directly -- they always go to `targets/<project>/deliverables/` and a prompt instructs the target-side Claude to apply them.
-
-4. **Changeable at any time.** The human can switch the policy by telling Claude to update the target's `profile.md`. No other files need to change -- prompts are always maintained in both locations when `direct` is active.
-
-#### Why this exception exists
-
-Copy-pasting multi-page prompts is error-prone and tedious. When the harness can drop a prompt file directly into the target project, the human's instruction to the target-side Claude becomes simply:
-
-> "Read and execute `docs/AE/prompts/003-create-developer-prompt.md`"
-
-This is faster, less error-prone, and the prompt file is version-controlled in the target project's repo as a record of what was done.
-
-#### Directory convention
-
-The target-side directory is always `docs/AE/prompts/` (AE = Agentic Engineering). This convention:
-- Keeps harness artifacts namespaced and visible in the target project
-- Is unlikely to collide with existing directory structures
-- Is easy to `.gitignore` if the team doesn't want prompts in their repo
-- Can be overridden per-project by recording a different path in `profile.md`
+The harness may optionally write prompt files directly into a target project's `docs/AE/prompts/` directory (prompt files only — never deliverables or other files). This is a **per-target policy** recorded in `profile.md` as `direct` or `manual`. Ask during onboarding. When `direct`: the harness writes to both `targets/<project>/prompts/` (source of truth) and `<target-path>/docs/AE/prompts/` (delivery). The target-side Claude then runs: "Read and execute `docs/AE/prompts/NNN-title.md`". The directory path can be overridden per-project in `profile.md`.
 
 ---
 
@@ -107,151 +73,31 @@ targets/
     └── journal.md                    # Chronological log of transformation sessions
 ```
 
-### File purposes
-
-| File | Purpose | Updated by |
-|---|---|---|
-| `profile.md` | Stable identity and context for the target project. Includes prompt delivery policy. Read first on any session. | Created once, updated when policy or context changes. |
-| `assessment.md` | Snapshot of the project's agentic readiness. Based on `templates/governance/assessment-checklist.md`. | Created during assessment phase. Re-run when the target evolves. |
-| `transformation-plan.md` | The phased plan: what to create, in what order, with what priority. | Created after assessment. Revised as work progresses. |
-| `tasks.md` | Granular task tracking for the transformation itself (not the target project's development tasks). | Updated every session. |
-| `decisions.md` | Records choices made and why (e.g. "use pytest not unittest because the project already has pytest fixtures"). | Append-only during sessions. |
-| `open-questions.md` | Questions that need human input, further investigation, or a decision before proceeding. | Updated every session. Cleared as questions are resolved. |
-| `review-history.md` | Append-only longitudinal log of all assessment/health-check/reviewer findings. Each dated entry includes full findings snapshot and comparison against previous. Serves as memory across sessions for pattern detection and drift tracking. | Appended every assessment, health-check, and reviewer pass. |
-| `orchestrator-state.md` | Pipeline position, prompt execution log, outcome scorecard, and session handoff notes. Created by the orchestrator persona on first engagement. Execution log and quality gate history are append-only. | Read and updated every orchestrator session. |
-| `prompts/` | Numbered, ordered, ready-to-paste prompt files. Each prompt is self-contained: it tells a Claude Code instance inside the target project exactly what to do. | Created as transformation plan is executed. |
-| `deliverables/` | Fully adapted files (persona prompts, `CLAUDE.md`, etc.) ready to be placed into the target project. | Created alongside prompts. |
-| `journal.md` | Chronological session log: what was done, what was learned, what's next. | Appended at end of each session. |
-
-### The targets/index.md registry
-
-This file is the **entry point for orientation**. It lists every target project with:
-- Project slug and display name
-- Filesystem path
-- Current transformation phase (assessment / planning / implementing / reviewing / maintaining)
-- One-line status summary
-- Date of last activity
-
-A fresh Claude session should read `CLAUDE.md` (this file) and then `targets/index.md` to understand the full landscape.
+Key files: `profile.md` (read first every session), `tasks.md` + `open-questions.md` (updated every session), `orchestrator-state.md` (pipeline position, append-only execution log), `review-history.md` (append-only findings log), `journal.md` (session log). `targets/index.md` is the entry point — lists all projects with phase and status. A fresh session reads `CLAUDE.md` → `targets/index.md` → active target's `profile.md` + `tasks.md`.
 
 ---
 
 ## Transformation Phases
 
-Each target project moves through these phases:
+> **Full reference:** `memory/ref/transformation-phases.md` — read when working on a transformation, domain deepening, or running the reviewer-implementer loop.
 
-### 1. Assessment
-- Read the target project's structure, README, existing config
-- Complete the assessment checklist (`templates/governance/assessment-checklist.md`)
-- Write findings to `targets/<project>/assessment.md`
-- Identify the priority actions
+| Phase | Summary |
+|-------|---------|
+| 1. Assessment | Read target, complete checklist, write findings to `targets/<project>/assessment.md` |
+| 2. Planning | Produce transformation plan, get human approval |
+| 3. Implementing | Adapt templates → deliverables → prompts. Self-containment check: no harness paths in prompts. |
+| 4. Reviewing | Review agentic config using `templates/governance/review-criteria.md`, feed lessons back |
+| 5. Maintaining | Periodic re-assessment, persona updates, retrospective-driven changes |
 
-### 2. Planning
-- Produce `targets/<project>/transformation-plan.md` with phased, ordered tasks
-- Identify project-specific adaptations needed for templates
-- Document decisions and open questions
-- Get human approval on the plan
-
-### 3. Implementing
-- For each task in the transformation plan:
-  - Adapt the relevant template to the target project
-  - Write the adapted file to `targets/<project>/deliverables/`
-  - Write a corresponding prompt to `targets/<project>/prompts/`
-  - **Self-containment check:** Before finalising the prompt, verify it contains NO references to harness-side paths (`targets/`, `deliverables/`, `templates/`). All deliverable content must be embedded directly in the prompt text.
-  - If prompt delivery policy is `direct`: also write the prompt to `<target-path>/docs/AE/prompts/`
-  - Update `targets/<project>/tasks.md`
-- The human takes each prompt to a Claude Code session in the target project:
-  - If `direct` delivery: "Read and execute `docs/AE/prompts/NNN-title.md`"
-  - If `manual` delivery: human copy-pastes the prompt text from `targets/<project>/prompts/`
-
-### 4. Reviewing
-- After the target project has its agentic config in place, review it using `templates/governance/review-criteria.md`
-- Document findings, suggest improvements
-- Feed lessons back into the harness templates
-
-### 5. Maintaining
-- Periodic re-assessment as the target project evolves
-- Update persona prompts and config as the target's stack or workflow changes
-- The target project's own retrospectives may trigger harness-side updates
-
-### Post-Onboarding: Domain Deepening
-
-Onboarding produces clean structure but domain-thin personas. The personas know the tech stack and conventions but don't deeply understand what the code actually does, what the specs get right or wrong, or what architectural decisions were made and why. Domain accuracy comes from post-onboarding investigation.
-
-**Three phases:**
-
-| Phase | What happens | Who does it |
-|-------|-------------|-------------|
-| 1. Housekeeping | Close open questions from assessment, resolve deferred items, fix known config issues | Harness generates a cleanup prompt; target executes |
-| 2. Ground truth | Code archaeology (map what exists) + spec reconciliation (compare specs against code) | Harness reads target for code archaeology; target executes spec reconciliation prompt |
-| 3. Refine | Archive/delete stale specs, inject verified domain knowledge into personas, fix documentation debt | Target executes prompts generated by harness |
-
-Phase 2 is the highest-value step. The spec reconciliation classifies every spec as MATCHES (accurate), PARTIAL (partly built), ASPIRATIONAL (correctly unbuilt), or STALE (contradicts the code). Stale specs that claim false implementation are the most dangerous finding -- they actively mislead agents.
-
-**The harness-target division of labour:**
-
-1. **Harness designs the question.** The harness-side agent generates a read-and-report prompt based on what needs investigation.
-2. **Target executes the investigation.** The target-side agent -- running inside the project with full CLAUDE.md context -- reads the code, compares against specs/docs, and writes findings to `docs/AE/`.
-3. **Harness interprets the results.** The operator brings findings back to the harness. The harness-side agent reads the report and generates refinement prompts.
-4. **Target applies refinements.** Archive stale specs, update personas, fix documentation.
-
-**Why the target-side agent, not the harness?** The target-side agent has the project's CLAUDE.md loaded, knows the conventions, and operates within the project's permission model. It will produce more accurate findings than an external agent reading the same files without that context. The harness can read target files for assessment, but domain-deep investigation belongs to the agent that lives in the codebase.
+**Post-onboarding domain deepening** follows three phases: housekeeping → ground truth (spec reconciliation) → refine. The target-side agent runs investigations; the harness designs questions and interprets results. The **reviewer-implementer loop** (harness writes deliverables → reviewer evaluates → implementer fixes → repeat) is the core operational workflow.
 
 ---
 
 ## Prompt File Format
 
-Every file in `targets/<project>/prompts/` should follow this structure:
+> **Full template:** `memory/ref/prompt-format.md` — read before writing any prompt file.
 
-```markdown
-# Prompt [NNN]: [Short Title]
-
-**Target project:** [name]
-**Target directory:** [absolute path]
-**Execute in:** [target project Claude Code session / AEH harness session / external LLM session]
-**Role:** [analyst / architect / developer / reviewer / no role (freestyle)]
-**Prerequisite prompts:** [list of prompt numbers that must be executed first, or "none"]
-**Phase:** [assessment / planning / implementing / reviewing]
-
-## Context for the operator
-
-[Brief explanation of what this prompt does and why, WHO should
-execute it and WHERE. Never assume this is obvious -- the human
-operates multiple agent contexts simultaneously.]
-
-## Prompt
-
-[The actual text to paste into Claude Code. This should be self-contained:
-it should not assume the target-side Claude has any context from this
-harness project. It should reference only files that exist or will exist
-in the target project.
-
-CRITICAL: Prompts must NEVER reference harness-side file paths (anything
-under targets/<project>/deliverables/, targets/<project>/, or the harness
-directory). The target-side Claude cannot access the harness filesystem.
-When a prompt needs to deliver content (persona files, adapted CLAUDE.md
-sections, configuration), the full content must be EMBEDDED directly in
-the prompt as a fenced code block or inline text. The deliverable file
-in the harness is a working copy for the harness; the prompt is the
-delivery vehicle and must carry the payload itself.
-
-IMPORTANT: When the prompt modifies an existing instruction file (CLAUDE.md,
-persona files, agents.md, etc.), it must use a merge-and-confirm approach:
-read the current file, read/receive the deliverable, diff the two, present
-the changes to the user, and confirm before applying. Never silently
-overwrite instruction files -- changes made between deliverable preparation
-and prompt execution would be lost. New files that don't yet exist in the
-target can be written directly.]
-
-## Expected outcome
-
-[What files should be created/modified, what the human should verify.]
-
-## If something goes wrong
-
-[Fallback instructions: what to check, how to retry, when to come
-back to the harness for a revised approach.]
-```
+Every prompt must include: header (target, directory, execute-in, role, prerequisites, phase), context for operator, the prompt text, expected outcome, and fallback instructions. **Critical rules:** prompts must be self-contained (no harness-side paths), deliverable content must be embedded inline, and modifications to existing instruction files must use merge-and-confirm (never silently overwrite).
 
 ---
 
@@ -270,88 +116,9 @@ back to the harness for a revised approach.]
 
 ## Assessment Working Principles
 
-When assessing a new target project, the harness operates as a **reviewer by nature**. The assessment is not just a checklist exercise -- it's a deep audit. These principles apply to every assessment:
+> **Full reference:** `memory/ref/assessment-guide.md` — read before running any assessment or onboarding. Covers thoroughness standards, inconsistency detection, policy derivation, assessment outputs, the assessment-implementation boundary, and pre-approval for experienced users.
 
-### Thoroughness
-
-- **Read everything.** Don't skim. Read all instruction files (`CLAUDE.md`, `.claude/`, `agents.md`, README), all configuration files, and all documentation indexes. For source code, read the directory structure completely and sample key files.
-- **Cross-reference.** Check whether what instruction files SAY matches what the filesystem SHOWS. Document every contradiction.
-- **Count things.** How many spec files? How many test files? How many fix instructions? Volume matters -- it signals documentation sprawl or audit debt.
-
-### Inconsistency Detection
-
-- **Produce a ranked inconsistency report** for every assessment. Use severity levels: CRITICAL (causes Claude session confusion), HIGH (creates ambiguity), MEDIUM (structural debt), LOW (cosmetic).
-- **Check for duplicates.** Multiple instruction files covering the same topic is a top-priority finding.
-- **Check naming conventions.** Are file names, directory names, and in-file references internally consistent? Mixed casing, mixed separators (hyphens vs underscores), stale path references -- all go in the report.
-- **Check for staleness.** Look for date references, version numbers, and references to files/directories that no longer exist. Stale documentation is worse than missing documentation.
-
-### Deriving Policies
-
-- When assessment reveals existing conventions that are well-established in the target project, **encode them as explicit policies** in the transformation deliverables rather than replacing them with generic templates.
-- When assessment reveals inconsistencies, **document the inconsistency AND propose a resolution**, but always defer the final decision to the human.
-- When assessment reveals mature practices (e.g. a working audit methodology, a config-driven architecture), **preserve and build on them** rather than imposing the harness's generic patterns.
-
-### Assessment Outputs
-
-Every assessment produces these files in `targets/<project>/`:
-
-| File | Content |
-|---|---|
-| `profile.md` | Project identity, tech stack, prompt delivery policy, key structural features |
-| `assessment.md` | Completed checklist (10 categories) with status and notes per item |
-| `inconsistencies.md` | Ranked report of all findings with severity, description, and recommendation |
-| `review-history.md` | First entry: full findings snapshot from initial assessment (append-only from here on) |
-| `transformation-plan.md` | Phased, ordered plan with task descriptions, priorities, and effort estimate |
-| `tasks.md` | Checklist view of all transformation tasks |
-| `decisions.md` | Decisions made during assessment + pending decisions needing human input |
-| `open-questions.md` | Unresolved questions that need human input before work can proceed |
-| `journal.md` | Session log of what was read, found, and produced |
-
----
-
-## The Reviewer-Implementer Loop
-
-The core operational workflow for transforming a target project:
-
-1. **Harness** writes policy/rule files as deliverables (adapted CLAUDE.md, persona prompts, policies)
-2. **Reviewer** Claude instance (in target project) evaluates rules against project ground truth, produces a ranked issue list as technical instruction tickets
-3. **Implementer** Claude instance (in target project) works through tickets top-down (CRITICAL first, then HIGH, etc.)
-4. **Repeat** until the reviewer finds no further CRITICAL or HIGH violations
-
-The human's role is to:
-- Review the harness's deliverables before applying them
-- Review the reviewer's findings and approve/prioritise
-- Decide when to stop iterating (e.g. MEDIUM/LOW issues can be deferred)
-
-This pattern is encoded in the prompt templates: `005-run-reviewer.md` runs the review, `006-implementer-fix-round.md` runs the fixes. These are reusable -- run them as many times as needed.
-
----
-
-## Assessment-Implementation Boundary
-
-Onboarding and assessment workflows operate in **read-and-report mode**. They may:
-- Read any file in the target project
-- Create/modify files in the AE harness namespace (`docs/AE/`, `_ai/reports/`)
-- Set up AE harness structure (personas, session init, CLAUDE.md sections for AE)
-- Generate reports, assessments, inconsistency lists, and transformation plans
-
-They must **never**:
-- Modify application code, scripts, or non-AE configuration files
-- Modify non-AE documentation (README, CONTRIBUTING, docs/ content outside `docs/AE/`)
-- Run build, test, or lint commands that modify state
-- Make fixes, refactors, or "improvements" to the codebase
-
-The boundary is: **assessment produces reports; implementation acts on them.** Implementation (code changes, doc fixes, config corrections) requires a separate step with human oversight.
-
-### Pre-approval for experienced users
-
-Users familiar with the process may pre-approve the implementation phase by explicitly saying so. This must be:
-1. **Asked, not assumed.** The onboarding playbook asks at the end of the assessment phase.
-2. **Informed.** The user is told what will happen: which issues will be fixed, which files will be touched, and that the reviewer-implementer loop will run autonomously.
-3. **Recoverable.** The prompt must include clear revert instructions (commit hashes, `git reset` commands) so the user can undo everything if it goes wrong.
-4. **Recorded.** The choice is logged in `targets/<slug>/decisions.md`.
-
-This is an opt-in escalation, not the default. The default is: assessment stops at the report, and the user decides what happens next.
+**Key principles:** Read everything, cross-reference instructions against filesystem, count things, produce a ranked inconsistency report (CRITICAL/HIGH/MEDIUM/LOW). Encode existing conventions as policies rather than replacing them. Assessment is read-and-report only — never modify application code, scripts, or non-AE files during assessment.
 
 ---
 
@@ -371,93 +138,14 @@ When a conversation produces a new insight about how the harness should work, or
 
 ## Harness Maintenance Discipline
 
-This harness is a project like any other. It needs the same discipline it prescribes for target projects.
+> **Full reference:** `memory/ref/harness-maintenance.md` — read before committing harness changes, setting up the targets repo, or checking documentation currency.
 
-### CHANGELOG.md
-
-`CHANGELOG.md` at project root tracks all notable changes. It follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format.
-
-**Update the CHANGELOG for every commit that:**
-- Adds, changes, or removes a template, persona, playbook, or governance document
-- Changes CLAUDE.md rules or working patterns
-- Adds or modifies harness-level features (commands, session init, playbooks)
-- Changes README or public-facing documentation
-
-**Do not update the CHANGELOG for:**
-- Target-specific work (prompts, deliverables, assessments, journal entries, persona adaptations) -- these are tracked per-project in `targets/<project>/tasks.md` and `targets/<project>/journal.md`
-- Typo fixes or minor formatting
-
-**When to bump the version:** When a coherent set of changes forms a meaningful capability increment. Not every commit is a version bump -- group related changes under the current unreleased version until they form a logical unit, then tag it.
-
-### README.md
-
-The README is the public face of this project. Update it when:
-- A new capability is added (persona, playbook, command)
-- The project structure changes
-- Core principles are added or revised
-- The "Current Status" section becomes stale
-
-### Documentation currency
-
-After every session that modifies the harness itself (not target work), verify:
-1. Does CLAUDE.md reflect the current rules and structure?
-2. Does README.md reflect the current capabilities and status?
-3. Is CHANGELOG.md up to date?
-4. Does the project structure tree in CLAUDE.md and README.md match reality?
-
-If any of these are stale, fix them before committing other work.
-
-### Nested Repository Structure (targets/)
-
-This project uses two git repositories:
-
-1. **Harness repo** (root) -- public, tracks templates, governance, playbooks, docs, CLAUDE.md, README. Pushed to the public remote.
-2. **Targets repo** (`targets/`) -- private, tracks all target project workspaces (assessments, plans, prompts, deliverables, journals). Nested inside the harness directory but is an independent git repo.
-
-The harness `.gitignore` contains `targets/` so nothing under `targets/` is tracked by the public repo. The targets repo owns everything in that directory, including `index.md`.
-
-**Commit and push rules:**
-
-**Command style for the targets repo:** Always use `git -C targets/` with a relative path -- never use an absolute path with `-C`. This ensures the command pattern matches across permission approvals (the user approves once, all subsequent `git -C targets/ ...` commands match). Example: `git -C targets/ status`, not `git -C "/full/path/targets" status`.
-
-When the user says "commit" or "commit and push":
-1. **Determine what changed.** Run `git status` and `git -C targets/ status` to check both repos.
-2. **If only harness files changed:** Commit and push the harness repo only.
-3. **If only target files changed:** Commit and push the targets repo only (`git -C targets/ ...`).
-4. **If both changed:** Commit and push BOTH repos, in separate commits with appropriate messages. Commit the targets repo first (it's the inner dependency), then the harness repo.
-
-When committing target-specific work (assessments, prompts, deliverables, journal entries):
-- Commit to the **targets repo**, not the harness repo.
-- Use descriptive messages: `<slug>: <what changed>` (e.g. `my-project: complete Phase 3 assessment`).
-- Do NOT update CHANGELOG.md for target-specific work.
-
-When committing harness work (templates, governance, playbooks, CLAUDE.md):
-- Commit to the **harness repo** only.
-- Follow the existing CHANGELOG/README currency rules.
-
-**Never assume only one repo is affected.** Always check both on commit.
-
-**Detecting and offering the nested repo setup:**
-
-On session start, check whether `targets/.git/` exists. If it does not, and target workspaces exist under `targets/`, mention it briefly:
-
-```
-Note: targets/ has no private repo set up. Your target workspaces are
-unversioned. Say "set up targets repo" for the recommended setup.
-```
-
-If the user says "set up targets repo" (or equivalent), explain briefly:
-- What it is: a nested private git repo inside `targets/` that tracks all transformation workspaces independently from the public harness repo
-- Why: keeps private project data versioned without risk of leaking into a shared/public harness
-- How: `git init` in `targets/`, add all existing files, optionally add a private remote for backup
-
-Then offer to create it. After creation, verify it works:
-- `git -C targets/ status` shows a clean working tree
-- `git status` in the root shows no target workspace files
-
-If the user already has it set up, verify on first commit of the session that both repos are healthy (`git status` in both).
-
-If the targets repo has no remote configured, do not nag -- but if the user asks about backup or syncing target data across machines, suggest adding a private remote.
+**Key rules (always active):**
+- Two git repos: harness (root, public) and targets (`targets/`, private, nested). Always use `git -C targets/` (relative path) for the targets repo.
+- On commit: check BOTH repos (`git status` + `git -C targets/ status`). Commit targets repo first if both changed.
+- Target-specific commits go to targets repo only. No CHANGELOG update for target work.
+- After harness changes: verify CLAUDE.md, README.md, CHANGELOG.md, and project structure tree are current before committing.
+- CHANGELOG follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Update for template/persona/playbook/governance/CLAUDE.md changes. Skip for target work and typo fixes.
 
 ---
 
@@ -639,7 +327,8 @@ If working on the harness itself:
 │   │   ├── context7-setup.md              # Context7 setup prompt template
 │   │   ├── context7-teardown.md           # Context7 teardown prompt template
 │   │   ├── serena-setup.md                # Serena setup prompt template
-│   │   └── serena-teardown.md             # Serena teardown prompt template
+│   │   ├── serena-teardown.md             # Serena teardown prompt template
+│   │   └── sandbox-env-provisioning.md    # Sandbox passthrough var provisioning mechanism
 │   └── agents/
 │       ├── README.md                      # Agent-specific knowledge overview
 │       └── claude-code/

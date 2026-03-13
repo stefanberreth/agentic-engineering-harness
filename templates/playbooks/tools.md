@@ -169,13 +169,14 @@ For each accepted action, generate a prompt:
 
 ### Setup
 
-1. Read the relevant setup template from `templates`tools`/<tool>-setup.md`
+1. Read the relevant setup template from `templates/tools/<tool>-setup.md`
 2. Adapt it to the target project:
    - Use the correct tech stack for Serena's `project.yml`
    - Reference the correct CLAUDE.md section locations
    - Include project-specific paths
-3. Write the prompt to `targets/<slug>/prompts/NNN-setup-<tool>.md` following the standard prompt format (see CLAUDE.md > Prompt File Format)
-4. If the target's prompt delivery policy is `direct`, also write to `<target-path>/docs/AE/prompts/`
+3. **If the tool requires environment variables** (see `templates/tools/sandbox-env-provisioning.md`): run the sandbox env provisioning flow -- check harness `.env` for the key, ask operator if missing, ensure the generated prompt includes `.env` provisioning steps.
+4. Write the prompt to `targets/<slug>/prompts/NNN-setup-<tool>.md` following the standard prompt format (see CLAUDE.md > Prompt File Format)
+5. If the target's prompt delivery policy is `direct`, also write to `<target-path>/docs/AE/prompts/`
 
 ### Teardown (removal)
 

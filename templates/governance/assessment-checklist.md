@@ -26,7 +26,7 @@ For each item, mark one of:
 
 | # | Item | Status | Notes |
 |---|---|---|---|
-| 2.1 | `CLAUDE.md` exists at project root | | |
+| 2.1 | `CLAUDE.md` exists (`.claude/CLAUDE.md` preferred, project root also accepted) | | |
 | 2.2 | `.claude/` directory exists and is in source control | | |
 | 2.3 | `agents.md` exists (cross-tool compatibility) | | |
 | 2.4 | Build commands are documented in `CLAUDE.md` | | |

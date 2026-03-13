@@ -1,7 +1,8 @@
 # CLAUDE.md Template for Target Projects
 
-> **Instructions:** Copy this file to the root of your target project as `CLAUDE.md`.
-> Replace all `[PLACEHOLDER]` values. Delete this instruction block when done.
+> **Instructions:** Place this file at `.claude/CLAUDE.md` in the target project.
+> Claude Code auto-loads from this location. Replace all `[PLACEHOLDER]` values.
+> Delete this instruction block when done.
 > **Section ordering matters.** Session init must stay at the top. LLMs give more
 > weight to early content in long files -- instructions buried past line 200 are
 > unreliably followed.
@@ -119,7 +120,7 @@ This project uses a persona-driven agentic engineering workflow:
 - **One task per branch.** Branch from `main` as `feature/[task-slug]`. [Or: "This project works directly on `main`. Small, focused commits."]
 - **Small commits.** Each commit should leave tests green and be reviewable in isolation.
 - **No dead code.** Don't commit commented-out blocks, unused imports, or TODO stubs.
-- **Write a retrospective** after each task in `_ai/reports/` or `reports/`.
+- **Write a retrospective** after each task in `docs/AE/reports/`.
 
 ### Git Conventions
 
@@ -163,8 +164,8 @@ When no change proposal exists (ad-hoc work), specs in `openspec/specs/` are sti
 | `docs/AE/discovery-log.md` | Developer findings that need routing to analyst/architect |
 | `openspec/specs/` | Specification documents (if OpenSpec configured) |
 | `openspec/changes/` | Change proposals with designs and tasks (if OpenSpec configured) |
-| `_ai/todo.md` | Active issue tracker |
-| `_ai/reports/` | Audit and review reports |
+| `docs/AE/todo.md` | Active issue tracker |
+| `docs/AE/reports/` | Audit and review reports |
 
 ## Constraints and Decisions
 

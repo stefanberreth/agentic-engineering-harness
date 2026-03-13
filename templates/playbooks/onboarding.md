@@ -118,7 +118,7 @@ Read the following (where they exist) and note which are present/absent:
 | File/Directory | Purpose |
 |----------------|---------|
 | `README.md` or `README` | Project description |
-| `CLAUDE.md` | Agent instructions |
+| `.claude/CLAUDE.md` or `CLAUDE.md` | Agent instructions (`.claude/` location preferred) |
 | `.claude/` directory | Claude configuration |
 | `agents.md` or `agents.yaml` | Cross-tool agent config |
 | `package.json` / `pyproject.toml` / `Cargo.toml` / `go.mod` / `*.csproj` / `Makefile` | Package/build config |
@@ -142,7 +142,7 @@ Many projects already have role-based instructions in non-standard locations. De
 
 | Pattern | Where to look | Examples |
 |---------|--------------|----------|
-| Persona/role files | `.claude/`, `docs/prompts/`, `prompts/`, `_ai/`, project root | `developer-prompt.md`, `reviewer-instructions.md`, `SYSTEM_PROMPT.md` |
+| Persona/role files | `.claude/`, `docs/prompts/`, `prompts/`, `docs/AE/`, project root | `developer-prompt.md`, `reviewer-instructions.md`, `SYSTEM_PROMPT.md` |
 | Role sections in CLAUDE.md | Embedded in CLAUDE.md or `.claude/Claude.md` | `## Developer Rules`, `## When reviewing code`, `## Coding Standards` |
 | agents.md / agents.yaml | Project root, `.claude/` | Cursor rules, Windsurf configs, other tool agent files |
 | Workflow instructions | README, CONTRIBUTING.md, `docs/` | `## Development Workflow`, `## Code Review Process` |
@@ -428,10 +428,10 @@ Write the final task list to `targets/<slug>/tasks.md`.
 ```
 
 **Scope boundary**: This phase generates prompts that set up the AE harness infrastructure in the target project. These prompts may ONLY touch:
-- `CLAUDE.md` (adding AE sections: session init, role selection, context management)
+- `.claude/CLAUDE.md` (adding AE sections: session init, role selection, context management)
 - `docs/AE/` (personas, prompts, harness artifacts)
 - `.gitignore` (adding AE-related ignores like `.claude/persona`)
-- `_ai/reports/` (writing assessment/review reports)
+- `docs/AE/reports/` (writing assessment/review reports)
 
 These prompts must NEVER touch:
 - Application code (`scripts/`, `src/`, `lib/`, etc.)
@@ -609,6 +609,64 @@ After OpenSpec decision, add:
   Optional: Additional tools (Context7, Serena) can enhance your workflow.
   Say `tools` to explore options.
 ```
+
+### 6h. Sandbox Environment Variable Provisioning
+
+> **Reference:** `templates/tools/sandbox-env-provisioning.md` for full mechanism details.
+
+If any accepted tool requires environment variables (currently: Context7 requires `CONTEXT7_API_KEY`), provision them now. This step ensures the variables reach the agent inside Docker sandbox containers.
+
+**Step 1: Check harness-level `.env`**
+
+Read `<harness-root>/.env` (gitignored). For each required variable:
+- If present: note the value for interactive use (do NOT write it to prompt files on disk).
+- If absent: ask the operator for the value. Store it in the harness `.env` for reuse across future onboardings.
+
+```
+Tools you selected require environment variables for sandbox passthrough.
+
+Checking harness config for known keys...
+  CONTEXT7_API_KEY: <found / not found>
+```
+
+If not found:
+
+```
+I need your CONTEXT7_API_KEY to provision it in the target project's .env.
+This is a personal key (same across all projects). Get one from https://context7.com/
+Paste it here:
+```
+
+Store the provided value in `<harness-root>/.env`:
+
+```
+# Personal API keys for sandbox passthrough (shared across all targets)
+CONTEXT7_API_KEY=<value>
+```
+
+**Step 2: Ensure the generated tool setup prompt handles `.env`**
+
+The Context7 setup prompt (generated from `templates/tools/context7-setup.md`) already includes `.env` provisioning steps. Verify the prompt instructs the target-side Claude to:
+
+1. Check if `.env` exists and contains the variable
+2. If missing, ask the operator for the value (interactive, not hardcoded)
+3. Append to `.env`
+4. Ensure `.env` is in `.gitignore`
+5. Create `.env.example` documenting required variables (without values)
+
+**Step 3: Pre-provision for the operator (optional, interactive only)**
+
+If the harness has the key value and the delivery policy is `direct`, offer to tell the operator the value so they can have it ready when the target-side Claude asks:
+
+```
+When the target-side Claude runs the Context7 setup prompt, it will ask
+for CONTEXT7_API_KEY. Your key is available in the harness config.
+Want me to show it now so you can paste it? [yes / I know it]
+```
+
+This is a convenience -- the key never appears in any file that's version-controlled. It passes through the interactive session only.
+
+**Generality:** This mechanism supports any passthrough variable. When new variables are added to the sandbox's `PASSTHROUGH_VARS` array, add them to `templates/tools/sandbox-env-provisioning.md` and they'll be picked up here automatically.
 
 Proceed to Phase 7.
 

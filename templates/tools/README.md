@@ -43,3 +43,4 @@ Tools are managed through the `tools` playbook (`templates/playbooks/tools.md`),
 | `context7-teardown.md` | Teardown prompt template for Context7 |
 | `serena-setup.md` | Setup prompt template for Serena |
 | `serena-teardown.md` | Teardown prompt template for Serena |
+| `sandbox-env-provisioning.md` | Mechanism for provisioning env vars into target `.env` for Docker sandbox passthrough |

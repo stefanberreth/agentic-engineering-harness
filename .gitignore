@@ -6,6 +6,9 @@
 # Local session state (not project config)
 .claude/persona
 
+# Harness-level secrets (personal API keys shared across targets)
+.env
+
 # Transient screenshots for human-Claude communication
 docs/screenshots/
 
