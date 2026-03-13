@@ -356,5 +356,5 @@ If working on the harness itself:
 │   ├── how-i-tamed-claude-ndc-london-2026.md
 │   ├── raw transcript.txt
 │   └── Screenshot 2026-02-15 at 15.17.33.png
-└── logs/                                  # (legacy, migrated to targets/)
+└── docs/screenshots/                      # (gitignored, transient human-Claude communication)
 ```

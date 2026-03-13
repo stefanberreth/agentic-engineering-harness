@@ -198,7 +198,8 @@ Ask Claude to explain the setup, help you create it, or verify an existing one. 
 │   ├── tools/
 │   │   ├── openspec-setup.md / teardown   # OpenSpec setup/removal (with role integration)
 │   │   ├── context7-setup.md / teardown   # Context7 MCP server setup/removal
-│   │   └── serena-setup.md / teardown     # Serena MCP server setup/removal
+│   │   ├── serena-setup.md / teardown     # Serena MCP server setup/removal
+│   │   └── sandbox-env-provisioning.md    # .env provisioning for Docker/sandbox environments
 │   └── agents/
 │       ├── README.md                      # Agent-specific knowledge overview
 │       └── claude-code/                   # Claude Code permission schema, patterns, baselines
@@ -276,13 +277,17 @@ AEH is in active development. It has been used to transform real projects end-to
 What's working:
 - Onboarding playbook (7-phase guided assessment)
 - Four engineering persona templates + optional Strategist
+- Orchestrator (pipeline management) and Harness Reviewer (self-review) personas
 - Assessment checklist (10 categories) and review criteria (6 rubrics)
 - Agent permission governance (schema reference, detection patterns, baselines)
 - Prompt generation and direct delivery
 - Post-transformation regression checks (build, imports, runtime verification)
-- Health check playbook (delta reports + tool health + permission health)
+- Health check playbook (delta reports + tool health + permission health + spec health)
 - OpenSpec role integration (recommended spec management, opt-out available, graceful degradation)
 - Tool integration playbook (Context7, Serena -- optional, reversible)
+- Sandbox environment provisioning (`.env` flow for Docker/sandbox MCP servers)
+- Structural hygiene auditing (catches agent-generated filesystem clutter)
+- Test coverage enforcement and database security checks in reviewer
 
 What's evolving:
 - Post-onboarding domain deepening (spec reconciliation, convention extraction, architecture mapping)
