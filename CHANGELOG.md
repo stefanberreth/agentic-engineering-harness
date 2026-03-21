@@ -10,7 +10,10 @@ Target-project-specific work (prompts, deliverables, assessments, journal entrie
 
 ## [Unreleased]
 
-_Nothing yet._
+### Added
+- **Autonomous loop capability** -- reviewer persona gains autonomous mode section: JSON verdict schema, deterministic gate execution before qualitative review, re-review protocol with iteration tracking and escalation to BLOCK after 3 persistent failures. Orchestrator persona gains autonomous loop mode: programmatic developer→gates→reviewer cycle, iteration tracking, escalation policy, batch execution commands, and monitor commands for reading loop state.
+- **Loop driver template** (`templates/scripts/loop-driver.sh.template`) -- shell script template for the developer→gates→reviewer automation loop. Handles iteration caps, gate result parsing, reviewer verdict parsing, escalation, and state file management.
+- **Orchestrator state schema extensions** -- orchestrator state template gains Active Loop State section (mode, iteration tracking, gate/reviewer results) and Escalation Policy section (iteration caps, gate failure rules, BLOCK handling, crash recovery).
 
 ---
 

@@ -34,6 +34,23 @@ Full quality assessment, wait for user approval, then generate the next prompt. 
 
 The active mode and quality gate setting are recorded in `orchestrator-state.md`.
 
+### Autonomous loop
+
+Activated by "run autonomous loop for prompt NNN" or by the loop driver script.
+
+In this mode, the orchestrator does not generate prompts for humans to carry. Instead, it:
+1. Reads the current prompt and state
+2. Invokes the developer instance programmatically (via the loop driver)
+3. Runs deterministic gates (via the gate script)
+4. If gates fail: feeds error output back to developer, increments iteration count
+5. If gates pass: invokes the reviewer instance in autonomous mode
+6. Parses the reviewer's JSON verdict
+7. If PASS/WARN: commits, updates state, moves to next prompt
+8. If FAIL: feeds blocking issues back to developer, increments iteration count
+9. If BLOCK or iteration cap reached: writes escalation to state, stops loop
+
+The human is only involved when escalation is triggered or when the prompt queue is exhausted.
+
 ## Process
 
 ### 1. Orient
@@ -132,6 +149,32 @@ Read and execute docs/AE/prompts/NNN-title.md
 
 This is non-negotiable. The operator switches rapidly between agent contexts and needs zero-friction handoff with complete instructions. Every handoff must include the role and the copy-paste string. No exceptions, no drift.
 
+#### Autonomous Execution
+
+When the operator requests autonomous execution for a prompt (or a batch of prompts), generate the loop invocation command:
+
+```bash
+cd /workspace/<project> && bash scripts/aeh-loop.sh NNN 3
+```
+
+For batch execution of sequential prompts:
+
+```bash
+for PROMPT_ID in NNN NNN NNN; do
+  bash scripts/aeh-loop.sh "$PROMPT_ID" 3
+  if [ $? -eq 2 ]; then
+    echo "Escalation at prompt $PROMPT_ID — stopping batch"
+    break
+  fi
+done
+```
+
+Monitor from the orchestrator instance by reading state files:
+```bash
+cat docs/AE/state/loop-state.json
+cat docs/AE/reviews/*-verdict.json | tail -20
+```
+
 Determine what should happen next:
 
 - **Next prompt in sequence:** If the current prompt passed and the next is already generated, present it with execution context.
@@ -226,6 +269,28 @@ When engaging with a target for the first time as orchestrator:
 | Criterion | Status | Evidence |
 |-----------|--------|----------|
 | (from strategic direction, or "none defined") | MET / NOT MET | ... |
+
+## Active Loop State
+
+- **Mode:** manual | autonomous
+- **Current prompt:** NNN
+- **Loop iteration:** 0
+- **Max iterations:** 3
+- **Developer invocations:** 0
+- **Reviewer invocations:** 0
+- **Last gate result:** (none)
+- **Last reviewer verdict:** (none)
+- **Escalation status:** none | warn | escalated
+- **Escalation reason:** (none)
+
+## Escalation Policy
+
+- Max developer→gate→reviewer iterations per prompt: **3**
+- Gate failure after developer claims fix: **auto-FAIL, counts as iteration**
+- Reviewer BLOCK verdict: **immediate escalation, stop loop**
+- Same blocking issue persists 3 iterations: **reviewer escalates to BLOCK**
+- New blocking issues introduced during fix: **counts as iteration, does not reset counter**
+- Loop driver crash/timeout: **stop loop, preserve state, alert human**
 
 ## Active Flags
 

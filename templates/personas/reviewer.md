@@ -14,6 +14,7 @@ Review the code changes on the current feature branch, produce a structured `com
    - Otherwise: read `spec.md`.
 3. Read the Developer's retrospective (`docs/AE/reports/task-[N]-retrospective.md`) if it exists.
 4. Check the current git state and identify the branch/commits to review.
+5. If operating in autonomous mode: run the project's deterministic gate script and record results before beginning qualitative review.
 
 ## Review Process
 
@@ -133,11 +134,97 @@ or request changes]
 - [ ] **Request changes** -- address blocking issues, then re-review
 ```
 
+### 3b. Autonomous Mode (Quality Gate)
+
+When the review prompt includes the instruction **"autonomous review with JSON verdict"**, operate as a blocking quality gate in an automated loop. This changes three behaviours:
+
+**1. Run Deterministic Gates First**
+
+Before qualitative review, execute the project's deterministic gate script (if it exists):
+
+```bash
+bash scripts/deterministic-gates.sh docs/AE/state/gate-results.json
+```
+
+If no gate script exists, run these individually and record results:
+- `npm test` or the project's test command
+- `npx tsc --noEmit` (if TypeScript project)
+- `npm run build` (if build script exists)
+- `npm run lint` (if lint script exists)
+
+If **any** deterministic gate fails, set verdict to FAIL immediately. Still produce the qualitative review — the developer needs both the gate failure details AND any other issues to fix everything in one pass.
+
+**2. Produce Structured JSON Verdict**
+
+Write a JSON verdict file to `docs/AE/reviews/<prompt-id>-verdict.json`:
+
+```json
+{
+  "prompt_id": "NNN",
+  "verdict": "PASS | WARN | FAIL | BLOCK",
+  "iteration": 1,
+  "timestamp": "ISO-8601",
+  "deterministic_gates": {
+    "tests": "PASS | FAIL | SKIP",
+    "typecheck": "PASS | FAIL | SKIP",
+    "build": "PASS | FAIL | SKIP",
+    "lint": "PASS | FAIL | SKIP"
+  },
+  "blocking_issues": [
+    {
+      "id": "B1",
+      "category": "security | correctness | convention | boundary | test_coverage | gate_failure",
+      "file": "path/to/file.ts",
+      "line": 42,
+      "title": "Short description",
+      "description": "Full explanation of the issue",
+      "suggestion": "How to fix it"
+    }
+  ],
+  "warnings": [
+    {
+      "id": "W1",
+      "category": "same categories as above",
+      "file": "path/to/file.ts",
+      "line": 10,
+      "title": "Short description",
+      "description": "Full explanation",
+      "suggestion": "How to fix it"
+    }
+  ],
+  "summary": "One-sentence human-readable summary"
+}
+```
+
+**Verdict rules:**
+- **PASS:** All deterministic gates pass AND zero blocking issues. Warnings are acceptable.
+- **WARN:** All deterministic gates pass AND zero blocking issues AND warnings present. Equivalent to "approve with suggestions."
+- **FAIL:** One or more deterministic gate failures OR one or more blocking qualitative issues. Developer should fix and resubmit.
+- **BLOCK:** Fundamental problem requiring human judgment — spec is wrong, architecture decision needed, scope creep detected, or 3+ iterations on the same blocking issue without progress.
+
+**3. Still Produce Markdown Report**
+
+The JSON verdict is the machine-readable signal. Still produce `comments.md` (or `docs/AE/reviews/<prompt-id>-review.md`) as the human-readable record. The markdown report follows the existing format unchanged.
+
+**Critical rule:** In autonomous mode, your verdict in the JSON file is a blocking state transition. FAIL means the developer loops back. BLOCK means a human is called. Do not soften verdicts — an issue is either blocking or it is not.
+
 ### 4. Handling Review Cycles
 
 - If this is a **re-review** (the developer addressed previous comments), check that each blocking issue from the previous `comments.md` has been resolved. Note any that remain.
 - If blocking issues were resolved but new ones were introduced, note them clearly.
 - If the review goes through more than 3 cycles on the same task, flag this to the user -- the task may need to be re-specified.
+
+### Re-review in Autonomous Mode
+
+When re-reviewing after a FAIL verdict:
+1. Read the previous verdict JSON to know what was blocking
+2. Verify each previously-blocking issue is resolved — check the actual code, do not trust claims
+3. Check for regressions — new issues introduced by the fix
+4. If all previous blocking issues are resolved and no new blocking issues: PASS
+5. If the same blocking issue persists after 3 iterations: escalate to BLOCK with note "persistent issue — human judgment needed"
+6. If new blocking issues were introduced by the fix: FAIL with the new issues listed
+
+Include the iteration count in the JSON verdict. The orchestrator uses this to enforce its escalation policy.
 
 ### 5. Structural Hygiene (Mandatory)
 

@@ -1,0 +1,214 @@
+#!/usr/bin/env bash
+# aeh-loop.sh — Autonomous quality gate loop driver
+#
+# Usage: bash scripts/aeh-loop.sh <prompt-id> [max-iterations]
+#
+# Runs the Developer→Gates→Reviewer cycle for a single prompt.
+# Stops on: PASS, BLOCK, iteration cap, or error.
+# Writes state to {{STATE_DIR}}/loop-state.json
+#
+# Template placeholders:
+#   {{PROMPT_DIR}} — path to prompt files (default: docs/AE/prompts)
+#   {{REVIEW_DIR}} — path to review output (default: docs/AE/reviews)
+#   {{STATE_DIR}} — path to state files (default: docs/AE/state)
+#   {{GATE_SCRIPT}} — path to deterministic gates (default: scripts/deterministic-gates.sh)
+#   {{PERSONA_DIR}} — path to persona definitions (default: docs/AE/personas)
+#
+# Prerequisites:
+#   - claude (Claude Code CLI) on PATH
+#   - {{GATE_SCRIPT}} exists and is executable
+#   - Prompt file exists at {{PROMPT_DIR}}/<prompt-id>-*.md
+#   - Reviewer persona at {{PERSONA_DIR}}/reviewer.md has autonomous mode
+
+set -euo pipefail
+
+PROMPT_ID="${1:?Usage: aeh-loop.sh <prompt-id> [max-iterations]}"
+MAX_ITERATIONS="${2:-3}"
+PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+STATE_FILE="$PROJECT_DIR/{{STATE_DIR}}/loop-state.json"
+GATE_RESULTS="$PROJECT_DIR/{{STATE_DIR}}/gate-results-${PROMPT_ID}.json"
+VERDICT_FILE="$PROJECT_DIR/{{REVIEW_DIR}}/${PROMPT_ID}-verdict.json"
+
+cd "$PROJECT_DIR"
+
+# Find prompt file
+PROMPT_FILE=$(find {{PROMPT_DIR}}/ -name "${PROMPT_ID}-*" -type f | head -1)
+if [ -z "$PROMPT_FILE" ]; then
+  echo "ERROR: No prompt file found for ID ${PROMPT_ID}"
+  exit 1
+fi
+
+echo "========================================"
+echo "AEH Autonomous Loop"
+echo "Prompt: $PROMPT_ID ($PROMPT_FILE)"
+echo "Max iterations: $MAX_ITERATIONS"
+echo "========================================"
+
+iteration=0
+final_verdict="PENDING"
+
+update_state() {
+  cat > "$STATE_FILE" << STATEEOF
+{
+  "prompt_id": "$PROMPT_ID",
+  "iteration": $iteration,
+  "max_iterations": $MAX_ITERATIONS,
+  "status": "$1",
+  "last_gate_result": "$2",
+  "last_reviewer_verdict": "$3",
+  "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+}
+STATEEOF
+}
+
+mkdir -p "$(dirname "$STATE_FILE")"
+mkdir -p {{REVIEW_DIR}}
+mkdir -p {{STATE_DIR}}/logs
+update_state "RUNNING" "none" "none"
+
+while [ $iteration -lt $MAX_ITERATIONS ]; do
+  iteration=$((iteration + 1))
+  echo ""
+  echo "──── Iteration $iteration / $MAX_ITERATIONS ────"
+
+  # ── Step 1: Developer ──
+  echo "[DEV] Invoking developer instance..."
+
+  if [ $iteration -eq 1 ]; then
+    DEV_PROMPT="Switch to developer role. Read and execute ${PROMPT_FILE}. When done, run: bash {{GATE_SCRIPT}} {{STATE_DIR}}/dev-self-check.json — fix any failures before finishing."
+  else
+    DEV_PROMPT="Switch to developer role. Read {{REVIEW_DIR}}/${PROMPT_ID}-verdict.json for the reviewer's blocking issues. Fix ALL blocking issues listed. Then run: bash {{GATE_SCRIPT}} {{STATE_DIR}}/dev-self-check.json — fix any failures before finishing."
+  fi
+
+  set +e
+  claude -p "$DEV_PROMPT" \
+    --dangerously-skip-permissions \
+    --output-format text \
+    --max-turns 50 \
+    2>&1 | tee "$PROJECT_DIR/{{STATE_DIR}}/logs/dev-output-${PROMPT_ID}-iter${iteration}.log"
+  DEV_EXIT=$?
+  set -e
+
+  if [ $DEV_EXIT -ne 0 ]; then
+    echo "[DEV] Developer instance exited with error ($DEV_EXIT)"
+    update_state "DEV_ERROR" "none" "none"
+  fi
+
+  # ── Step 2: Deterministic Gates ──
+  echo "[GATE] Running deterministic gates..."
+
+  set +e
+  bash {{GATE_SCRIPT}} "$GATE_RESULTS"
+  GATE_EXIT=$?
+  set -e
+
+  GATE_OVERALL="PASS"
+  if [ $GATE_EXIT -ne 0 ]; then
+    GATE_OVERALL="FAIL"
+    echo "[GATE] FAIL — deterministic gates did not pass"
+    update_state "GATE_FAIL" "$GATE_OVERALL" "none"
+
+    if [ $iteration -lt $MAX_ITERATIONS ]; then
+      echo "[GATE] Feeding gate failures back to developer (iteration $iteration of $MAX_ITERATIONS)"
+      continue
+    else
+      echo "[GATE] Max iterations reached with gate failures. Escalating."
+      update_state "ESCALATED" "$GATE_OVERALL" "none"
+      final_verdict="ESCALATED"
+      break
+    fi
+  fi
+
+  echo "[GATE] PASS — all deterministic gates passed"
+
+  # ── Step 3: Reviewer ──
+  echo "[REV] Invoking reviewer instance..."
+
+  REVIEW_PROMPT="Switch to reviewer role. Perform an autonomous review with JSON verdict for prompt ${PROMPT_ID}. The code is on the current branch. The spec is referenced in ${PROMPT_FILE}. This is iteration ${iteration}. Write JSON verdict to {{REVIEW_DIR}}/${PROMPT_ID}-verdict.json and markdown report to {{REVIEW_DIR}}/${PROMPT_ID}-review.md."
+
+  set +e
+  claude -p "$REVIEW_PROMPT" \
+    --dangerously-skip-permissions \
+    --output-format text \
+    --max-turns 30 \
+    2>&1 | tee "$PROJECT_DIR/{{STATE_DIR}}/logs/rev-output-${PROMPT_ID}-iter${iteration}.log"
+  REV_EXIT=$?
+  set -e
+
+  if [ $REV_EXIT -ne 0 ]; then
+    echo "[REV] Reviewer instance exited with error ($REV_EXIT)"
+    update_state "REV_ERROR" "$GATE_OVERALL" "none"
+    final_verdict="ESCALATED"
+    break
+  fi
+
+  # ── Step 4: Parse Verdict ──
+  if [ ! -f "$VERDICT_FILE" ]; then
+    echo "[REV] ERROR: Reviewer did not produce verdict file at $VERDICT_FILE"
+    update_state "REV_NO_VERDICT" "$GATE_OVERALL" "none"
+    if [ $iteration -lt $MAX_ITERATIONS ]; then
+      continue
+    else
+      final_verdict="ESCALATED"
+      break
+    fi
+  fi
+
+  VERDICT=$(grep -o '"verdict"[[:space:]]*:[[:space:]]*"[^"]*"' "$VERDICT_FILE" | head -1 | grep -o '"[A-Z]*"$' | tr -d '"')
+
+  echo "[REV] Verdict: $VERDICT"
+  update_state "REVIEWED" "$GATE_OVERALL" "$VERDICT"
+
+  case "$VERDICT" in
+    PASS|WARN)
+      echo "[LOOP] Prompt $PROMPT_ID completed with verdict: $VERDICT"
+      final_verdict="$VERDICT"
+
+      git add -A
+      git commit -m "feat: prompt ${PROMPT_ID} — autonomous loop (${iteration} iteration(s), verdict: ${VERDICT})" --no-verify
+      echo "[LOOP] Changes committed."
+      break
+      ;;
+    FAIL)
+      if [ $iteration -lt $MAX_ITERATIONS ]; then
+        echo "[LOOP] FAIL — looping back to developer (iteration $iteration of $MAX_ITERATIONS)"
+      else
+        echo "[LOOP] FAIL after $MAX_ITERATIONS iterations. Escalating to human."
+        final_verdict="ESCALATED"
+      fi
+      ;;
+    BLOCK)
+      echo "[LOOP] BLOCK — immediate escalation to human."
+      final_verdict="ESCALATED"
+      break
+      ;;
+    *)
+      echo "[LOOP] Unrecognised verdict: $VERDICT — treating as FAIL"
+      if [ $iteration -ge $MAX_ITERATIONS ]; then
+        final_verdict="ESCALATED"
+        break
+      fi
+      ;;
+  esac
+done
+
+# ── Final State ──
+update_state "$final_verdict" "$(cat "$GATE_RESULTS" 2>/dev/null | grep overall | grep -o '"[A-Z]*"' | tr -d '"' || echo 'unknown')" "$final_verdict"
+
+echo ""
+echo "========================================"
+echo "Loop complete: $final_verdict"
+echo "  Prompt: $PROMPT_ID"
+echo "  Iterations: $iteration"
+echo "  State: $STATE_FILE"
+if [ -f "$VERDICT_FILE" ]; then
+  echo "  Verdict: $VERDICT_FILE"
+fi
+echo "========================================"
+
+if [ "$final_verdict" = "ESCALATED" ]; then
+  echo ""
+  echo "HUMAN INTERVENTION REQUIRED"
+  echo "Review the state file and latest verdict/gate results."
+  exit 2
+fi
