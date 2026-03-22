@@ -30,6 +30,7 @@ Scan all harness files (everything outside `targets/`) for:
 - Any information that could identify a specific target project
 
 Also check:
+- **Base persona templates** (`templates/personas/*.md`) for project-specific content that leaked into generic methodology. The `bin/validate-personas.sh` script catches known patterns automatically, but also do a judgment-level scan for subtle leakage that grep won't catch (e.g. domain-specific examples that only make sense for one project, methodology that was generalised from a specific project but retained project-specific assumptions).
 - **Git commit messages** (`git log --oneline -50`) for target-identifying details
 - **CHANGELOG.md** entries for target-specific references
 - **README.md** for details that bleed from real transformations
@@ -63,6 +64,17 @@ Verify structural alignment across templates:
 - Playbooks reference correct phase names, file paths, and output formats as defined in `CLAUDE.md`
 - No contradictions between `CLAUDE.md` rules and what templates/playbooks instruct
 - Session init rules in `CLAUDE.md` are consistent with what `CLAUDE.md.template` prescribes for target projects
+
+**Layered Persona Architecture:**
+- All base templates in `templates/personas/` follow the layered convention: base header notice present, §N section numbering, at least one §N.PROJECT extension point per template
+- No base template contains project-specific content (technology names, project identifiers, regulatory framework names tied to a specific project)
+- If reviewing a target project's AEH setup: every overlay file in the target's `docs/AE/personas/` has a Persona Header Block referencing a valid base template
+- If reviewing a target project's AEH setup: overlay files do not duplicate methodology sections from their base template (same heading + similar content = duplication)
+- Run `bin/validate-personas.sh` (and `bin/validate-personas.sh /path/to/target` if reviewing a target project) as a deterministic check. Include the output in the review report.
+
+**Archaeologist Baseline Specs:**
+- If the target project has `openspec/specs/baseline-*.md` files: verify they have OpenSpec frontmatter with `status: baseline`, include a coverage heatmap for reports over 200 lines, and tag factual claims as `[verified]` or `[unverified]`
+- Baseline specs should describe what EXISTS, not what should exist. If a baseline spec contains forward-looking requirements language ("should", "must", "will"), flag it as a finding.
 
 ### 5. Isolation Boundary Integrity
 
@@ -111,6 +123,11 @@ git log --oneline -50
 
 # Verify structure trees
 # Compare CLAUDE.md and README.md trees against actual filesystem
+
+# Validate layered persona conventions
+./bin/validate-personas.sh
+# If reviewing a target project:
+# ./bin/validate-personas.sh /path/to/target-project
 ```
 
 Read each file systematically. Cross-reference claims against reality.
@@ -187,3 +204,4 @@ Create `comments.md` in the project root with this structure:
 - **The harness must practice what it preaches.** If AEH tells target projects to have consistent naming, its own files must have consistent naming. If it tells targets to keep documentation current, its own docs must be current.
 - **Be kind but honest.** The maintainer is reading your review. Write for clarity and helpfulness, not for showing off.
 - **Check everything, report concisely.** Read every file in scope. But the output should be a ranked list of findings, not a narration of everything you read.
+- **Write to workspace, not memory.** Review output goes to `comments.md` in the project root. Never write reports to Claude Code's memory directory (`~/.claude/`). Memory is for session recall only; the workspace is the system of record.
