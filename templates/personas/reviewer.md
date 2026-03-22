@@ -150,6 +150,10 @@ Evaluate the change against each of these dimensions:
   - Any match in a tracked file is **CRITICAL** unless it is clearly a test fixture or example.
 - **Environment bleed** *(for multi-environment projects)*: Scan for production or staging connection details, credentials, or identifiers outside their designated locations (e.g. `.env.prod`, CI/CD variables). Production details in application code, scripts, or non-gitignored config is **CRITICAL**.
 
+### §ES.PROJECT — Environment and Credential Security
+
+> **Project extension point.** The project overlay defines project-specific credential patterns to scan for (API key prefixes, service account identifiers, environment-specific project refs), designated locations for each environment's secrets, and MCP scope verification rules. If no overlay exists, use the generic patterns above.
+
 **Database Security** *(when the reviewed code touches schema, migrations, or data access)*
 - Do new tables have appropriate access control (e.g. RLS in Supabase/PostgreSQL, grants in other systems)?
 - Do migrations avoid weakening existing security policies without justification?
@@ -459,6 +463,10 @@ If the project has no E2E tests, or the change doesn't touch user-facing flows, 
 
 > **Project extension point.** The project overlay defines the specific E2E runner (Playwright, Cypress, etc.), run commands, CI version alignment checks, and stability thresholds. If no overlay exists, use generic detection: look for `playwright.config.*`, `cypress.config.*`, or similar in the project root.
 
+### §DF.PROJECT — Documentation Freshness Checks
+
+> **Project extension point.** The project overlay defines which documentation artefacts to check for staleness when code changes (Mermaid diagrams, portal pages, traceability matrices, API docs). It specifies file locations, freshness scripts, and the mapping between code areas and their documentation. If no overlay exists, skip documentation freshness checks.
+
 ## §10. Test Coverage Enforcement (Mandatory)
 
 **This step is mandatory on every review pass.** Test coverage is not a suggestion — it is a quality gate. Submissions that fail coverage standards are blocking.
@@ -486,6 +494,10 @@ If the project has no E2E tests, or the change doesn't touch user-facing flows, 
 5. **Include a Test Coverage Compliance section in the review report** (see report template above).
 
 If no code was added or modified (e.g. documentation-only change), include the section with "N/A — no code changes" and a PASS verdict.
+
+### §10.PROJECT — Coverage Tiers and Retrofit List
+
+> **Project extension point.** The project overlay defines project-specific coverage tiers (extending or replacing the default 3-tier model), the named list of known-untested areas for retrofit tracking, and any CI threshold configuration. If no overlay exists, use the AEH default standard above.
 
 ## Principles
 
@@ -526,6 +538,10 @@ The adapted reviewer should include a dedicated section of domain checks — inv
 - **Infrastructure**: state management, failure modes, blast radius analysis
 
 The adaptation should add domain checks as a numbered section in the review checklist and include "Domain Correctness Issues" as a category in the report, separate from generic compliance issues.
+
+### §DC.PROJECT — Domain-Specific Invariant Checks
+
+> **Project extension point.** The project overlay defines domain-specific invariant checks using the pattern above — state models, access control rules, data ownership constraints, business value governance, and other domain invariants that the reviewer verifies on every pass. If no overlay exists, no domain checks are applied.
 
 ### Other Adaptation Points
 
