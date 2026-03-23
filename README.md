@@ -16,7 +16,9 @@ An AI coding agent given a focused role with clear boundaries produces dramatica
 
 ## The Five Engineering Personas
 
-AEH defines five engineering roles that run inside Claude Code. Each has a base template encoding mature software engineering methodology, and a project overlay that adds project-specific configuration.
+AEH defines five engineering roles. These are not abstract concepts -- they are instruction files ("system prompts") loaded into a Claude Code session to shape the agent's behaviour for a specific type of work. You start a Claude Code session in your project, load a persona, and the agent operates within that role's boundaries until you switch.
+
+Each persona has a base template (generic methodology, ships with AEH) and a project overlay (project-specific configuration, lives in your project). More on this in [Layered Persona Architecture](#layered-persona-architecture) below.
 
 | Persona | What it does |
 |---------|-------------|
@@ -26,9 +28,9 @@ AEH defines five engineering roles that run inside Claude Code. Each has a base 
 | **Developer** | TDD implementation, follows conventions. Logs discoveries for other roles. |
 | **Reviewer** | Quality gate: compliance checking, security audit, spec traceability. |
 
-The standard workflow is Archaeologist (once, for existing codebases) then Analyst → Architect → Developer → Reviewer in a loop.
+The standard workflow is Archaeologist (once, for existing codebases) then Analyst → Architect → Developer → Reviewer in a loop. You run one role at a time in a Claude Code session pointed at your project. Between sessions, state lives in committed files -- kill a session at any point, start fresh, and the next agent picks up where the last left off.
 
-Three additional harness roles manage the process itself:
+Three additional roles run in the AEH harness itself (a separate Claude Code session in the AEH directory) to manage the process:
 
 | Role | What it does |
 |------|-------------|
