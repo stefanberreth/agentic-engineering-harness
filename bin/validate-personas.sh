@@ -160,7 +160,7 @@ if [ -n "$TARGET_PATH" ]; then
       fi
 
       # 2. Referenced base file exists
-      base_ref=$(grep -oP '(?<=AEH Base:\s).*' "$filepath" 2>/dev/null | head -1 | sed 's/[`*]//g' | xargs 2>/dev/null || true)
+      base_ref=$(grep 'AEH Base:' "$filepath" | head -1 | sed 's/.*AEH Base:[* ]*//' | sed 's/[`*>]//g' | xargs 2>/dev/null || true)
       if [ -n "$base_ref" ]; then
         # Resolve relative to harness root
         resolved_base="$HARNESS_ROOT/$base_ref"
