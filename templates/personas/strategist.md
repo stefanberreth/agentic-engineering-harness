@@ -58,6 +58,7 @@ The human pastes both into the web session. The role definition goes first, the 
 - Domain-specific context relevant to strategic decisions
 - Competitive landscape and research state of the art
 - Known technical debt and open questions
+- Verified codebase state from baseline specs (`openspec/specs/baseline-*.md`) when they exist -- these are Archaeologist-verified facts about what the code actually does, not what documentation claims it does
 - A staleness date so downstream personas know when to distrust it
 
 ### Staleness
