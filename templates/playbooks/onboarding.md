@@ -179,7 +179,7 @@ For each detected file/section:
 - **Source**: file path and section (if within a larger file)
 - **Summary**: one-line description of what it covers
 - **Quality**: clear / inconsistent / stale / contradictory
-- **AE role mapping**: which persona (analyst/architect/developer/reviewer) it maps to, or "cross-cutting" if it spans multiple
+- **AE role mapping**: which persona (archaeologist/analyst/architect/developer/reviewer) it maps to, or "cross-cutting" if it spans multiple
 - **Coverage**: what topics it addresses vs what the AE template covers
 - **Recommendation**: keep as-is / merge and refactor / archive / no existing equivalent (generate new)
 
@@ -395,9 +395,9 @@ Phase 1: Foundation
   1. [CRITICAL] Create consolidated CLAUDE.md           ~1 prompt
   2. [CRITICAL] Resolve contradictory instructions       ~1 prompt
 
-Phase 2: Personas
-  3. [HIGH] Create developer persona (merge existing)    ~1 prompt
-  4. [HIGH] Create reviewer persona                      ~1 prompt
+Phase 2: Personas (overlay scaffolding)
+  3. [HIGH] Scaffold docs/AE/personas/ with overlay files ~1 prompt
+  4. [HIGH] Populate overlays (merge existing content)    ~1-5 prompts
 
 Phase 3: Governance
   5. [MEDIUM] Add assessment checklist                   ~1 prompt
@@ -409,7 +409,7 @@ Total: <N> prompts
 Tasks based on existing setup migration should note the approach:
 
 ```
-  3. [HIGH] Create developer persona (merge from CLAUDE.md > Dev Rules + AE template)
+  3. [HIGH] Scaffold persona overlays (merge from CLAUDE.md > Dev Rules + AE base templates)
 ```
 
 **Ask the user:**
@@ -441,11 +441,42 @@ These prompts must NEVER touch:
 
 For each approved task, in order:
 
-### 6a. Generate Deliverable
+### 6a. Generate Deliverable — Layered Persona Convention
 
-Adapt the relevant template from `templates/` to the target project's specifics. When migrating existing instructions, use the project's own content as the foundation and fill gaps from the AE template.
+Personas use a two-file layered architecture:
+- **Base template** (`templates/personas/<role>.md` in the AEH repo) — generic methodology, unchanged per project
+- **Project overlay** (`docs/AE/personas/<role>.md` in the target project) — project-specific configuration extending the base
 
-Write to `targets/<slug>/deliverables/`.
+The five engineering personas are: **archaeologist**, **analyst**, **architect**, **developer**, **reviewer**. The archaeologist runs upstream (before the Analyst → Architect → Developer → Reviewer loop) to produce baseline specs of existing codebases. For greenfield projects with no existing code, the archaeologist overlay is scaffolded but not immediately invoked.
+
+**When generating persona deliverables:**
+
+1. **Scaffold overlay files**, not monolithic personas. Each overlay must start with the Persona Header Block:
+
+```markdown
+# [Role] Persona: [Project Name]
+
+> **AEH Base:** `templates/personas/<role>.md`
+> Load the base template first. This file provides project-specific
+> configuration that extends, overrides, or parameterises the base.
+> **Precedence rules:**
+> - Sections here with the same heading as a base section → this file wins
+> - Sections here not in the base → extensions, applied after the base
+> - Base sections not mentioned here → apply unchanged
+> - `[SKIP]` marker → explicitly suppresses a base section
+
+## Project Identity
+
+[1-2 lines: project name, domain, tech stack summary]
+```
+
+2. **Populate `§.PROJECT` extension points** from the base template with project-specific content. Read the base template to identify which extension points exist (e.g. `§1.PROJECT`, `§HR.PROJECT`, `§ENV.PROJECT`) and fill in those that apply to this project.
+
+3. **Merge existing instructions** from the reconnaissance catalogue into the appropriate overlay extension points. Do not duplicate base methodology — only add project-specific rules, conventions, constraints, and domain knowledge.
+
+4. **For projects with existing codebases**, include the archaeologist overlay with investigation tools, priority areas, and known documentation gaps populated from the reconnaissance.
+
+Write overlay deliverables to `targets/<slug>/deliverables/`. These are the working copies — the prompt embeds their content for delivery.
 
 ### 6b. Generate Prompt -- Self-Contained, Merge, Don't Replace
 
@@ -464,7 +495,9 @@ Write to `targets/<slug>/deliverables/`.
 
 This prevents loss of changes made between deliverable preparation and prompt execution, and makes the transformation auditable.
 
-**Exception**: For brand-new files that don't exist yet in the target project (e.g. creating a new persona file), the prompt can write directly without a merge step.
+**Exception**: For brand-new files that don't exist yet in the target project (e.g. creating a new persona overlay file), the prompt can write directly without a merge step.
+
+**Persona prompt convention:** Prompts that create persona overlay files must instruct the target-side Claude to create files at `docs/AE/personas/<role>.md`. Each prompt must note that the overlay works in conjunction with the AEH base template — the CLAUDE.md in the target project describes the two-file loading convention. The prompt itself must NOT reference harness-side paths (self-containment rule still applies); the overlay's header block contains the base template path as documentation for the operator.
 
 Write the prompt following the standard format (see CLAUDE.md > Prompt File Format) to `targets/<slug>/prompts/`.
 
@@ -773,7 +806,10 @@ After presenting the options, add one line:
 
 ```
 Tip: Switch to the orchestrator role to manage prompt execution with
-continuous state tracking. It picks up where you left off across sessions.
+continuous state tracking. It uses the five-role model (Archaeologist,
+Analyst, Architect, Developer, Reviewer) and includes two-file persona
+loading in all handover prompts. It picks up where you left off across
+sessions.
 ```
 
 Do not elaborate unless the user asks. This is a pointer, not a pitch.

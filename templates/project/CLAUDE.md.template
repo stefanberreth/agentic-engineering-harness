@@ -21,7 +21,7 @@
 
 The active persona is stored in `.claude/persona` as a single line (e.g. `reviewer`). This file is local and NOT tracked in git.
 
-Valid roles: `analyst`, `architect`, `developer`, `reviewer`
+Valid roles: `analyst`, `archaeologist`, `architect`, `developer`, `reviewer`
 
 An absent or empty file means no role is active.
 
@@ -39,7 +39,7 @@ An absent or empty file means no role is active.
 **If no persona is set:**
 
     [PROJECT_NAME] · no active role
-      Roles: analyst · architect · developer · reviewer
+      Roles: analyst · archaeologist · architect · developer · reviewer
       Pick a role, or "no role" to work freestyle. Say "role info" for details.
 
 3. **Wait for the user before proceeding.** When a persona is carried over from a previous session, do NOT adopt it automatically. Show the banner and wait for the user to either confirm the role (by saying "continue", giving a task, or acknowledging) or switch/clear it. Do not read the persona definition file or apply persona constraints until confirmed.
@@ -54,10 +54,14 @@ An absent or empty file means no role is active.
 
 ### Role behaviour
 
+Personas use a two-file layered architecture: a generic base template (methodology) and a project overlay (project-specific configuration).
+
 When a persona is active:
-- Read its definition file (`docs/AE/personas/<role>.md`) at session start
-- Follow its instructions and constraints throughout the session
-- Apply project rules from this file (CLAUDE.md) in addition to persona rules
+1. Read the AEH base template: `[AEH_PATH]/templates/personas/<role>.md` — generic methodology
+2. Read the project overlay: `docs/AE/personas/<role>.md` — project-specific configuration
+3. The overlay takes precedence where sections overlap. Base sections not mentioned in the overlay apply unchanged.
+4. Follow the combined instructions and constraints throughout the session
+5. Apply project rules from this file (CLAUDE.md) in addition to persona rules
 
 When no persona is active:
 - Follow CLAUDE.md rules only
@@ -68,6 +72,12 @@ When no persona is active:
 ## Filesystem Scope
 
 **This agent operates exclusively within this project's directory tree (`[PROJECT_ROOT]/`).** Never read, write, or reference files outside this directory. If a prompt or instruction references external paths (other projects, parent directories, sibling directories), flag it to the user rather than attempting to access them. All inputs this agent needs must exist within the project or be provided inline in the prompt.
+
+---
+
+## Artifact Output Rule
+
+All reports, review outputs, retrospectives, and deliverables must be written to the project workspace tree — never to Claude Code's internal memory directory (`~/.claude/`). Claude's memory is for session-to-session recall only. Workspace paths for each role are documented in the persona files under `docs/AE/personas/`.
 
 ---
 
@@ -109,10 +119,11 @@ When no persona is active:
 
 This project uses a persona-driven agentic engineering workflow:
 
-1. **Analyst** -- requirements gathering
-2. **Architect** -- solution design
-3. **Developer** -- TDD implementation
-4. **Reviewer** -- code review and compliance checking
+1. **Archaeologist** -- codebase investigation, produces baseline specs (runs before the loop for existing codebases)
+2. **Analyst** -- requirements gathering
+3. **Architect** -- solution design
+4. **Developer** -- TDD implementation
+5. **Reviewer** -- code review and compliance checking
 
 ### Developer Rules
 
