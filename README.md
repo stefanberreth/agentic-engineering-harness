@@ -8,40 +8,50 @@
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2)](https://discord.gg/qnKVnJEuQz)
 [![Support on Ko-fi](https://img.shields.io/badge/Ko--fi-Support-FF5E5B)](https://ko-fi.com/stefanberreth)
 
-A meta-engineering toolkit for transforming software projects into structured agentic engineering setups -- where AI coding agents (Claude Code primarily) work within a reviewable, restartable, persona-driven workflow.
+A meta-engineering toolkit for transforming software projects into structured agentic engineering setups. AI coding agents (Claude Code primarily) work within a reviewable, restartable, persona-driven workflow instead of generating unreviewable volumes of code with no process.
 
-## The Problem
+## The Core Insight
 
-AI coding agents are powerful but undisciplined by default. Without structure, they produce unreviewable volumes of code, lose context between sessions, make silent assumptions, and resist being managed. Most people either "vibe code" (no process, no review) or bolt an AI into their existing workflow without rethinking how work is organised.
+An AI coding agent given a focused role with clear boundaries produces dramatically better output than one agent asked to do everything. Separating concerns into distinct engineering personas -- the same separation that makes human teams effective -- makes AI teams effective too. Inspired by [Emmz Rendle's "How I Tamed Claude" talk at NDC London 2026](https://www.youtube.com/watch?v=pey9u_ANXZM).
 
-## The Solution
+## The Five Engineering Personas
 
-AEH codifies a **persona-driven workflow** inspired by [Emmz Rendle's "How I Tamed Claude" talk at NDC London 2026](https://www.youtube.com/watch?v=pey9u_ANXZM). The core insight: an AI coding agent given a focused role with clear boundaries (what it IS, what it is NOT, when to stop) produces dramatically better output than one agent asked to do everything. Separating concerns into Analyst, Architect, Developer, and Reviewer -- the same separation that makes human teams effective -- makes AI teams effective too.
+AEH defines five engineering roles that run inside Claude Code. Each has a base template encoding mature software engineering methodology, and a project overlay that adds project-specific configuration.
 
-AEH provides:
+| Persona | What it does |
+|---------|-------------|
+| **Archaeologist** | Investigates existing codebases, produces verified baseline specs. Runs upstream before the main loop. |
+| **Analyst** | Gathers requirements, produces specs. Consumes baseline specs as context. |
+| **Architect** | Designs solutions, defines task breakdowns. Works within verified constraints. |
+| **Developer** | TDD implementation, follows conventions. Logs discoveries for other roles. |
+| **Reviewer** | Quality gate: compliance checking, security audit, spec traceability. |
 
-- **Persona templates** -- instruction files ("system prompts") for each engineering role, encoding mature software engineering principles (TDD, small commits, retrospectives, spec-driven development). These are loaded into the AI agent at the start of a session and shape its behaviour. Four engineering personas run inside Claude Code; an optional Strategist runs in any LLM chat for higher-altitude decision-making.
-- **Project templates** -- scaffolds for `CLAUDE.md` (Claude Code's project instruction file -- the single most important file for agentic engineering) and `agents.md` (cross-tool agent configuration), adapted per target project
-- **Governance criteria** -- checklists and rubrics to assess and improve agentic configuration quality, including agent permission audits
-- **Guided playbooks** -- step-by-step workflows for onboarding new projects, running health checks, and configuring development tools
-- **Specification management** -- [OpenSpec](https://openspec.dev/) manages specs and change proposals as structured markdown files alongside your code (`openspec/specs/` for specifications, `openspec/changes/` for proposed changes with designs and task breakdowns). No MCP server, no dependencies -- just a directory convention that CLI agents read and write directly. AEH recommends it because spec drift is the most common source of agent confusion: specs living in ad-hoc locations (`spec.md`, `docs/specs/`, `requirements.md`) without structured update processes silently go stale, and agents make confident decisions based on outdated information. With OpenSpec integrated into the role flow, each persona knows where to read and write: Analyst creates specs, Architect fills in designs and tasks, Developer reads tasks and applies spec updates, Reviewer checks that specs match what was built. Optional but recommended; projects can opt out during onboarding and personas gracefully fall back to `spec.md`
-- **Tool integration** -- optional setup/teardown for MCP servers (Model Context Protocol -- a standard for giving AI agents access to external tools and data sources): Context7 (docs) and Serena (code navigation)
-- **Agent permission governance** -- AI coding agents accumulate permissions transactionally ("yes, don't ask again") with no systematic review. AEH audits these configurations: detecting secrets leaked into permission rules, flagging missing safety boundaries, consolidating sprawled allow lists, and enforcing filesystem scope
-- **Transformation process** -- a repeatable method for taking an existing project from zero agentic setup to a fully structured one
+The standard workflow is Archaeologist (once, for existing codebases) then Analyst → Architect → Developer → Reviewer in a loop.
 
-## Who Is This For
+Three additional harness roles manage the process itself:
 
-- **Solo practitioners** using Claude Code (or similar) who want structure without bureaucracy
-- **Small teams** introducing AI coding agents and needing a shared workflow
-- **Technical leads** evaluating how to integrate AI agents into existing processes
-- **Anyone** who has experienced the "100 files changed, no idea what happened" problem with AI coding
+| Role | What it does |
+|------|-------------|
+| **Orchestrator** | Manages the prompt execution pipeline, tracks state across sessions, generates handover prompts with two-file persona loading |
+| **Strategist** | Business strategy and priorities -- runs in any LLM chat (optional, external to Claude Code) |
+| **Harness Reviewer** | Self-review of AEH's own quality, documentation currency, and target detail leakage |
 
-## What This Is NOT
+## Layered Persona Architecture
 
-- It is **not a framework or library**. There is no code to install or import.
-- It is **not specific to any language or stack**. The templates are adapted per target project.
-- It **does not implement software**. It produces the configuration, documentation, and process artifacts that *drive* implementation.
-- It is **not Claude-exclusive**. While optimised for Claude Code, the persona templates and governance criteria work with any LLM-based coding agent.
+Personas are split into two files:
+
+- **Base template** (`templates/personas/<role>.md`) -- generic methodology with numbered sections and `§.PROJECT` extension points. These ship with AEH and evolve with the project.
+- **Project overlay** (`docs/AE/personas/<role>.md` in the target project) -- project-specific configuration: hard boundaries, domain checks, conventions, credential patterns. Populated during onboarding.
+
+The agent loads the base first, then the overlay. The overlay takes precedence where sections overlap. This means methodology improvements in AEH base templates flow to all projects without rewriting overlays, and project-specific knowledge stays in the project.
+
+Run `bin/validate-personas.sh` to verify structural integrity of base templates. Run `bin/validate-personas.sh /path/to/project` to also validate that project's overlays.
+
+## OpenSpec and Baseline Specs
+
+[OpenSpec](https://openspec.dev/) manages specifications as structured markdown files alongside your code (`openspec/specs/` for specifications, `openspec/changes/` for change proposals with designs and task breakdowns). No MCP server, no dependencies -- just a directory convention that CLI agents read and write directly. Each persona knows where to read and write: Analyst creates specs, Architect fills in designs and tasks, Developer reads tasks and applies spec updates, Reviewer checks that specs match what was built.
+
+The Archaeologist produces **baseline specs** (`status: baseline` in frontmatter) that document what the codebase currently does -- not what it should do. These are the verified ground truth that all downstream roles consume. Baseline specs include `[verified]` and `[unverified]` tags on factual claims so downstream roles know what they can build on safely.
 
 ## Quick Start
 
@@ -55,114 +65,50 @@ Then say `onboard /path/to/your/project` to start the guided assessment.
 
 AEH will:
 1. Read your project's structure, README, and any existing AI agent configuration
-2. Run an assessment checklist across 10 categories
+2. Run a 10-category assessment checklist
 3. Produce a ranked inconsistency report (CRITICAL / HIGH / MEDIUM / LOW)
-4. Generate a phased transformation plan
-5. Create ready-to-execute prompts for setting up the agentic structure in your project
-6. Generate a regression check prompt to verify nothing was broken
+4. Generate a transformation plan
+5. Scaffold persona overlay files with the layered base+overlay convention
+6. Create ready-to-execute prompts for setting up the agentic structure in your project
+7. Offer OpenSpec setup for structured spec management
 
 No code in your project is modified during onboarding. The harness only reads and reports.
 
 ## How It Works
 
-### The Two-Project Model
-
-AEH operates on a strict separation: the harness never directly modifies your project's code. Why? Because an AI agent that reads your project's own `CLAUDE.md`, follows your project's conventions, and operates within your project's permission model will make better, safer changes than one operating from an external context. The harness produces the plan; your project's own agent executes it.
-
-1. **Harness-side** (this project) -- reads target projects, analyses them, produces plans, generates adapted templates and prompts. Never modifies target project files directly (with one narrow, optional exception for prompt delivery).
-2. **Target-side** (your project) -- a separate Claude Code session receives prompts and executes changes within your project's own context and conventions.
-
-### The Personas
-
-| Persona | Where it runs | What it does |
-|---------|---------------|--------------|
-| **Analyst** | Claude Code (harness or target) | Gathers requirements, produces specs |
-| **Architect** | Claude Code (harness or target) | Designs solutions, defines boundaries |
-| **Developer** | Claude Code (target) | TDD implementation, follows conventions |
-| **Reviewer** | Claude Code (target) | Compliance checking, produces issue lists |
-| **Strategist** | Any LLM chat (optional) | Business strategy, priorities, trade-offs |
-
-The four engineering personas are the core workflow. The Strategist is an optional upstream role for users who want a strategic conversation partner (e.g. in Claude Web) to inform engineering priorities. See `templates/personas/strategist.md` for details.
-
-### The Workflow
-
-You work in two Claude Code sessions: one in the AEH directory (the planner), one in your project (the practitioner). The harness designs; your project executes.
+AEH operates on a strict separation: the harness never directly modifies your project's code. The harness produces plans and prompts; your project's own Claude Code session executes them within your project's context, conventions, and permission model.
 
 ```
 IN AEH                              IN YOUR PROJECT
-──────                               ───────────────
+------                               ---------------
 onboard /path/to/project
-  → assessment (read-only)
-  → plan
-  → generates prompts
+  -> assessment (read-only)
+  -> plan
+  -> generates prompts
                                      Run the prompts:
                                        "Read and execute
                                         docs/AE/prompts/001-..."
                                        (one at a time, you review each)
 
                                      Reviewer-Implementer loop:
-                                       reviewer scans → issue list →
-                                       implementer fixes → repeat
-
-Ask for domain deepening
-  → spec reconciliation prompt
-  → persona refinement prompts
-                                     Run deepening prompts:
-                                       reconcile specs vs code
-                                       update personas with findings
+                                       reviewer scans -> issue list ->
+                                       implementer fixes -> repeat
 
 health (periodic)
-  → delta report
-  → fix prompts if needed
+  -> delta report
+  -> fix prompts if needed
                                      Run fix prompts
 ```
 
 Each step is human-approved. The harness generates prompts; you decide when and whether to execute them.
 
-### Transforming a Project Step by Step
+## What AEH Is NOT
 
-**Phase 1: Onboard** (in AEH)
-
-1. `claude` in the AEH directory
-2. `onboard /path/to/your/project`
-3. AEH reads your project, runs a 10-category assessment, produces a ranked report
-4. You approve a transformation plan
-5. AEH generates numbered prompts and delivers them to your project's `docs/AE/prompts/`
-
-**Phase 2: Apply** (in your project)
-
-6. `claude` in your project directory
-7. `Read and execute docs/AE/prompts/001-...` -- run each prompt in order
-8. The prompts set up personas, session init, CLAUDE.md sections -- structure, not code changes
-9. Onboarding offers OpenSpec setup for structured spec management (recommended, opt-out available)
-9a. Optional: say `tools` in AEH to configure Context7 or Serena
-10. For code-level fixes from the assessment, run the reviewer-implementer loop with human oversight
-
-**Phase 3: Deepen** (back and forth)
-
-11. Back in AEH, ask for domain deepening -- AEH generates investigation prompts
-12. In your project, run the spec reconciliation prompt -- it compares your specs against actual code and reports what's stale, what's accurate, what's missing
-13. Back in AEH, review the findings -- AEH generates persona refinement prompts
-14. In your project, run the refinement prompts -- they inject verified domain knowledge into your personas
-
-After this, your personas understand your codebase, not just your tech stack.
-
-**Ongoing: Health checks**
-
-15. Say `health` in AEH periodically to detect drift -- configuration that's fallen out of sync with your evolving project
-
-**Key concepts:**
-
-- **Domain deepening** -- onboarding gives structure; deepening gives accuracy. Three sub-phases: (1) housekeeping -- close open questions, (2) ground truth -- reconcile specs against code, (3) refine -- fix stale specs, update personas. Typically 3-5 prompts, one session.
-- **Drift** -- agentic configuration silently degrades as your project evolves. New dependencies, accumulated permissions, moved files. The agent still runs but gets less effective. Health checks catch it.
-
-### Managing Target Workspace History
-
-When you onboard projects, AEH creates workspaces under `targets/` containing assessments, plans, prompts, and journals. These are valuable artifacts -- but they're also private to you and have no place in a shared or public harness repo.
-
-The recommended setup is a **nested private repo** inside `targets/`. The harness repo (public) ignores target workspace contents via `.gitignore`; the targets repo (private) tracks them independently with its own commit history. Two repos, one working directory, zero risk of leaking private project data into the public harness.
-
-Ask Claude to explain the setup, help you create it, or verify an existing one. Say `set up targets repo` or ask about it -- Claude knows how to configure and maintain it.
+- **Not a framework or library.** No code to install, no dependencies, no build step.
+- **Not specific to any language or stack.** Templates are adapted per target project.
+- **Does not implement software.** It produces configuration, documentation, and process artifacts that *drive* implementation.
+- **Not Claude-exclusive.** Optimised for Claude Code, but the persona templates and governance criteria work with any LLM-based coding agent.
+- **Not a SaaS product.** It's an open-source side project that works well enough to share.
 
 ## Project Structure
 
@@ -170,99 +116,91 @@ Ask Claude to explain the setup, help you create it, or verify an existing one. 
 .
 ├── CLAUDE.md                              # Claude's instructions for this project
 ├── README.md                              # This file
-├── CHANGELOG.md                           # Version history (Keep a Changelog format)
+├── CHANGELOG.md                           # Version history
 ├── LICENSE                                # AGPL-3.0
-├── LICENSE-FAQ.md                         # License clarifications (output ownership, SaaS, etc.)
-├── CONTRIBUTING.md                        # How to contribute (prompt-first, BDFL model)
+├── LICENSE-FAQ.md                         # License clarifications
+├── CONTRIBUTING.md                        # How to contribute
+├── bin/
+│   └── validate-personas.sh              # Structural validation for base templates + overlays
 ├── templates/
 │   ├── personas/
-│   │   ├── analyst.md                     # Requirements gathering persona
-│   │   ├── architect.md                   # Solution design persona
-│   │   ├── developer.md                   # TDD implementation persona
-│   │   ├── harness-reviewer.md            # Harness self-review persona
-│   │   ├── orchestrator.md               # Pipeline management persona
-│   │   ├── reviewer.md                    # Code review persona
-│   │   └── strategist.md                  # Strategic advisor (optional, external sessions)
-│   ├── prompts/
-│   │   └── regression-check.md.template   # Post-transformation regression check
+│   │   ├── archaeologist.md              # Codebase investigation (base template)
+│   │   ├── analyst.md                    # Requirements gathering (base template)
+│   │   ├── architect.md                  # Solution design (base template)
+│   │   ├── developer.md                  # TDD implementation (base template)
+│   │   ├── reviewer.md                   # Code review (base template)
+│   │   ├── orchestrator.md               # Pipeline management
+│   │   ├── harness-reviewer.md           # Harness self-review
+│   │   └── strategist.md                 # Strategic advisor (optional, external)
 │   ├── project/
-│   │   ├── CLAUDE.md.template             # Scaffold for target project CLAUDE.md
-│   │   └── agents.md.template             # Cross-tool agent config scaffold
+│   │   ├── CLAUDE.md.template            # Scaffold for target project CLAUDE.md
+│   │   └── agents.md.template            # Cross-tool agent config scaffold
 │   ├── governance/
-│   │   ├── assessment-checklist.md        # Evaluate agentic readiness
-│   │   └── review-criteria.md             # Quality rubric for config files
+│   │   ├── assessment-checklist.md       # 10-category agentic readiness evaluation
+│   │   └── review-criteria.md            # Quality rubric for config files
 │   ├── playbooks/
-│   │   ├── onboarding.md                  # Guided 7-phase onboarding workflow
-│   │   ├── health-check.md               # Recurring compliance check + delta report
-│   │   └── tools.md                       # Optional development tool configuration
+│   │   ├── onboarding.md                 # 7-phase guided onboarding workflow
+│   │   ├── health-check.md              # Recurring compliance check + delta report
+│   │   └── tools.md                      # Optional development tool configuration
 │   ├── tools/
-│   │   ├── openspec-setup.md / teardown   # OpenSpec setup/removal (with role integration)
-│   │   ├── context7-setup.md / teardown   # Context7 MCP server setup/removal
-│   │   ├── serena-setup.md / teardown     # Serena MCP server setup/removal
-│   │   └── sandbox-env-provisioning.md    # .env provisioning for Docker/sandbox environments
+│   │   ├── README.md                     # Tool integration overview
+│   │   ├── tool-detection-patterns.md    # Detection patterns for tools + equivalents
+│   │   ├── openspec-setup.md             # OpenSpec setup prompt template
+│   │   ├── openspec-teardown.md          # OpenSpec teardown prompt template
+│   │   ├── context7-setup.md             # Context7 setup prompt template
+│   │   ├── context7-teardown.md          # Context7 teardown prompt template
+│   │   ├── serena-setup.md               # Serena setup prompt template
+│   │   ├── serena-teardown.md            # Serena teardown prompt template
+│   │   └── sandbox-env-provisioning.md   # Env var provisioning for Docker/sandbox
+│   ├── prompts/
+│   │   └── regression-check.md.template  # Post-transformation regression check
+│   ├── scripts/
+│   │   └── loop-driver.sh.template       # Autonomous dev->gates->reviewer loop
 │   └── agents/
-│       ├── README.md                      # Agent-specific knowledge overview
-│       └── claude-code/                   # Claude Code permission schema, patterns, baselines
-├── targets/                               # Private nested repo (see "Managing Target Workspace History")
-│   └── index.md                           # Registry of target projects + status
+│       ├── README.md                     # Agent-specific knowledge overview
+│       └── claude-code/
+│           ├── permissions.md            # Permission schema reference + anti-patterns
+│           ├── permission-detection-patterns.md
+│           └── permission-baselines.md   # Recommended configs by project archetype
+├── targets/                              # Private nested repo (your project workspaces)
+│   └── index.md                          # Registry of target projects + status
 └── docs/
-    ├── how-i-tamed-claude-ndc-london-2026.md  # Structured reference from source talk
-    └── ...
+    ├── how-i-tamed-claude-ndc-london-2026.md
+    └── Images/                           # Project logos
 ```
 
-When you onboard a project, AEH creates a workspace under `targets/<your-project>/` with assessment, plan, tasks, decisions, prompts, deliverables, and a session journal.
+## What AEH Provides
 
-## Core Principles
-
-1. **Structure over speed.** A well-structured agentic setup is slower to start but dramatically more productive and reliable over time.
-2. **Restartability.** AI agent sessions are ephemeral -- they lose all context when they end. AEH ensures every piece of state that matters (current task, decisions made, what was tried) lives in committed files, not conversation history. Kill a session at any point, start a fresh one, and it picks up where the last one left off by reading the project files.
-3. **Small increments.** One task, one commit, one reviewable change. No 100k-line surprises.
-4. **Human in the loop.** The AI proposes; the human decides. Every code-touching change requires explicit approval (or explicit pre-approval for experienced users).
-5. **Assessment before implementation.** Onboarding reads and reports. It never modifies your code. Implementation is a separate, conscious step.
-6. **Preserve what works.** When your project already has good instructions or conventions, AEH builds on them. Templates fill gaps -- they don't replace what's working.
-7. **Governance is continuous.** Agentic configuration degrades over time as the project evolves and permissions accumulate. Regular `health` checks detect the drift before it causes problems.
-
-## How AEH Governs Itself
-
-AEH prescribes structured governance for target projects -- so it applies the same discipline to itself. Two additional personas exist for harness-internal use only. They are not part of the target project workflow.
-
-| Persona | What it does |
-|---------|--------------|
-| **Harness Reviewer** | Audits AEH's own quality: documentation currency, template consistency, target detail leakage into public files, public-facing integrity |
-| **Orchestrator** | Manages the prompt execution pipeline for a target transformation. Tracks which prompts have been run, assesses agent output quality, persists state across sessions so nothing is lost between restarts |
-
-These roles exist because a tool that helps others structure their agentic engineering should not be unstructured itself. They are a second-order concern -- useful once you're familiar with the core workflow, not something to worry about when getting started.
+- **Persona templates** -- base templates for five engineering roles and three harness roles, with `§.PROJECT` extension points for project-specific adaptation
+- **Project templates** -- scaffolds for `CLAUDE.md` and `agents.md`, adapted per target project with two-file persona loading
+- **Governance criteria** -- assessment checklists (10 categories) and quality rubrics (6 rubrics) for evaluating agentic configuration
+- **Guided playbooks** -- `onboard` (7-phase assessment + transformation), `health` (recurring compliance check), `tools` (optional MCP server configuration)
+- **Agent permission governance** -- schema reference, detection patterns, recommended baselines. Catches secrets in permission rules, missing deny lists, filesystem scope violations
+- **Validation tooling** -- `bin/validate-personas.sh` checks base template structure, extension points, and project-specific content leakage
+- **Tool integration** -- optional setup/teardown for OpenSpec, Context7 (docs), and Serena (code navigation) MCP servers
 
 ## Maturity Model
 
-AEH doesn't require you to adopt everything at once. Start where you are:
+Start where you are:
 
 | Level | What you get | Effort |
 |-------|-------------|--------|
-| **1. Assessment only** | Run `onboard`, get a ranked report of your project's agentic readiness. No changes made. | 15 minutes |
-| **2. Harness setup** | Add AE structure (personas, session init, CLAUDE.md sections). Your code untouched. | 1 session |
-| **3. Reviewer-implementer loop** | Fix issues found in the assessment with human oversight. | 1-2 sessions |
-| **4. Domain deepening** | Reconcile specs against code, inject verified domain knowledge into personas. | 1 session |
-| **5. Full workflow** | All personas active, regular `health` checks, continuous governance. | Ongoing |
-| **6. Strategic layer** | Add a Strategist in an external LLM chat for business-level decision support. | When needed |
+| **1. Assessment only** | Run `onboard`, get a ranked report. No changes made. | 15 minutes |
+| **2. Harness setup** | Persona overlays, session init, CLAUDE.md sections. Code untouched. | 1 session |
+| **3. Reviewer-implementer loop** | Fix assessment issues with human oversight. | 1-2 sessions |
+| **4. Domain deepening** | Archaeologist baseline specs, verified domain knowledge in personas. | 1 session |
+| **5. Full workflow** | All personas active, health checks, continuous governance. | Ongoing |
 
-Most projects get significant value at level 2. Domain deepening (level 4) is where personas go from generic to accurate. You don't need to reach level 6 to benefit.
+Most projects get significant value at level 2. Domain deepening (level 4) is where personas go from generic to accurate.
 
-## Community
+## Core Principles
 
-- **Discord:** [Join the AEH Discord](https://discord.gg/qnKVnJEuQz) -- chat, help, show-and-tell, feature ideas
-- **GitLab Issues:** [Report bugs and request features](https://gitlab.com/stefanberreth/agentic-engineering-harness/-/issues)
-- **Contributing:** See [CONTRIBUTING.md](CONTRIBUTING.md) -- we prefer prompts over patches
-
-## Supporting AEH
-
-AEH is free, open source, and maintained by one person. If it saves you time, consider supporting continued development:
-
-- **[Support on Ko-fi](https://ko-fi.com/stefanberreth)** -- one-time or monthly
-- **Star the repo** -- visibility helps more than you'd think
-- **[Join the Discord](https://discord.gg/qnKVnJEuQz)** -- questions, ideas, show-and-tell
-
-For organisations wanting to embed AEH in proprietary tooling or host it as a service without AGPL obligations, a commercial license is available -- contact Stefan Berreth.
+1. **Structure over speed.** A well-structured agentic setup is slower to start but dramatically more productive over time.
+2. **Restartability.** Kill a session at any point, start fresh, and it picks up where the last one left off by reading committed files.
+3. **Small increments.** One task, one commit, one reviewable change.
+4. **Human in the loop.** The AI proposes; the human decides.
+5. **Assessment before implementation.** Onboarding reads and reports. It never modifies your code.
+6. **Preserve what works.** Templates fill gaps -- they don't replace working instructions.
 
 ## Requirements
 
@@ -270,30 +208,21 @@ For organisations wanting to embed AEH in proprietary tooling or host it as a se
 - A software project you want to structure for agentic development
 - That's it. No dependencies, no installation, no build step.
 
-## Current Status
+## Community
 
-AEH is in active development. It has been used to transform real projects end-to-end across different tech stacks. The templates and governance criteria are refined through real-world usage.
+- **Discord:** [Join the AEH Discord](https://discord.gg/qnKVnJEuQz)
+- **GitLab Issues:** [Report bugs and request features](https://gitlab.com/stefanberreth/agentic-engineering-harness/-/issues)
+- **Contributing:** See [CONTRIBUTING.md](CONTRIBUTING.md) -- we prefer prompts over patches
 
-What's working:
-- Onboarding playbook (7-phase guided assessment)
-- Four engineering persona templates + optional Strategist
-- Orchestrator (pipeline management) and Harness Reviewer (self-review) personas
-- Assessment checklist (10 categories) and review criteria (6 rubrics)
-- Agent permission governance (schema reference, detection patterns, baselines)
-- Prompt generation and direct delivery
-- Post-transformation regression checks (build, imports, runtime verification)
-- Health check playbook (delta reports + tool health + permission health + spec health)
-- OpenSpec role integration (recommended spec management, opt-out available, graceful degradation)
-- Tool integration playbook (Context7, Serena -- optional, reversible)
-- Sandbox environment provisioning (`.env` flow for Docker/sandbox MCP servers)
-- Structural hygiene auditing (catches agent-generated filesystem clutter)
-- Test coverage enforcement and database security checks in reviewer
+## Supporting AEH
 
-What's evolving:
-- Post-onboarding domain deepening (spec reconciliation, convention extraction, architecture mapping)
-- Templates are being refined based on real-world usage
-- Multi-agent coordination beyond orchestrator pipeline tracking
-- CI/CD integration templates are planned but not yet created
+AEH is free, open source, and maintained by one person. If it saves you time:
+
+- **[Support on Ko-fi](https://ko-fi.com/stefanberreth)**
+- **Star the repo**
+- **[Join the Discord](https://discord.gg/qnKVnJEuQz)**
+
+For organisations wanting to embed AEH in proprietary tooling or host it as a service without AGPL obligations, a commercial license is available -- contact Stefan Berreth.
 
 ## Key Resources
 
@@ -302,55 +231,12 @@ What's evolving:
 | [How I Tamed Claude (NDC London 2026)](https://www.youtube.com/watch?v=pey9u_ANXZM) | The talk that inspired this project |
 | [Claude Code Docs](https://docs.anthropic.com/en/docs/claude-code) | Official Claude Code documentation |
 | [OpenSpec](https://openspec.dev/) | Specification-driven development tool |
-| [Context7](https://context7.com/) | Documentation MCP server |
-
-## Mission Evolution
-
-### v0.1–v0.4 -- Foundation (Feb 2026)
-
-- Persona templates, project templates, governance criteria, and assessment workflow
-- Two-project model with strict target isolation boundary
-- Onboarding and health-check playbooks with guided workflows
-- Session init, role selection, and assessment-implementation boundary
-- Two real-world transformations completed
-
-### v0.5 -- Tool Integration, Open Source, Regression Checks (Feb 2026)
-
-- Added optional tool integration system for OpenSpec, Context7, and Serena MCP servers
-- `tools` playbook for setup, teardown, and repair -- runnable independently or during onboarding
-- Detection patterns for tools and functional equivalents (ADR directories, other MCP servers, etc.)
-- Tool health checking integrated into `health` playbook
-- Every setup has a matching teardown -- fully reversible, per-project, never prescribed
-- Post-transformation regression checks verify builds, imports, and runtime after structural changes
-- AGPL-3.0 license with FAQ clarifying output ownership
-- Prompt-first contribution model -- submit the LLM prompt, not just the diff
-- Community: Discord + GitLab Issues + sponsor support
-- Multiple real-world transformations completed across different tech stacks
-
-### v0.6 -- Governance & Permissions (Feb 2026)
-
-- Agent permission governance as a first-class subsystem: schema reference, detection patterns, recommended baselines per project archetype
-- Permission health integrated into reviewer, health checks, and assessment (10 categories, 6 rubrics)
-- Harness isolation check (CRITICAL detection pattern for cross-project reads)
-- Structural hygiene auditing catches agent-generated filesystem clutter
-- Harness Reviewer persona for self-review of the harness itself
-- Review history file for longitudinal pattern detection across assessments
-- Target detail leakage enforcement in working rules and git commit messages
-
-### v0.7 -- OpenSpec Integration & Role Maturity (Mar 2026)
-
-- OpenSpec promoted to recommended spec management, integrated into all four personas
-- Orchestrator persona for prompt pipeline management across sessions
-- Personas hardened from real-world usage: scope escalation prevention, discovery logging, test coverage enforcement, database security checks
-- MCP runtime health verification with functional smoke tests
-- Sandbox environment provisioning for Docker containers
-- Consolidated `docs/AE/` as standard location for agent working files
 
 ## License
 
 AGPL-3.0. See [LICENSE](LICENSE) and [LICENSE-FAQ.md](LICENSE-FAQ.md).
 
-**TL;DR:** Use AEH freely -- on personal projects, in teams, across your entire organisation. No license to buy, no obligations triggered by internal use. All generated output (personas, prompts, CLAUDE.md sections) belongs to you under any license you choose. The AGPL only applies if you take AEH itself, modify it, and offer it as a public service or distribute it externally.
+**TL;DR:** Use AEH freely -- personal projects, teams, entire organisations. All generated output (personas, prompts, CLAUDE.md sections) belongs to you under any license you choose. The AGPL only applies if you modify AEH itself and offer it as a public service or distribute it externally.
 
 ## Contact
 

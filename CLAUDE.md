@@ -6,7 +6,7 @@ This project is a **meta-engineering harness**. It does not implement software. 
 
 ## What This Project Contains
 
-- **Persona templates** (`templates/personas/`) -- system prompt files for the four core engineering roles (Analyst, Architect, Developer, Reviewer), the Harness Reviewer (self-review), and the optional Strategist role. These are generic but principled starting points.
+- **Persona templates** (`templates/personas/`) -- base template files for the five engineering roles (Archaeologist, Analyst, Architect, Developer, Reviewer), plus the Orchestrator, Harness Reviewer, and optional Strategist. Engineering base templates use numbered sections with `§.PROJECT` extension points for project-specific overlays.
 - **Project templates** (`templates/project/`) -- scaffold files (`CLAUDE.md`, `agents.md`, governance checklists) to be adapted for target projects.
 - **Governance criteria** (`templates/governance/`) -- assessment checklists and quality rubrics for evaluating and evolving the agentic configuration of a target project.
 - **Agent knowledge** (`templates/agents/`) -- agent-specific reference knowledge (permission schemas, detection patterns, baselines) for coding agent runtimes like Claude Code.
@@ -46,6 +46,29 @@ The harness may optionally write prompt files directly into a target project's `
 
 ---
 
+## Artifact Output Rule
+
+**All artifacts, reports, reference documents, and deliverables must be written to the workspace tree — never to Claude Code's memory directory (`~/.claude/`).**
+
+Claude Code's built-in memory (`~/.claude/projects/*/memory/`) is for session-to-session recall notes only (e.g., user preferences, conversation context). It must not be used for:
+- Reports, diagnostics, or review outputs
+- Reference documents or expanded guides
+- Deliverables or generated content
+- Any artifact that a human or another agent session might need to read
+
+**Why:** The harness often runs inside a Docker container where `~/.claude/` is a named volume invisible from the host. The workspace directories (`/workspace/aeh/`, `/workspace/<project>/`) are bind-mounted and visible. Anything written to Claude's memory is effectively lost between environments.
+
+**Where artifacts go:**
+
+| Artifact type | Write to |
+|---|---|
+| Harness planning/state | `targets/<slug>/` |
+| Harness reference docs | `docs/` or inline in templates |
+| Target-side reports | `docs/AE/reports/` or `docs/AE/reviews/` (in target project) |
+| Target-side deliverables | `targets/<slug>/deliverables/` → delivered via prompts |
+
+---
+
 ## Target Project Workspace Structure
 
 Each target project gets a workspace under `targets/`:
@@ -79,7 +102,7 @@ Key files: `profile.md` (read first every session), `tasks.md` + `open-questions
 
 ## Transformation Phases
 
-> **Full reference:** `memory/ref/transformation-phases.md` — read when working on a transformation, domain deepening, or running the reviewer-implementer loop.
+> **Full reference:** `templates/playbooks/onboarding.md` — read when working on a transformation, domain deepening, or running the reviewer-implementer loop.
 
 | Phase | Summary |
 |-------|---------|
@@ -95,7 +118,7 @@ Key files: `profile.md` (read first every session), `tasks.md` + `open-questions
 
 ## Prompt File Format
 
-> **Full template:** `memory/ref/prompt-format.md` — read before writing any prompt file.
+> **Full template:** See any existing prompt in `targets/<project>/prompts/` for the canonical format.
 
 Every prompt must include: header (target, directory, execute-in, role, prerequisites, phase), context for operator, the prompt text, expected outcome, and fallback instructions. **Critical rules:** prompts must be self-contained (no harness-side paths), deliverable content must be embedded inline, and modifications to existing instruction files must use merge-and-confirm (never silently overwrite).
 
@@ -116,7 +139,7 @@ Every prompt must include: header (target, directory, execute-in, role, prerequi
 
 ## Assessment Working Principles
 
-> **Full reference:** `memory/ref/assessment-guide.md` — read before running any assessment or onboarding. Covers thoroughness standards, inconsistency detection, policy derivation, assessment outputs, the assessment-implementation boundary, and pre-approval for experienced users.
+> **Full reference:** `templates/playbooks/onboarding.md` and `templates/governance/assessment-checklist.md` — read before running any assessment or onboarding.
 
 **Key principles:** Read everything, cross-reference instructions against filesystem, count things, produce a ranked inconsistency report (CRITICAL/HIGH/MEDIUM/LOW). Encode existing conventions as policies rather than replacing them. Assessment is read-and-report only — never modify application code, scripts, or non-AE files during assessment.
 
@@ -138,7 +161,7 @@ When a conversation produces a new insight about how the harness should work, or
 
 ## Harness Maintenance Discipline
 
-> **Full reference:** `memory/ref/harness-maintenance.md` — read before committing harness changes, setting up the targets repo, or checking documentation currency.
+> **Full reference:** See "Nested Repository Structure" below and the harness-reviewer persona at `templates/personas/harness-reviewer.md`.
 
 **Key rules (always active):**
 - Two git repos: harness (root, public) and targets (`targets/`, private, nested). Always use `git -C targets/` (relative path) for the targets repo.
@@ -201,7 +224,7 @@ When a playbook is triggered, Claude must read the playbook file and follow its 
 
 The active persona is stored in `.claude/persona` as a single line (e.g. `reviewer`). This file is NOT tracked in git (add to `.gitignore`).
 
-Valid roles: `analyst`, `architect`, `developer`, `reviewer`, `harness-reviewer`, `orchestrator`
+Valid roles: `analyst`, `archaeologist`, `architect`, `developer`, `reviewer`, `harness-reviewer`, `orchestrator`
 
 Note: A `strategist` persona template also exists (`templates/personas/strategist.md`) but is not an active harness-side role. It is designed for use in external LLM sessions (Claude Web, etc.) where the human pastes an adapted briefing document. When users ask about roles or say "role info", mention the strategist as an available option for users who want a strategic conversation partner outside Claude Code. Don't push it -- just make it discoverable.
 
@@ -229,7 +252,7 @@ agentic-engineering-harness · reviewer (from last session)
 
 ```
 agentic-engineering-harness · no active role
-  Roles: analyst · architect · developer · reviewer · harness-reviewer · orchestrator
+  Roles: analyst · archaeologist · architect · developer · reviewer · harness-reviewer · orchestrator
   Pick a role, or "no role" to work freestyle. Say "role info" for details.
 ```
 
@@ -298,17 +321,22 @@ If working on the harness itself:
 ├── LICENSE                                # AGPL-3.0
 ├── LICENSE-FAQ.md                         # License clarifications (output ownership, SaaS, etc.)
 ├── CONTRIBUTING.md                        # How to contribute (prompt-first, BDFL model)
+├── bin/
+│   └── validate-personas.sh              # Structural validation for base templates + overlays
 ├── templates/
 │   ├── personas/
-│   │   ├── analyst.md                     # Requirements gathering persona
-│   │   ├── architect.md                   # Solution design persona
-│   │   ├── developer.md                   # TDD implementation persona
+│   │   ├── analyst.md                     # Requirements gathering (base template)
+│   │   ├── archaeologist.md               # Codebase investigation (base template)
+│   │   ├── architect.md                   # Solution design (base template)
+│   │   ├── developer.md                   # TDD implementation (base template)
+│   │   ├── reviewer.md                    # Code review (base template)
 │   │   ├── harness-reviewer.md            # Harness self-review persona
 │   │   ├── orchestrator.md               # Pipeline management persona
-│   │   ├── reviewer.md                    # Code review persona
 │   │   └── strategist.md                  # Strategic advisor (optional, for external LLM sessions)
 │   ├── prompts/
 │   │   └── regression-check.md.template   # Post-transformation functional regression check
+│   ├── scripts/
+│   │   └── loop-driver.sh.template        # Autonomous dev→gates→reviewer loop template
 │   ├── project/
 │   │   ├── CLAUDE.md.template             # Scaffold for target project CLAUDE.md
 │   │   └── agents.md.template             # Cross-tool agent config scaffold
