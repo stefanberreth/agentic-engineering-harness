@@ -18,6 +18,10 @@ FAIL_COUNT=0
 WARN_COUNT=0
 PASS_COUNT=0
 
+# Harness-internal roles: intentionally NOT layered (no §N, no extension points, no base header).
+# They are never overlaid by target projects. Still checked for leakage.
+HARNESS_ROLES="orchestrator.md strategist.md harness-reviewer.md"
+
 # Project-specific identifiers that must not appear in base templates
 # Each entry is a grep -i pattern
 LEAKAGE_PATTERNS=(
@@ -67,30 +71,44 @@ for filepath in "$BASE_DIR"/*.md; do
   filename="$(basename "$filepath")"
   echo "$filename:"
 
-  # 1. Contains base header notice
-  if grep -q "AEH Base Template" "$filepath"; then
-    pass "Contains AEH Base Template header"
+  # Check if this is a harness-internal role
+  is_harness_role=0
+  for hr in $HARNESS_ROLES; do
+    if [ "$filename" = "$hr" ]; then
+      is_harness_role=1
+      break
+    fi
+  done
+
+  if [ "$is_harness_role" -eq 1 ]; then
+    pass "Harness-internal role (not subject to layered convention)"
   else
-    warn "Missing 'AEH Base Template' header notice"
+    # 1. Contains base header notice
+    if grep -q "AEH Base Template" "$filepath"; then
+      pass "Contains AEH Base Template header"
+    else
+      warn "Missing 'AEH Base Template' header notice"
+    fi
+
+    # 2. Has at least one §N numbered section
+    if grep -qE '^## §' "$filepath"; then
+      count=$(grep -cE '^## §' "$filepath")
+      pass "Has $count numbered section(s)"
+    else
+      warn "No §N numbered sections found (not yet migrated to layered format)"
+    fi
+
+    # 3. Has at least one §N.PROJECT extension point
+    if grep -q '\.PROJECT' "$filepath"; then
+      count=$(grep -c '\.PROJECT' "$filepath")
+      pass "Has $count .PROJECT extension point(s)"
+    else
+      warn "No .PROJECT extension points found (not yet migrated to layered format)"
+    fi
   fi
 
-  # 2. Has at least one §N numbered section
-  if grep -qE '^## §' "$filepath"; then
-    count=$(grep -cE '^## §' "$filepath")
-    pass "Has $count numbered section(s)"
-  else
-    warn "No §N numbered sections found (not yet migrated to layered format)"
-  fi
-
-  # 3. Has at least one §N.PROJECT extension point
-  if grep -q '\.PROJECT' "$filepath"; then
-    count=$(grep -c '\.PROJECT' "$filepath")
-    pass "Has $count .PROJECT extension point(s)"
-  else
-    warn "No .PROJECT extension points found (not yet migrated to layered format)"
-  fi
-
-  # 4. Does NOT contain project-specific identifiers
+  # Leakage check applies to ALL templates (harness-internal included)
+  # Does NOT contain project-specific identifiers
   leakage_found=0
   for pattern in "${LEAKAGE_PATTERNS[@]}"; do
     if grep -qi "$pattern" "$filepath"; then
