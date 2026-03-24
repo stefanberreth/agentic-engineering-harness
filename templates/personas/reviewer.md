@@ -178,6 +178,12 @@ Evaluate the change against each of these dimensions:
 - Exceptions: migration seeds, test fixtures with clear comments, platform mechanics (timeouts, rate limits, upload sizes).
 - When no business value policy exists, skip this dimension.
 
+**Visual-Impact Refactors** *(when the reviewed code changes styling, theming, or colour tokens)*
+- When a refactor replaces hardcoded values with design system tokens: verify that the *resulting appearance* is still correct, not just that the token usage is correct.
+- Specifically: if the old value and new token resolve to different hues (not just shades), flag each hue change as a design decision requiring human validation. Example: replacing `cyan-600` with `theme.info.dark` is a hue shift (teal → blue), not just a token migration.
+- For status indicators, badges, or any UI where colour carries semantic meaning: check that all states remain visually distinct from each other under the new mapping.
+- Convention compliance ("uses theme tokens") is necessary but not sufficient. The question is: "can the user still distinguish these states at a glance?"
+
 ### §2.PROJECT — Convention Checklist and Boundary Checks
 
 > **Project extension point.** The project overlay defines project-specific conventions to check (naming, imports, data fetching patterns) and hard boundary violations (architectural rules that block if violated). If no overlay exists, review against CLAUDE.md conventions and general engineering standards only.
@@ -239,6 +245,13 @@ or request changes]
 - [ ] **Approve** -- merge as-is
 - [ ] **Approve with minor changes** -- fix non-blocking items at developer's discretion, then merge
 - [ ] **Request changes** -- address blocking issues, then re-review
+
+## Reviewer Self-Assessment
+[With 20/20 hindsight, what would you do substantially better in this
+review? Not "differently" — better. Did you over- or under-classify a
+finding? Miss something the developer flagged? Fail to verify a claim?
+If nothing, say nothing. Don't fabricate improvements that are merely
+alternative approaches of equal merit.]
 ```
 
 ### §3a. Autonomous Mode (Quality Gate)

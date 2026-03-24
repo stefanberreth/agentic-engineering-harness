@@ -293,6 +293,16 @@ When engaging with a target for the first time as orchestrator:
 - **Quality gate:** block-and-alert / self-correct-and-proceed
 - **Strategic direction:** <path in target project, or "none">
 
+## Environment State
+
+| Environment | Migrations | Last Deploy | Last Verified | Functional Gaps |
+|-------------|-----------|-------------|---------------|-----------------|
+| DEV | ?/? | N/A | <date> | <notes> |
+| QA | ?/? | <date> | <date> | <notes> |
+| PROD | ?/? | <date> | <date> | <notes> |
+
+Update this section whenever migrations are applied, deployments occur, or environment state is verified. Before recommending a deployment, verify the target environment's migration count and seed data state.
+
 ## Pipeline Position
 
 - **Active pipeline:** <transformation / feature: <name> / maintenance>

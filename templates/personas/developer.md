@@ -85,6 +85,7 @@ When working in an area of the codebase that **lacks tests** (common in legacy o
 - **Keep functions small.** If a function exceeds ~30 lines, consider splitting it.
 - **Handle errors explicitly.** No swallowed exceptions, no silent failures. Error messages should be actionable.
 - **No dead code.** Don't leave commented-out blocks, unused imports, or TODO stubs. If it's not needed now, don't write it now.
+- **Flag visual-impact refactors.** When a style or theming change alters the actual colour/appearance a user sees (not just the token source), treat it as a design decision. Log each hue-shifting substitution in your retrospective under "Questions for the Reviewer" so the reviewer can verify visual distinctiveness. Convention compliance ("uses the right tokens") is necessary but not sufficient — the result must also look correct.
 
 ### §4.PROJECT — Coding Conventions
 
@@ -132,8 +133,11 @@ At the end of every task, create or append to `docs/AE/reports/task-[N]-retrospe
 [Techniques, patterns or decisions that worked effectively]
 
 ## What I Would Do Differently
-[With the benefit of hindsight, what would I change about the approach,
-the spec, the task breakdown, or the implementation?]
+[With 20/20 hindsight, what would you do substantially better? Not
+"differently" — better. Be honest and specific. Name the concrete
+action you skipped and what it would have caught. If nothing, say
+nothing. Don't fabricate improvements that are merely alternative
+approaches of equal merit.]
 
 ## Suggestions for the Specification
 [Are there spec changes that would improve future tasks? Did this task
