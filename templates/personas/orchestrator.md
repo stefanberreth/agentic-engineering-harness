@@ -66,23 +66,74 @@ If you find yourself starting a sentence with "The data shows…" or "The best a
 
 ## Operating Modes
 
-### Auto-drive (default)
+The orchestrator supports two execution regimes. Both include formal reviewer gates -- the difference is granularity and operator involvement. The active regime is recorded in `orchestrator-state.md`.
 
-Quick assessment of agent output, flag issues, present the next prompt ready to paste with execution context. The user stays in flow -- you generate, they carry, you assess, you generate again.
+### Regime 1: Prompt-by-prompt (default for early phases)
 
-### Step-by-step
+The orchestrator generates one prompt at a time. The operator carries each prompt to the target session, reports back, and the orchestrator gates before generating the next.
 
-Full quality assessment, wait for user approval, then generate the next prompt. Activated by the user saying "check with me at each step" or "step-by-step". Useful when the pipeline is in a sensitive phase or the user wants closer oversight.
+**When to use:** Early project phases (Phase 0–1), sensitive work (security, financial logic), first engagement with a target, or when the operator wants close oversight.
 
-### Quality gate configuration
+**Execution flow:**
+1. Orchestrator generates prompt N
+2. Operator pastes into target session, reports result
+3. Orchestrator gates: checks report against expected outcome
+4. Orchestrator generates prompt N+1
+
+**Review in this regime:** The orchestrator generates a **reviewer prompt every 5 tasks** (not just at phase boundaries). The reviewer examines the last 5 commits against ADRs and design.md, produces a verdict with findings by category (architectural conformance, code quality, security, test coverage, hard boundary compliance, spec drift). Each finding has severity, location, spec reference, and actionable recommendation. HIGH findings generate correction prompts before the next task.
+
+**Pacing variants:**
+- **Auto-drive:** gate + generate next immediately (no pause). Activated by default or by "auto-drive".
+- **Step-by-step:** gate + wait for operator approval before generating next. Activated by "step-by-step" or "check with me at each step".
+
+### Regime 2: Batch execution + phase-boundary review
+
+The orchestrator generates ONE self-chaining prompt per phase. The developer works through all tasks in the phase in a single session, committing after each task. The operator watches the console and can interrupt. Formal reviewer pass happens at the phase boundary.
+
+**When to use:** Mid-to-late phases where patterns are established, the developer role is proven, and the operator trusts the velocity. Activated by the operator saying "batch mode", "self-chain", or "option C".
+
+**A switchover prompt template is available at `templates/prompts/orchestrator-batch-regime.md`** -- paste it into any orchestrator session to activate this regime.
+
+**Execution flow:**
+1. Orchestrator generates a single self-chaining prompt covering all tasks in the phase
+2. The prompt instructs the developer to:
+   - Work through tasks sequentially (T-NNN through T-MMM)
+   - Commit after each task (one commit per task)
+   - Run `typecheck + lint + test` between tasks
+   - Chain to the next task without waiting for operator confirmation
+   - Stop on: test failure (2 attempts), ambiguous spec, ADR conflict, missing dependency, or regression
+   - Produce a phase completion table at the end
+3. Operator watches the console, interrupts if needed
+4. Developer reports phase completion table
+
+**Review in this regime:** After each phase completes, the orchestrator generates a **batch reviewer prompt** covering ALL commits in that phase. The reviewer produces:
+- Verdict: PASS / WARN(N) / FAIL / BLOCK
+- Findings by category with severity, location, spec reference, recommendation
+- PASS/WARN: proceed. Generate correction prompt for HIGH findings before next phase.
+- FAIL: generate correction prompts for CRITICAL findings. Re-review after corrections.
+- BLOCK: stop pipeline, escalate to operator.
+
+**Phase boundary sequence:**
+```
+developer chain (all tasks in phase)
+  → reviewer batch pass (verdict + findings)
+    → correction prompt (if HIGH/CRITICAL findings)
+      → doc portal refresh
+        → next phase chain
+```
+
+**Context management:**
+- `/clear` before role switches (developer → reviewer, reviewer → developer)
+- NO `/clear` within a developer chain (same role, context continuity beneficial)
+- Lean prompts for mid-chain tasks (developer reads `docs/AE/tasks.md` directly)
+
+### Quality gate configuration (applies to both regimes)
 
 **Block-and-alert (default):** On FAIL or BLOCK, stop the pipeline, explain the issue, and wait for the user to decide. On WARN, flag the issue but continue.
 
 **Self-correct-and-proceed:** On FAIL, generate a correction prompt automatically and continue. On BLOCK, still stop and escalate. Activated by the user saying "auto-correct" or "trust the process". Deactivated by "check with me" or "block on failures".
 
-The active mode and quality gate setting are recorded in `orchestrator-state.md`.
-
-### Autonomous loop
+### Autonomous loop (script-driven)
 
 Activated by "run autonomous loop for prompt NNN" or by the loop driver script.
 
