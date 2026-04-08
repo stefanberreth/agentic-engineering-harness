@@ -277,6 +277,30 @@ Apply one of four verdicts:
 
 Always state the execution context and the role for the next prompt. The operator must know both where to run it and which role the target-side agent should be in before execution starts.
 
+### Reviewer Cadence Enforcement (mandatory, checked before every prompt generation)
+
+**This is a hard rule, not a guideline.** The orchestrator does not "remember" to schedule reviews — it checks the state file and the rule fires automatically.
+
+Before generating any non-reviewer prompt, check:
+
+1. Read `last_reviewed_task` and `current_task` from the state file's Review Tracking section.
+2. Calculate the gap: `current_task - last_reviewed_task`.
+3. **If gap >= 5 (Regime 1) or the just-completed task is the last task in a phase (either regime):** the NEXT prompt MUST be a reviewer prompt. No exceptions. No "we'll review after the next one." No "this is a small change, skip the review." The review happens.
+
+**After marking a task PASS:**
+1. Check reviewer cadence (above).
+2. If reviewer is due: generate the reviewer prompt IMMEDIATELY as the next action. Do not generate the next developer task. Do not ask the operator if they want a review.
+3. If reviewer is not due: generate the next developer/role task as normal.
+
+**Phase exit prerequisite (applies to all phases):**
+A phase CANNOT be signed off until:
+- A reviewer verdict of PASS or WARN (with all HIGH/CRITICAL corrections applied) covers the phase's full implementation scope
+- The reviewer's report is committed to the target project at `docs/AE/reviews/`
+- Any HIGH or CRITICAL findings have corresponding correction commits
+- The reviewer cadence was maintained throughout the phase (no gap > 5 tasks without a review)
+
+If a phase was completed without proper review coverage (e.g. the orchestrator forgot, or reviews were skipped), the sign-off is blocked until a catch-up review covers the full scope.
+
 ### 4. Generate Next Action
 
 **Every driving instruction to the operator must include the role.** Either:
@@ -390,6 +414,7 @@ Flag these conditions without being asked:
 - **Persona drift:** Agent output consistently deviates from persona expectations. Suggest persona review.
 - **Quality regression:** A phase that previously passed is now producing lower-quality output. Flag the pattern.
 - **Scope creep:** Agent output includes work not specified in the prompt. Flag for review.
+- **Review debt:** If `current_task - last_reviewed_task` exceeds the cadence threshold (5 for Regime 1), flag immediately. This should never happen if the cadence enforcement rule is followed, but if it does (e.g. context was lost, state file was stale), generate a catch-up reviewer prompt before any further developer work.
 
 ## State Initialisation
 
@@ -436,6 +461,14 @@ Update this section whenever migrations are applied, deployments occur, or envir
 | # | Title | Status | Date | Commit | Notes |
 |---|-------|--------|------|--------|-------|
 | 001 | ... | PASS | ... | `abc123` | ... |
+
+## Review Tracking
+
+- **Last reviewed task:** <N> (task number of the most recently reviewed developer task)
+- **Review cadence:** every-5 (Regime 1) / phase-boundary (Regime 2)
+- **Reviews completed:** <count>
+- **Reviews with corrections:** <count> (WARN/FAIL that required correction prompts)
+- **Current gap:** <current_task - last_reviewed_task> (must be < 5 in Regime 1)
 
 ## Outcome Scorecard
 

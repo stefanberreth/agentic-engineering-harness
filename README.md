@@ -26,7 +26,7 @@ Each persona has a base template (generic methodology, ships with AEH) and a pro
 | **Analyst** | Gathers requirements, produces specs. Consumes baseline specs as context. |
 | **Architect** | Designs solutions, defines task breakdowns. Works within verified constraints. |
 | **Developer** | TDD implementation, follows conventions. Logs discoveries for other roles. |
-| **Reviewer** | Quality gate: compliance checking, security audit, spec traceability. |
+| **Reviewer** | Quality gate: 15 review dimensions including absence checks, dependency health, security audit, spec traceability, performance anti-patterns. Evidence-based verdicts (no rubber-stamping). |
 
 The standard workflow is Archaeologist (once, for existing codebases) then Analyst → Architect → Developer → Reviewer in a loop. You run one role at a time in a Claude Code session pointed at your project. Between sessions, state lives in committed files -- kill a session at any point, start fresh, and the next agent picks up where the last left off.
 
@@ -34,7 +34,7 @@ Three additional roles run in the AEH harness itself (a separate Claude Code ses
 
 | Role | What it does |
 |------|-------------|
-| **Orchestrator** | Manages the prompt execution pipeline, tracks state across sessions, generates handover prompts with two-file persona loading |
+| **Orchestrator** | Manages the prompt execution pipeline, enforces reviewer cadence (every 5 tasks or phase boundary -- non-discretionary), tracks state across sessions, generates handover prompts with two-file persona loading |
 | **Strategist** | Business strategy and priorities -- runs in any LLM chat (optional, external to Claude Code) |
 | **Harness Reviewer** | Self-review of AEH's own quality, documentation currency, and target detail leakage |
 
