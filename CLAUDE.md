@@ -230,7 +230,7 @@ Note: A `strategist` persona template also exists (`templates/personas/strategis
 
 The `harness-reviewer` role is special: it reviews the harness itself, not target projects. It checks for target detail leakage, documentation currency, template consistency, and public-facing quality. Use it before publishing or after significant harness changes. See `templates/personas/harness-reviewer.md`.
 
-The `orchestrator` role manages the agentic pipeline for a single target project. It tracks prompt execution, assesses agent output quality, maintains outcome metrics, and generates the next action. Unlike other roles that do work, the orchestrator manages the flow of work across roles. It persists state in `targets/<slug>/orchestrator-state.md` so any session can reconstruct the full pipeline position. See `templates/personas/orchestrator.md`.
+The `orchestrator` role manages the agentic pipeline for a single target project. It tracks prompt execution, assesses agent output quality, maintains outcome metrics, and generates the next action. Unlike other roles that do work, the orchestrator manages the flow of work across roles. It persists state in `targets/<slug>/orchestrator-state.md` so any session can reconstruct the full pipeline position. The orchestrator enforces **mandatory reviewer cadence** (every 5 developer tasks or at phase boundaries — non-discretionary) and tracks review state (`last_reviewed_task`, `current_gap`) to prevent reviews from being skipped. No phase can be signed off without a reviewer PASS/WARN covering its full scope. See `templates/personas/orchestrator.md`.
 
 An absent or empty file means no role is active.
 

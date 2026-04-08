@@ -125,6 +125,22 @@ This project uses a persona-driven agentic engineering workflow:
 4. **Developer** -- TDD implementation
 5. **Reviewer** -- code review and compliance checking
 
+The orchestrator enforces reviewer cadence automatically: a formal reviewer pass runs every 5 developer tasks (or at phase boundaries). Reviews are non-discretionary — they happen whether anyone remembers to schedule them or not.
+
+### Reviewer Expectations
+
+The reviewer checks 15 dimensions on every pass, including:
+- **Correctness** and **spec traceability** (does the code do what the spec says?)
+- **Absence check** (what's MISSING? error handling, validation, auth, logging, resource cleanup)
+- **Test quality** (are tests meaningful? edge cases? TDD compliance?)
+- **Cross-module impact** (mandatory caller grep — broken callers are blocking)
+- **Dependency health** (real packages? known CVEs? license compatibility?)
+- **Performance anti-patterns** (N+1, unbounded collections, missing pagination)
+- **Security** (credential scan, input validation, auth enforcement, environment bleed)
+- **Structural hygiene, permission health, spec currency** (mandatory audits on every pass)
+
+Every verdict (PASS or FAIL) must cite **specific evidence** — line numbers, grep results, or test output. Dimensions without evidence are marked SKIPPED, not PASS. This prevents rubber-stamping.
+
 ### Developer Rules
 
 - **Test-driven development.** Write the test first, then make it pass.

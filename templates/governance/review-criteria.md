@@ -132,6 +132,8 @@ Use this rubric to evaluate the quality of the agentic engineering files in a ta
 | Criterion | Score | Notes |
 |---|---|---|
 | **Review process**: Clear workflow for review cycles | | |
+| **Reviewer cadence**: Mandatory reviewer passes every 5 tasks or at phase boundaries; cadence tracked in orchestrator-state.md | | |
+| **Review quality**: Reviewer enforces evidence-based verdicts (line citations, grep results, not vague approvals); checks 15 dimensions including absence, dependency health, and performance | | |
 | **Feedback loop**: Retrospectives feed back into spec revisions | | |
 | **Human-in-the-loop**: Clear decision points where the human must approve | | |
 | **Recovery process**: What to do when things go wrong is documented | | |

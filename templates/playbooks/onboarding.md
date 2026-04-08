@@ -419,6 +419,8 @@ Tasks based on existing setup migration should note the approach:
 Record approvals and modifications in `targets/<slug>/decisions.md`.
 Write the final task list to `targets/<slug>/tasks.md`.
 
+**Note to operator:** The orchestrator enforces mandatory reviewer cadence (every 5 developer tasks or at phase boundaries — non-discretionary). This is built into the orchestrator template and does not need to be configured per-project. The plan should anticipate reviewer passes at regular intervals; they are not optional extras.
+
 ---
 
 ## Phase 6: Execute (AE Harness Setup Only)

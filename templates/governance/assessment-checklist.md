@@ -84,9 +84,11 @@ For each item, mark one of:
 | # | Item | Status | Notes |
 |---|---|---|---|
 | 7.1 | Review process is defined (who reviews, what criteria) | | |
-| 7.2 | Spec revision process exists (how to handle feedback from retrospectives) | | |
-| 7.3 | Quality criteria for agentic config files are defined | | |
-| 7.4 | Permissions and safety boundaries are documented | | |
+| 7.2 | Reviewer cadence enforcement is active (every 5 tasks or phase boundary, non-discretionary) | | |
+| 7.3 | Orchestrator state tracks review cadence (`last_reviewed_task`, `current_gap` in orchestrator-state.md) | | |
+| 7.4 | Spec revision process exists (how to handle feedback from retrospectives) | | |
+| 7.5 | Quality criteria for agentic config files are defined | | |
+| 7.6 | Permissions and safety boundaries are documented | | |
 
 ---
 

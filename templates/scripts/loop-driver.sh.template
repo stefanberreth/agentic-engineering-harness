@@ -19,6 +19,7 @@
 #   - {{GATE_SCRIPT}} exists and is executable
 #   - Prompt file exists at {{PROMPT_DIR}}/<prompt-id>-*.md
 #   - Reviewer persona at {{PERSONA_DIR}}/reviewer.md has autonomous mode
+#     (checks 15 dimensions with evidence requirements; produces JSON verdict)
 
 set -euo pipefail
 

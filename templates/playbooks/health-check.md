@@ -91,7 +91,28 @@ If the target has a CLAUDE.md, verify that session-critical instructions appear 
 
 LLMs give more weight to early content in long files. Instructions buried past line 200+ in a large CLAUDE.md are unreliably followed. If session init is found late in the file, flag it as a HIGH issue with the fix: move it to the top.
 
-### 3f. Check Persona Drift
+### 3f. Review Cadence Health
+
+Check whether reviewer cadence has been maintained since the last assessment:
+
+1. Read the target's `orchestrator-state.md` (if it exists). Look for the Review Tracking section:
+   - `last_reviewed_task` — what was the last task that received a formal reviewer pass?
+   - `current_gap` — how many developer tasks since the last review?
+   - `reviews_completed` / `reviews_with_corrections` — ratio of reviews to correction rounds
+2. If `current_gap >= 5` (Regime 1) or a phase was signed off without a reviewer pass: flag as **HIGH** — review debt has accumulated.
+3. If no Review Tracking section exists in `orchestrator-state.md`: flag as **MEDIUM** — the orchestrator state predates the cadence enforcement upgrade. Add the section.
+4. If no `orchestrator-state.md` exists: this target has not been managed by the orchestrator. Not a finding — just note it.
+
+**Review cadence health checks:**
+
+| Check | Status | Finding |
+|-------|--------|---------|
+| Review Tracking section present | pass/WARN | |
+| Review gap within cadence (< 5) | pass/HIGH | gap = N |
+| All phases have reviewer PASS/WARN | pass/HIGH | phase N unsigned |
+| Review-to-correction ratio | info | N reviews, M corrections |
+
+### 3g. Check Persona Drift
 
 For each persona file in the target project (if they exist):
 - Does it still reference the correct tech stack? (Check against package config)
@@ -99,7 +120,7 @@ For each persona file in the target project (if they exist):
 - Are there new patterns in the codebase that the persona should know about? (New frameworks added, new test patterns, new directories)
 - Are there conventions encoded in the persona that the codebase no longer follows?
 
-### 3g. Structural Hygiene Scan (Independent)
+### 3h. Structural Hygiene Scan (Independent)
 
 **This scan does NOT compare against the baseline.** It applies fresh engineering judgment to the current filesystem, regardless of what previous assessments found or missed. The baseline is irrelevant here -- if the project looks cluttered to a staff engineer, it's cluttered.
 
@@ -116,7 +137,7 @@ For each persona file in the target project (if they exist):
 
 Report findings as structural hygiene items in the delta report (Phase 4). These are always "New issues" regardless of baseline, because they represent current state, not drift from a previous state.
 
-### 3h. Tool Health Check
+### 3i. Tool Health Check
 
 If `targets/<slug>/profile.md` records any configured development tools (under `## Development Tools`), verify each one:
 
@@ -152,7 +173,7 @@ Status values:
 
 Report findings as tool drift items in the delta report (Phase 4).
 
-### 3i. Permission Health Check
+### 3j. Permission Health Check
 
 Check the target project's agent permission configuration for drift, sprawl, and security issues.
 
@@ -169,7 +190,7 @@ Check the target project's agent permission configuration for drift, sprawl, and
 4. **Check for harness isolation**: If the target is managed by AEH and the harness path is known (from `profile.md`), verify the deny list blocks reads from the harness directory.
 5. **Record findings** for inclusion in the delta report (Phase 4) under the Permission Health section.
 
-### 3j. OpenSpec Specification Health
+### 3k. OpenSpec Specification Health
 
 **Only run when `openspec/specs/` exists in the target project.** If OpenSpec is not configured, skip this step entirely.
 
