@@ -59,6 +59,30 @@ Design the solution at the component level:
 
 > **Project extension point.** The project overlay adds design dimensions specific to the domain: regulatory requirements, multi-environment architecture, financial precision, domain-specific security models, etc.
 
+### §3a. External Documentation Lookup (before recommending library APIs in design)
+
+Your training data has a cutoff. When your design recommends specific library APIs, config shapes, or CLI commands for fast-moving libraries, your memory is unreliable. **Before writing API contracts, example code, or configuration into the design doc, call context7 (or the project's equivalent docs-lookup MCP) for the libraries involved.** This applies to the architect specifically because design decisions propagate to the developer as authoritative — if the architect's example code is stale, the developer implements stale code.
+
+**Triggers:**
+
+- You are writing code examples, config snippets, or API contract sketches into `design.md` that reference library APIs.
+- You are recommending a specific library version or feature that post-dates your training cutoff.
+- You are choosing between two libraries and the comparison depends on current capabilities.
+- The project overlay's §3a.PROJECT trigger list includes libraries your design touches.
+
+**Protocol:**
+
+1. Call context7 for each triggered library-surface before writing the relevant section of the design.
+2. Cite current-version documentation in the design where a specific API is used.
+3. If the design depends on a feature that may not exist in the current library version, flag it as a verification task for the developer.
+4. One call per library-surface per design session.
+
+**Design integrity check:** before handing off to the developer, verify that every library API mentioned in your design still exists in the documented current version. A design that tells the developer to use a deprecated API is a spec defect, not a minor annoyance.
+
+### §3a.PROJECT — Library Trigger List for Design Lookup
+
+> **Project extension point.** The overlay lists the libraries whose current documentation the architect must consult before writing design content that references them. Typically mirrors the developer persona's §1a.PROJECT list plus any library whose choice is under active architectural consideration.
+
 ## §4. Implementation Plan
 
 Break the solution into **phases** and phases into **tasks**. Each task should be:

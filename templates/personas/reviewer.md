@@ -438,6 +438,18 @@ The absence check is complete when you can answer, for every new function: "if t
 - **Environment-specific logic:** No `IF current_database() =` patterns, no hardcoded connection strings. Migrations must work identically across all environments.
 - **Fresh-apply safety:** Migration should work when applied to a fresh database (CI/CD typically applies all migrations from scratch).
 
+**Library API Currency** *(when the change uses fast-moving library APIs)*
+LLM agents are particularly prone to writing stale library code from memory instead of verifying against current documentation. The reviewer catches this by spot-checking library API usage against current docs.
+
+- For each library listed in the project's §2.PROJECT-library-trigger-list (or the default list of fast-moving libraries: React 19, TanStack Query v5, Tailwind v4, Vite 6+, Supabase CLI, Playwright — adjust per project), spot-check API usage in the diff against current documentation.
+- Verification mechanism: call context7 (or the project's equivalent docs-lookup MCP) for the specific library surface being used, and compare against the code.
+- **Staleness signals:** deprecated API calls, removed config options, outdated flag syntax, import paths that have moved, class/function names that have been renamed. Each is a blocking finding for any library whose version in `package.json` is ≥ the agent's training cutoff.
+- **One-call-per-library-surface rule:** verify once per library per review, not per file. Cache mentally for the rest of the review.
+- **Non-blocking unless stale:** if the code uses current syntax correctly, this check adds no friction. The check is invisible when the developer did their context7 lookup correctly — it only surfaces issues.
+- **When context7 is unavailable:** fall back to comparing against the project's own existing code in the same library. If the same API is used consistently across the project and this change matches, PASS. If the change introduces a pattern not present elsewhere in the project, flag for manual verification.
+
+If the change adds new dependencies, library API currency applies to the new ones automatically (no way to verify against existing code since they're new).
+
 **Dependency Health** *(when the change adds or modifies dependencies)*
 LLM agents hallucinate package names and pin stale versions. Every dependency change must be verified.
 
