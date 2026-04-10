@@ -91,6 +91,26 @@ For the work being reviewed, identify the governing artefact. One of these MUST 
 
 **If NONE found:** verdict is **FAIL** with reason `NO_GOVERNING_SPEC`. Do not soften this. Do not "make an exception this once". The orchestrator must produce a change proposal before the work can be reviewed.
 
+### §0.1a Meta-Work Exception: OpenSpec Substrate Bootstrap
+
+A narrow, documented exception applies when the work under review **is itself building the OpenSpec substrate** — i.e. creating `openspec/project.md`, `AGENTS.md`, archive scaffolding, retrofitting archived proposals for past work, consolidating stub specs. Such work does not yet have a "governing spec" in the normal sense because the spec substrate is what's being built.
+
+For meta-work, §0.1 passes as **SPECIAL** when ALL of the following hold:
+
+1. The work is demonstrably OpenSpec infrastructure: directory scaffolding, `openspec/project.md`, `AGENTS.md`, archived change proposals for past work, spec consolidation, or equivalent substrate-building.
+2. The governing artefacts for the meta-work are one or both of:
+   - An audit report (e.g. `docs/AE/reports/openspec-state-audit-*.md`) that enumerated what needs to be built, AND/OR
+   - The prompt files (e.g. `docs/AE/prompts/14N-*.md`) whose acceptance criteria describe the expected output.
+3. The work does not touch source code, tests, migrations, or application configuration. If it does, the touching parts are NOT meta-work and must pass §0.1 normally.
+
+Record the SPECIAL disposition in the §0 verdict table with evidence:
+
+```
+§0.1 Governing spec exists | PASS (SPECIAL — meta-work) | [audit report path + prompt file paths as the governing pair]
+```
+
+The SPECIAL disposition is one-time per meta-work phase. Once the OpenSpec substrate is built, subsequent work — even on the substrate itself — must pass §0.1 normally via a change proposal. A second SPECIAL in the same project is a red flag indicating the substrate is being rebuilt instead of evolved, and should escalate to operator review.
+
 ### §0.2 Implementation Matches Spec (HARD CHECK)
 
 If §0.1 passed, verify the code implements what the spec describes:
@@ -120,7 +140,23 @@ Test files must include a spec reference comment near the top:
 **Zero linkage on new test files** → **FAIL** with reason `UNLINKED_TESTS`.
 **Stale references** (file references a spec section that no longer exists) → flag as HIGH (not blocking on first occurrence, blocking on second).
 
+#### §0.3 Documentation-Only Work Disposition
+
+When the diff contains **no test files** because the work is documentation, spec authoring, archive creation, README updates, or similar non-code deliverables, §0.3 is **N/A**. Record as:
+
+```
+§0.3 Test-to-spec linkage | N/A — doc-only work | [no test files in diff; N source-comment updates verified]
+```
+
+However, if the diff touches **source files** (even one line of code, JSX, server handler, etc.), §0.3 applies fully to any test files in the same phase — not just the diff. If the code change should logically have a test update and doesn't, that's still a linkage gap to flag.
+
+**Edge case:** if the diff contains existing source file updates that change referenced spec paths in comments (e.g. `// Implements: openspec/specs/<old-path>.md` → `// Implements: openspec/specs/<new-path>.md`), verify the new path resolves. This is a spec currency check, not a linkage check, so it belongs to §0.4 — but §0.3 reviewers should route it there rather than skipping.
+
 ### §0.4 Spec Currency (HARD CHECK)
+
+§0.4 has two parts: **content currency** (does the spec still describe what the code does?) and **path currency** (do operational documents still reference spec paths that exist?). Both are hard checks.
+
+#### §0.4a Content currency
 
 If the code changes behaviour described in a baseline spec:
 
@@ -129,7 +165,42 @@ If the code changes behaviour described in a baseline spec:
 
 **Stale spec** (code changed behaviour, spec still describes the old behaviour, no delta in flight) → **FAIL** with reason `STALE_SPEC`.
 
-This is the dimension most prone to drift. Be strict.
+#### §0.4b Path currency after spec moves (MANDATORY grep)
+
+When the phase under review includes ANY spec file move, rename, or consolidation (e.g. `git mv docs/specs/<id>.md openspec/specs/<id>.md`, filename normalisation, or relocation across directories), run this grep across the entire project to find stale path references:
+
+```bash
+# For each moved/renamed spec, grep for the OLD path in operational documentation
+for OLD_PATH in <list of old paths from the move commits>; do
+  grep -rn "$OLD_PATH" \
+    docs/ openspec/ src/ server/ .claude/ \
+    --include="*.md" --include="*.ts" --include="*.tsx" --include="*.js" --include="*.json" \
+    2>/dev/null
+done
+```
+
+**Exclusions** — the following matches are historical and correct in context, not blocking:
+
+- `docs/AE/reports/openspec-state-audit-*.md` and similar audit reports that deliberately describe the old state as evidence
+- `docs/AE/reviews/*-openspec-*review*.md` — review reports that name the findings (historical record)
+- Files with `retrofit_source:` or `retrofit_note:` frontmatter fields where the old path is the deliberate provenance pointer
+- Archived change proposal files under `openspec/changes/archive/` that describe historical state (not live references)
+- "Was X" markers in internal documentation describing the change itself
+- `docs/AE/designs/*.md` legacy files explicitly deferred by an earlier decision (note the decision reference)
+
+**Anything NOT in the exclusion list is a blocking finding.** Each match must be:
+- Listed in the review report with file:line
+- Assigned a severity: blocking if in operational documentation (traceability matrices, persona overlays, baseline specs, project README, CLAUDE.md, AGENTS.md), non-blocking but flagged if in low-traffic documentation (session logs, old reports)
+
+**Why this check exists:** the first live exercise of §0 (a target project OpenSpec restoration, 147 review) missed 21 dead links in a traceability matrix, 3 stale persona overlay references, and 3 baseline spec contradictions because §0.4 as originally written only looked at spec files themselves. Operational documents that reference specs by path are the drift carriers.
+
+**Path currency verdict:**
+
+- All non-excluded matches resolved → `PASS`
+- 1-5 non-excluded matches in low-traffic docs → `WARN`
+- Any match in operational documentation (the high-traffic files listed above) → `FAIL`
+
+This is the dimension most prone to drift. Be strict. The grep is non-negotiable after any spec move.
 
 ### §0.5 Commit Traceability (SOFT CHECK)
 
@@ -163,16 +234,27 @@ Append this to the JSON verdict produced in autonomous mode (see §3a):
 
 ```json
 "spec_traceability": {
-  "status": "PASS | FAIL | CONDITIONAL_PASS",
-  "governing_spec": "<path or 'NONE'>",
+  "status": "PASS | PASS_SPECIAL | WARN | FAIL | CONDITIONAL_PASS",
+  "governing_spec": "<path or 'NONE' or 'META:audit+prompts' for SPECIAL>",
   "change_slug": "<slug or 'N/A'>",
   "implementation_match": true,
-  "test_linkage": { "linked": 0, "unlinked": 0 },
-  "spec_currency": "CURRENT | STALE | N/A",
+  "test_linkage": { "linked": 0, "unlinked": 0, "na_doc_only": false },
+  "content_currency": "CURRENT | STALE | N/A",
+  "path_currency": {
+    "applicable": true,
+    "grep_executed": true,
+    "matches_total": 0,
+    "matches_excluded_historical": 0,
+    "matches_blocking": 0,
+    "status": "PASS | WARN | FAIL | N/A"
+  },
   "commit_traceability": "PASS | WARN | FAIL",
-  "exception_reason": "<only if CONDITIONAL_PASS>"
+  "meta_work_exception": false,
+  "exception_reason": "<only if CONDITIONAL_PASS or PASS_SPECIAL>"
 }
 ```
+
+The `path_currency` object is populated whenever the phase under review includes spec moves/renames. When no moves occurred, `applicable: false` and the other fields are omitted.
 
 Include this in the markdown report as well, in a "Spec Traceability" section that comes BEFORE the "Blocking Issues" section.
 
@@ -184,15 +266,25 @@ Every review report must include this section, even on PASS:
 ## §0. Spec Traceability (BLOCKING)
 | Check | Status | Evidence |
 |-------|--------|----------|
-| §0.1 Governing spec exists | PASS / FAIL | `openspec/changes/<slug>/proposal.md` |
+| §0.1 Governing spec exists | PASS / PASS (SPECIAL — meta-work) / FAIL | `openspec/changes/<slug>/proposal.md` or audit+prompts pair for meta-work |
 | §0.2 Implementation matches spec | PASS / FAIL | [diff vs design.md analysis] |
-| §0.3 Test-to-spec linkage | PASS / FAIL | [N test files reviewed, M with refs] |
-| §0.4 Spec currency | PASS / FAIL / N/A | [delta status] |
+| §0.3 Test-to-spec linkage | PASS / FAIL / N/A — doc-only | [N test files reviewed, M with refs; or "no test files in diff"] |
+| §0.4a Content currency | PASS / FAIL / N/A | [delta status] |
+| §0.4b Path currency (post-move grep) | PASS / WARN / FAIL / N/A — no moves | [grep result summary: X non-excluded matches in Y operational files] |
 | §0.5 Commit traceability | PASS / WARN | [N commits, M with refs] |
-**Spec Traceability verdict:** PASS / FAIL / CONDITIONAL_PASS
+**Spec Traceability verdict:** PASS / WARN / FAIL / CONDITIONAL_PASS / SPECIAL
 ```
 
-If §0 verdict is FAIL or CONDITIONAL_PASS, the overall review verdict cannot be higher than the §0 verdict. (i.e. §0 FAIL → overall FAIL; §0 CONDITIONAL_PASS → overall WARN at best.)
+Verdict rules:
+- **PASS** — all checks pass (or N/A), any warnings are in §0.5
+- **PASS (SPECIAL)** — §0.1 disposition only, applies to OpenSpec substrate meta-work (see §0.1a)
+- **WARN** — §0.4b has non-blocking matches in low-traffic documentation OR §0.5 warns
+- **FAIL** — any hard check fails
+- **CONDITIONAL_PASS** — §0.6 emergency hotfix exception only
+
+If §0 verdict is FAIL or CONDITIONAL_PASS, the overall review verdict cannot be higher than the §0 verdict. (§0 FAIL → overall FAIL; §0 CONDITIONAL_PASS → overall WARN at best.)
+
+SPECIAL is equivalent to PASS for overall verdict purposes — the meta-work exception does not cap the review.
 
 ### When OpenSpec is not configured
 
