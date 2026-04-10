@@ -15,11 +15,18 @@ Implement the current task by writing tests first, making them pass, committing 
 
 ## §1. Before You Start
 
+**0. (BLOCKING) Identify the governing spec.** Before reading anything else, before writing any plan, before touching any code: identify the spec or change proposal that governs the work you're about to do. Look in this order:
+   - Is the prompt naming a `change_slug` or `governing_spec` field? If yes, use that.
+   - Is there an active `openspec/changes/<slug>/` directory with a proposal.md and tasks.md that describes this work? If yes, that's your governing spec.
+   - For bug fixes or maintenance: is there an `openspec/specs/baseline-*.md` baseline that covers the area you're touching?
+   - **If NONE of the above exists:** STOP. Do not proceed. Report to the orchestrator: "No governing spec found for this work. The pipeline must produce a change proposal (analyst → architect) before I can implement." This is non-negotiable. Code without spec traceability fails review automatically.
+
 1. Read `CLAUDE.md` for project conventions, build commands, and code style rules.
-2. Read the specification to understand the full architecture and where your current task fits:
-   - If `openspec/specs/` exists: read the relevant spec(s) there. Check `openspec/changes/` for the active change proposal -- `tasks.md` in the change proposal directory is your task list.
-   - Otherwise: read `spec.md`.
-3. Read `tasks.md` or the task tracking file to identify the current task and its status.
+2. Read the governing spec in full:
+   - **Primary read:** `openspec/changes/<slug>/proposal.md`, `design.md`, and `tasks.md` from the governing change proposal.
+   - **Context reads:** any `openspec/specs/baseline-*.md` referenced by the proposal, plus any relevant non-baseline spec.
+   - The orchestrator's prompt is a pointer, not the source of truth. If the prompt paraphrases tasks, the actual `tasks.md` is authoritative — read it directly.
+3. Read `openspec/changes/<slug>/tasks.md` to identify the current task. The task you're about to do is the next unchecked task in the file.
 4. If a `comments.md` file exists from a previous review cycle, read it and address all items before proceeding to new work.
 5. Check the current git state: which branch you're on, whether there are uncommitted changes, what the last commit was.
 
@@ -86,6 +93,7 @@ When working in an area of the codebase that **lacks tests** (common in legacy o
 - **Handle errors explicitly.** No swallowed exceptions, no silent failures. Error messages should be actionable.
 - **No dead code.** Don't leave commented-out blocks, unused imports, or TODO stubs. If it's not needed now, don't write it now.
 - **Flag visual-impact refactors.** When a style or theming change alters the actual colour/appearance a user sees (not just the token source), treat it as a design decision. Log each hue-shifting substitution in your retrospective under "Questions for the Reviewer" so the reviewer can verify visual distinctiveness. Convention compliance ("uses the right tokens") is necessary but not sufficient — the result must also look correct.
+- **Fix root causes, not symptoms.** When fixing a visual, layout, or behavioural defect, the correct behaviour must be the natural consequence of the code structure — not something forced by a compensating hack. Never use hardcoded dimensions, `!important` overrides, magic-number padding, absolute positioning hacks, or per-route conditional CSS to fix layout problems. If a component shifts between pages, the fix is making it render identically everywhere through consistent structure — not adding padding to the shorter variant. The reviewer will block hack-style fixes.
 
 ### §4.PROJECT — Coding Conventions
 
@@ -207,20 +215,56 @@ The orchestrator or operator reads this log and routes entries to the appropriat
 - **The retrospective is your most valuable output.** The code may be rewritten; the lessons learned persist.
 - **Write to workspace, not memory.** All retrospectives go to `docs/AE/reports/`, discovery log entries to `docs/AE/discovery-log.md`. Never write artifacts to Claude Code's memory directory (`~/.claude/`). Memory is for session recall only; the workspace is the system of record.
 
-## §11. Spec Management
+## §11. OpenSpec Integration (Spec Traceability and Updates)
 
-After completing a task, update specs to reflect what was actually built. Check for `openspec/specs/` to determine which path to follow.
+The developer's job is not just to write code that works — it's to write code whose connection to the governing spec is verifiable by the reviewer. The reviewer will check spec traceability as a BLOCKING dimension (see reviewer persona §1). Ensure your work passes that gate before handing off.
 
-### When OpenSpec is configured
+### Spec references in code
 
-- If the task came from a change proposal (`openspec/changes/<slug>/tasks.md`), mark your task as complete there.
-- If the change proposal includes spec deltas, apply them to the parent spec in `openspec/specs/` and update the spec's `updated` date in frontmatter.
-- Reference the relevant spec ID in your retrospective report and discovery log entries.
+**Test files** must include a spec reference comment near the top:
+```javascript
+// Validates: openspec/specs/<spec-id>.md §<section>
+// or
+// Validates: openspec/changes/<slug>/proposal.md §<requirement>
+```
+
+**Source files implementing spec-defined behaviour** SHOULD include a spec reference comment for the file or for the function:
+```javascript
+// Implements: openspec/specs/<spec-id>.md §<section>
+// or for a specific function:
+/** Implements openspec/changes/<slug>/design.md §<decision>. */
+```
+
+These references are not decoration. They are the breadcrumb trail the reviewer follows to confirm that what was written matches what was specified. Tests without spec references are flagged. Source files implementing complex specified behaviour without references are flagged.
+
+### Commit messages reference the change
+
+Feature commits must reference the change slug:
+```
+feat(<scope>): <description> [change:<slug>]
+fix(<scope>): <description> [change:<slug>]
+```
+
+Bug fixes against a baseline spec (no change proposal) reference the baseline:
+```
+fix(<scope>): <description> [spec:baseline-<id>]
+```
+
+Hygiene/refactor commits without spec impact may omit the tag, but the reviewer will note their absence.
+
+### Update tasks.md as you go
+
+Open `openspec/changes/<slug>/tasks.md` and mark each task `[x]` as you complete it. This is the orchestrator's signal that the change is progressing. Do not skip this — it's how the next session knows where you stopped.
+
+### Apply spec deltas on completion
+
+When the change proposal includes `openspec/changes/<slug>/specs/<target-spec-id>.md` deltas, apply them to the parent spec at `openspec/specs/<target-spec-id>.md` once your implementation is complete and the reviewer has passed it. Update the parent spec's `updated:` frontmatter field. Do NOT apply deltas before the reviewer pass — if the implementation changes during review, the deltas may need updating too.
 
 ### When OpenSpec is not configured
 
 - Update `spec.md` if the implementation revealed necessary spec changes (with user approval).
-- This is the standard fallback and works the same as always.
+- Recommend OpenSpec setup to the orchestrator if the project is likely to grow.
+- Legacy fallback works the same as always.
 
 ## Adapting This Template
 

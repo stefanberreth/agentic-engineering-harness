@@ -379,17 +379,55 @@ Not every prompt needs the same level of detail. Calibrate verbosity to context:
 
 The lean prompt still includes: persona loading instruction, pre-flight check, TDD reminder, verify step, commit format, and report structure. It omits: paraphrased task description, speculative implementation guidance, and anticipated edge cases — the developer reads those from the source.
 
-### Spec-Aware Routing
+### Spec-Aware Routing (MANDATORY when OpenSpec is configured)
 
-When OpenSpec is configured in the target project, use change proposals as the organising unit for pipeline work:
+**This section is mandatory, not advisory.** When the target project has `openspec/specs/` present, every orchestrator-generated prompt that invokes an engineering role MUST be routed through the OpenSpec change-proposal workflow. This is how AEH maintains versioned, traceable, reviewable specification discipline. Bypassing this is a process failure equivalent to skipping a reviewer pass.
 
-- **Archaeologist findings** that produce baseline specs: direct the archaeologist to create specs with `status: baseline` in `openspec/specs/`. These are reference material for all downstream roles, not change proposals.
-- **Analyst findings** that produce new requirements: direct the analyst to create or update specs in `openspec/specs/`.
-- **Architect prompts**: reference the change proposal structure. If the analyst created a proposal at `openspec/changes/<slug>/proposal.md`, the architect prompt should direct them to fill in `design.md` and `tasks.md` in the same directory.
-- **Developer prompts**: reference `openspec/changes/<slug>/tasks.md` as the task source when a change proposal exists.
-- **Prompt execution log**: note which change proposal (if any) each prompt relates to in the Notes column.
+OpenSpec is filesystem-based. No MCP server is required or desired. All OpenSpec operations are markdown reads and writes via standard file tools.
 
-When OpenSpec is not configured, route through `requirements.md` and `spec.md` as before. The orchestrator adapts to whatever spec management the target uses.
+#### Pipeline Sequence (Non-Negotiable)
+
+```
+Analyst   → openspec/changes/<slug>/proposal.md   (requirements, acceptance criteria)
+Architect → openspec/changes/<slug>/design.md     (solution design, trade-offs)
+          → openspec/changes/<slug>/tasks.md      (ordered task breakdown)
+          → openspec/changes/<slug>/specs/        (spec deltas, if modifying baselines)
+Developer → reads tasks.md directly, checks off items, implements
+Reviewer  → validates against proposal.md + design.md + spec deltas
+On PASS   → orchestrator archives the change, deltas merge into openspec/specs/
+```
+
+The developer reads the authoritative task list from `tasks.md` — the orchestrator MUST NOT paraphrase tasks into prompts. Paraphrasing introduces drift between the architect's intent and what the developer implements. Lean developer prompts reference the tasks.md path directly.
+
+#### Routing by Role
+
+- **Archaeologist findings** that produce baseline specs: direct the archaeologist to create specs with `status: baseline` in `openspec/specs/`. These are reference material for all downstream roles, not change proposals. Baseline specs are the only output the archaeologist produces in `openspec/specs/` directly; all other roles produce via change proposals.
+- **Analyst findings** that produce new requirements: direct the analyst to create `openspec/changes/<slug>/proposal.md`. For updates to existing specs, the analyst creates a change proposal whose `specs/` directory holds the deltas. The analyst does NOT write directly to `openspec/specs/` (that's the archaeologist's lane for baselines).
+- **Architect prompts**: direct the architect to fill in `openspec/changes/<slug>/design.md` and `openspec/changes/<slug>/tasks.md`, plus spec deltas in `openspec/changes/<slug>/specs/` if the design modifies existing baselines.
+- **Developer prompts**: reference `openspec/changes/<slug>/tasks.md` as the authoritative task source. The developer reads tasks from that file, not from the orchestrator prompt body.
+- **Reviewer prompts**: instruct the reviewer to validate the implementation against the specific change proposal (proposal, design, tasks, deltas) plus any touched baseline specs.
+- **Prompt execution log**: every row includes the `change_slug` it relates to in the Notes column. Prompts with no change slug are suspect — they should be rare and justified.
+
+#### Pre-Generation Self-Check (MANDATORY)
+
+Before generating ANY role-bound prompt (analyst, architect, developer, reviewer), run this check:
+
+1. **Is this work governed by a spec?** Identify the governing artefact:
+   - An active `openspec/changes/<slug>/` change proposal, OR
+   - An existing `openspec/specs/baseline-*.md` baseline spec (for bugfixes that don't change behaviour).
+2. **If neither exists:** STOP. The correct next prompt is an analyst prompt to create the change proposal. Do not generate developer work without a governing spec.
+3. **Is the orchestrator about to paraphrase tasks from design.md into the prompt body?** If yes, STOP. Rewrite the prompt to reference `openspec/changes/<slug>/tasks.md` directly. Paraphrasing creates drift.
+4. **Does the prompt header include the `change_slug` and `governing_spec` fields?** If no, add them. Every role-bound prompt declares what it's governed by.
+
+If a prompt cannot pass this self-check, it must not be issued to the operator. Silent bypass of OpenSpec routing is a process regression that the reviewer will catch on the next review pass, blocking the phase.
+
+#### Exception: Freestyle harness-setup prompts
+
+Freestyle prompts (no role, harness-delivered structural changes like persona overlay creation) do not require a governing spec. These are clearly marked in the prompt header (`**Role:** none (freestyle)`) and are rare — they run only during onboarding or when the harness itself is being restructured in the target. Any prompt that touches source code, tests, migrations, or application configuration MUST NOT be freestyle.
+
+#### When OpenSpec is not present
+
+If the target project has no `openspec/` directory, the orchestrator falls back to `requirements.md` / `spec.md` conventions. In this case, the orchestrator's first maintenance action should be to propose OpenSpec setup (via the `tools` playbook) to establish the governing-spec substrate. Working indefinitely without OpenSpec is acceptable only for small or short-lived projects.
 
 ### 5. Track Outcomes
 
@@ -458,9 +496,17 @@ Update this section whenever migrations are applied, deployments occur, or envir
 
 ## Prompt Execution Log
 
-| # | Title | Status | Date | Commit | Notes |
-|---|-------|--------|------|--------|-------|
-| 001 | ... | PASS | ... | `abc123` | ... |
+| # | Title | Role | Change slug | Status | Date | Commit | Notes |
+|---|-------|------|-------------|--------|------|--------|-------|
+| 001 | ... | analyst | `example-slug` | PASS | ... | `abc123` | ... |
+
+## Active OpenSpec Change Proposals
+
+| Slug | Status | Current phase | Prompts consuming | Notes |
+|------|--------|---------------|-------------------|-------|
+| `example-slug` | active (analyst PASS, architect IN-PROGRESS) | design | 002, 003 | ... |
+
+When a change proposal reaches the reviewer PASS gate and the developer has applied deltas to `openspec/specs/`, the orchestrator archives it (moves the directory to `openspec/changes/archive/<YYYY-MM>/<slug>/` or the project's convention) and removes it from this table.
 
 ## Review Tracking
 

@@ -26,7 +26,7 @@ Each persona has a base template (generic methodology, ships with AEH) and a pro
 | **Analyst** | Gathers requirements, produces specs. Consumes baseline specs as context. |
 | **Architect** | Designs solutions, defines task breakdowns. Works within verified constraints. |
 | **Developer** | TDD implementation, follows conventions. Logs discoveries for other roles. |
-| **Reviewer** | Quality gate: 15 review dimensions including absence checks, dependency health, security audit, spec traceability, performance anti-patterns. Evidence-based verdicts (no rubber-stamping). |
+| **Reviewer** | Quality gate: 15+ review dimensions including a BLOCKING §0 spec traceability check (no governing spec → automatic FAIL), absence checks, dependency health, security audit, performance anti-patterns. Evidence-based verdicts (no rubber-stamping). The reviewer is the enforcement gate for OpenSpec discipline — code without spec traceability does not pass review. |
 
 The standard workflow is Archaeologist (once, for existing codebases) then Analyst → Architect → Developer → Reviewer in a loop. You run one role at a time in a Claude Code session pointed at your project. Between sessions, state lives in committed files -- kill a session at any point, start fresh, and the next agent picks up where the last left off.
 
@@ -51,9 +51,24 @@ Run `bin/validate-personas.sh` to verify structural integrity of base templates.
 
 ## OpenSpec and Baseline Specs
 
-[OpenSpec](https://openspec.dev/) manages specifications as structured markdown files alongside your code (`openspec/specs/` for specifications, `openspec/changes/` for change proposals with designs and task breakdowns). No MCP server, no dependencies -- just a directory convention that CLI agents read and write directly. Each persona knows where to read and write: Analyst creates specs, Architect fills in designs and tasks, Developer reads tasks and applies spec updates, Reviewer checks that specs match what was built.
+[OpenSpec](https://openspec.dev/) manages specifications as structured markdown files alongside your code (`openspec/specs/` for specifications, `openspec/changes/` for change proposals with designs and task breakdowns). **No MCP server, no dependencies — just a directory convention that CLI agents read and write directly via standard file tools.** OpenSpec MCP servers exist but are not used by AEH; CLI agents (Claude Code, Aider, etc.) have direct filesystem access and the MCP server adds no functional value while introducing brittle process management.
 
-The Archaeologist produces **baseline specs** (`status: baseline` in frontmatter) that document what the codebase currently does -- not what it should do. These are the verified ground truth that all downstream roles consume. Baseline specs include `[verified]` and `[unverified]` tags on factual claims so downstream roles know what they can build on safely.
+OpenSpec is the **organising unit for all engineering work** in AEH-governed projects:
+
+```
+Analyst   → openspec/changes/<slug>/proposal.md   (requirements, acceptance criteria)
+Architect → openspec/changes/<slug>/design.md     (solution design)
+          → openspec/changes/<slug>/tasks.md      (ordered task breakdown)
+Developer → reads tasks.md directly, implements
+Reviewer  → validates against the change proposal (BLOCKING §0 check)
+On PASS   → spec deltas merge into openspec/specs/, change archives
+```
+
+Each persona knows where to read and write. The reviewer's BLOCKING §0 spec traceability check enforces this — code that bypasses the OpenSpec workflow does not pass review.
+
+The Archaeologist produces **baseline specs** (`status: baseline` in frontmatter, file path `openspec/specs/baseline-<area>.md`) that document what the codebase currently does -- not what it should do. These are the verified ground truth that all downstream roles consume. Baseline specs include `[verified]` and `[unverified]` tags on factual claims so downstream roles know what they can build on safely.
+
+**MCP servers are project-level concerns, not framework-level.** AEH templates do not prescribe MCP servers. Individual target projects may configure MCP servers (Supabase for schema introspection, Context7 for external documentation lookup) in their own `.mcp.json` based on the project's needs. AEH does not require, recommend, or assume any MCP server in its core workflow.
 
 ## Quick Start
 

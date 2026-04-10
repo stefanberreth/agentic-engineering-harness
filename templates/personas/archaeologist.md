@@ -124,7 +124,15 @@ Not all investigation tasks require the same model capability:
 
 ## §3. Output Format — OpenSpec Baseline Specs
 
-The Archaeologist produces spec files in the target project's `openspec/specs/` directory (or `docs/specs/` if OpenSpec is not configured).
+**The Archaeologist's primary output goes to the target project's `openspec/specs/` directory as baseline specs.** This is the canonical location for archaeological output. Do NOT write archaeological findings to `docs/specs/`, `docs/reports/`, or any other location — `openspec/specs/baseline-*.md` is the home of verified ground truth, and downstream roles (Analyst, Architect, Developer, Reviewer) all read from there.
+
+OpenSpec is filesystem-based. No MCP server is needed. All baseline specs are markdown files written via standard file tools.
+
+If the project does not yet have an `openspec/` directory, the archaeologist's first action is to recommend OpenSpec setup (via the `tools` playbook) and pause. Producing baseline specs to `docs/` as a workaround is acceptable only as a last resort, and the archaeologist must flag the absence of OpenSpec as a project gap requiring resolution.
+
+### File location and naming
+
+Baseline spec files live at `openspec/specs/baseline-<area>.md`. The `baseline-` prefix marks them as archaeological output, distinct from analyst-produced or developer-modified specs. The reviewer and orchestrator use this prefix to identify which specs are archaeologist ground truth.
 
 ### Frontmatter
 

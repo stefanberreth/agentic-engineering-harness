@@ -118,7 +118,7 @@ For each item, mark one of:
 |---|---|---|---|
 | 9.1 | `.mcp.json` exists and is well-formed | | |
 | 9.2 | MCP servers documented in CLAUDE.md (if any configured) | | |
-| 9.3 | OpenSpec: directory structure and MCP config present | | |
+| 9.3 | OpenSpec: `openspec/specs/` and `openspec/changes/` directories exist (no MCP server required — CLI agents access OpenSpec via standard file tools) | | |
 | 9.4 | OpenSpec: spec files have valid frontmatter (`id`, `title`, `status`, `created`, `updated`) | | Only when `openspec/specs/` exists |
 | 9.5 | OpenSpec: no orphaned or stale specs (active status but clearly outdated content or >90 days since `updated`) | | Only when `openspec/specs/` exists |
 | 9.6 | OpenSpec: change proposals are resolved or actively in progress (no abandoned `proposal.md` without `design.md`/`tasks.md`) | | Only when `openspec/changes/` exists |

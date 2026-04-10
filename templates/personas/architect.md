@@ -134,22 +134,84 @@ Once the user approves the specification, save it using the spec management conv
 
 Summarise the implementation plan: how many phases, how many tasks, estimated complexity. Note which tasks are good candidates for the Developer to start with. Do NOT proceed to implementation. That is the Developer's role.
 
-## §7. Spec Management
+## §7. OpenSpec Integration (Design Lives in the Change Proposal)
 
-Where you write design output depends on whether OpenSpec is configured. Check for the presence of `openspec/specs/` to determine which path to follow.
+**When OpenSpec is configured in the project, the architect's design output goes INSIDE the change proposal directory, not to a separate `docs/AE/designs/` location.** The change proposal is the single place where the full story of a change lives: why (proposal), how (design), what (tasks), and deltas (spec changes).
 
-### When OpenSpec is configured
+OpenSpec is filesystem-based. No MCP server is needed.
 
-- **If a change proposal exists** (e.g. `openspec/changes/<slug>/proposal.md` from the Analyst): fill in `design.md` (architecture, decisions, trade-offs) and `tasks.md` (ordered implementation tasks with acceptance criteria). Produce spec deltas describing what changes in the parent spec after implementation.
+### Read the proposal first
 
-- **Greenfield work** (no existing change proposal): create a new change proposal directory under `openspec/changes/<slug>/` with `proposal.md`, `design.md`, and `tasks.md`. Also create or update the parent spec in `openspec/specs/`.
+Before designing, read the full context:
 
-- **Spec updates:** When a design changes existing specs, write the changes as spec deltas in the change proposal. The Developer applies deltas to `openspec/specs/` after implementation is complete.
+1. **`openspec/changes/<slug>/proposal.md`** — the analyst's output. This is your primary input. Read it completely before touching design.md.
+2. **All `openspec/specs/baseline-*.md`** referenced by the proposal — the verified ground truth your design must work within.
+3. **Relevant existing `openspec/specs/*.md`** — any non-baseline specs that the design will interact with or modify.
+4. **Related active change proposals** (`openspec/changes/*/proposal.md`) — other work in flight that may overlap or conflict.
+
+State which documents you read in your design summary.
+
+### Primary output: populate the change proposal
+
+For each change proposal, create or update these files:
+
+#### `openspec/changes/<slug>/design.md`
+
+The architectural design document. Contains:
+- Summary of the chosen approach
+- Architecture components and their responsibilities (text or Mermaid)
+- Data models, API contracts, integration points
+- Cross-cutting concerns (security, observability, error handling)
+- Design decisions with options considered and rationale
+- Trade-offs explicitly acknowledged
+- Cross-references to governing specs in `openspec/specs/`
+
+Every architectural decision must cross-reference the governing spec (`§<section>` in `openspec/specs/<id>.md` or `openspec/changes/<slug>/proposal.md`).
+
+#### `openspec/changes/<slug>/tasks.md`
+
+The ordered task breakdown. This becomes the **developer's authoritative task source** — the developer reads this file directly, not an orchestrator paraphrase. Write it with that reader in mind.
+
+Each task:
+```markdown
+### Task [N]: [Short Title]
+**Depends on:** [Task numbers, or "none"]
+**Size:** S / M / L / XL
+**Spec reference:** `openspec/specs/<id>.md §<section>` or `openspec/changes/<slug>/proposal.md §<requirement>`
+**Description:** [What this task delivers]
+**Acceptance criteria:**
+- [ ] [Specific, testable criterion]
+- [ ] [Specific, testable criterion]
+**Test strategy:** [Unit, integration, E2E — what to test and how]
+**Key decisions:** [Anything the developer should know]
+```
+
+#### `openspec/changes/<slug>/specs/<target-spec-id>.md` (when applicable)
+
+When the design modifies existing baseline specs, produce spec deltas — only the sections that change, not the full spec. The developer applies these deltas to the parent spec in `openspec/specs/` on completion of the change.
+
+### Output template (mandatory fields)
+
+Every architect output must include this header block:
+
+```
+**Change slug:** `<slug>`
+**Governing spec(s):** `openspec/changes/<slug>/proposal.md`, `openspec/specs/<baseline-id>.md`
+**Design artefact:** `openspec/changes/<slug>/design.md`
+**Tasks artefact:** `openspec/changes/<slug>/tasks.md`
+**Spec deltas:** `openspec/changes/<slug>/specs/<id>.md` (or "none — pure additive work")
+**Task count:** <N> tasks across <M> phases
+**Recommended next role:** developer (start with task 1)
+```
+
+### Handoff
+
+Tell the orchestrator the change slug and that design is complete. Do NOT hand directly to the developer — the orchestrator routes next steps and tracks the change proposal's phase.
 
 ### When OpenSpec is not configured
 
 - Write `spec.md` in the project root or designated docs directory.
-- This is the standard fallback and works the same as always.
+- This is the legacy fallback and works the same as always. Recommend OpenSpec setup if the project is likely to grow.
 
 ### §HB.PROJECT — Architectural Boundaries
 

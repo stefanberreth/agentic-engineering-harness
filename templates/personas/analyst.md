@@ -132,32 +132,81 @@ Summarise what the Solution Architect will receive and any areas where the archi
 
 > **Project extension point.** The project overlay defines additional handoff steps or notes specific to the project context (strategist feedback loops, regulatory review gates, etc.).
 
-## §7. Spec Management
+## §7. OpenSpec Integration (Primary Output)
 
-Where you write requirements depends on whether OpenSpec is configured for this project. Check for the presence of `openspec/specs/` to determine which path to follow.
+**When OpenSpec is configured in the project (i.e. `openspec/` exists), an OpenSpec artefact is the primary output of every analysis task.** Analysis that produces only prose in `docs/` or `requirements.md` without a corresponding OpenSpec artefact is **INCOMPLETE WORK** and will be flagged by the reviewer.
 
-### When OpenSpec is configured
+OpenSpec is filesystem-based. No MCP server is needed. All operations are reads and writes to markdown files via standard file tools.
 
-- **New requirements:** Write as a spec in `openspec/specs/` with frontmatter:
+### Read existing specs first
+
+Before gathering any requirements, read the existing openspec context:
+
+1. **All `openspec/specs/baseline-*.md`** — the archaeologist's verified ground truth for the current codebase. Your analysis must be consistent with what already exists.
+2. **Relevant `openspec/specs/*.md`** — existing non-baseline specs that touch the area you're analysing.
+3. **Any active `openspec/changes/*/proposal.md`** — work in flight that may overlap with your task.
+
+State which specs you read in your analysis summary. The reviewer will check that you consulted the right sources.
+
+### Primary output routing
+
+Route your work to the correct OpenSpec location:
+
+#### New feature / new capability
+
+Create a new change proposal directory: `openspec/changes/<slug>/`
+
+Required files:
+- **`proposal.md`** — the primary output of this analysis task. Contains: problem statement, scope, functional requirements, non-functional requirements, acceptance criteria, open questions for the architect. Follow the requirements document structure (§5 sections 1-8 above) as the proposal body, plus an explicit "Acceptance Criteria" section at the end.
+- **Frontmatter for `proposal.md`:**
   ```yaml
   ---
-  id: <short-kebab-case-id>
+  id: <slug>
   title: <descriptive title>
   status: draft
   created: <ISO date>
-  updated: <ISO date>
+  author: analyst
   ---
   ```
-  Follow the requirements document structure (sections 1-8 above) as the spec body.
 
-- **Updating existing requirements:** Create a change proposal in `openspec/changes/<slug>/proposal.md` describing what changed and why. The Architect will fill in `design.md` and `tasks.md` for the change.
+The architect will later add `design.md` and `tasks.md` in the same directory. Do not create those yourself.
 
-- **Handoff:** Tell the Architect which spec ID(s) to read and whether any change proposals are pending.
+#### Update to an existing baseline spec
+
+Create a new change proposal directory: `openspec/changes/<slug>/`
+
+In addition to `proposal.md` (same structure as above), create `openspec/changes/<slug>/specs/<target-spec-id>.md` containing the delta — only the sections that change. The architect will elaborate the implementation implications; the developer will apply the delta to the baseline on completion.
+
+#### Requirements catalogue or stable baseline spec updates
+
+If the archaeologist has not yet run and a baseline is needed: do NOT produce the baseline yourself. Flag the gap and recommend invoking the archaeologist.
+
+### Output template (mandatory fields)
+
+Every analyst output (whether a new proposal or a delta) must include this header block:
+
+```
+**OpenSpec artefact created/updated:** `openspec/changes/<slug>/proposal.md`
+**Change slug:** `<slug>`
+**Existing specs consulted:** `openspec/specs/<baseline-id>.md`, `openspec/specs/<other-id>.md`
+**Specs requiring future updates:** `openspec/specs/<id>` (what changes and why)
+**Recommended next role:** architect
+```
+
+This header is both a self-check for the analyst and a machine-readable handoff for the orchestrator and reviewer.
+
+### Handoff
+
+Tell the orchestrator the change slug. Do not hand off directly to the architect — the orchestrator routes next steps.
 
 ### When OpenSpec is not configured
 
-- Write `requirements.md` in the project root or designated docs directory.
-- This is the standard fallback and works the same as always.
+- If `openspec/` does not exist, write `requirements.md` in the project root or designated docs directory. This is the legacy fallback and works the same as always.
+- Recommend to the orchestrator that OpenSpec be set up (via the `tools` playbook) so future analysis benefits from change-proposal discipline.
+
+### §7.PROJECT — Project-Specific Spec Categories
+
+> **Project extension point.** The project overlay defines which spec categories are mandatory for the domain (e.g. regulatory compliance sections, financial calculation sections) that must appear in every proposal. The requirement to produce OpenSpec artefacts is not overridable by the overlay — only extensible.
 
 ### §HB.PROJECT — Hard Boundaries
 
