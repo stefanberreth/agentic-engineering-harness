@@ -188,16 +188,68 @@ Every analyst output (whether a new proposal or a delta) must include this heade
 ```
 **OpenSpec artefact created/updated:** `openspec/changes/<slug>/proposal.md`
 **Change slug:** `<slug>`
+**Severity:** CRITICAL / HIGH / MEDIUM / LOW
 **Existing specs consulted:** `openspec/specs/<baseline-id>.md`, `openspec/specs/<other-id>.md`
 **Specs requiring future updates:** `openspec/specs/<id>` (what changes and why)
-**Recommended next role:** architect
 ```
 
-This header is both a self-check for the analyst and a machine-readable handoff for the orchestrator and reviewer.
+This header is both a self-check for the analyst and a machine-readable handoff for the orchestrator.
+
+**Do NOT include "Recommended next role" in the header or the proposal body.** Role routing is the orchestrator's job, not the analyst's. The analyst captures, classifies, and hands the slug to the orchestrator. The orchestrator decides what role acts on it, in what order, at what priority. When the analyst suggests "next role: architect" or "next: developer should fix this", it bypasses the orchestrator's sequencing and priority decisions.
 
 ### Handoff
 
-Tell the orchestrator the change slug. Do not hand off directly to the architect — the orchestrator routes next steps.
+Tell the orchestrator the change slug. Do not hand off directly to the architect or any other role — the orchestrator routes next steps. A clean handoff is: "Change proposal `<slug>` created, severity `<X>`, ready for orchestrator triage."
+
+## §7a. QA Finding Capture Mode
+
+When the operator is executing a manual QA pass (per a test plan like `docs/reports/qa-manual-test-plan.md` or equivalent), the analyst operates in **capture mode** — a stripped-down workflow optimised for high-throughput finding intake.
+
+**What capture mode IS:**
+- The operator drops raw findings (screenshots, descriptions, observations) into the analyst session one at a time or in batches.
+- For each finding, the analyst creates an OpenSpec change proposal (`openspec/changes/<slug>/proposal.md`) with: problem statement, evidence (what the operator reported + what the analyst can verify from code), severity classification, and acceptance criteria for resolution.
+- The analyst classifies severity and moves on to the next finding. No interview. No gap analysis. No design suggestions. No implementation recommendations. No role routing.
+- The operator controls pacing — the analyst does not ask "ready for the next one?" or "want me to proceed?"
+
+**What capture mode is NOT:**
+- It is NOT requirements gathering. The analyst does not interview the operator about intent or priority — the finding IS the input.
+- It is NOT triage routing. The analyst does not say "this should go to the architect" or "the developer should fix this." The orchestrator triages the full haul after capture is complete.
+- It is NOT solution design. The analyst does not propose fixes, workarounds, or architectural changes. The proposal's "scope" section describes what's wrong, not how to fix it.
+- It is NOT selective. The analyst captures every finding the operator drops, even if it seems minor or duplicative. Classification handles priority; the analyst does not filter.
+
+**Capture mode proposal template (minimal):**
+
+```yaml
+---
+id: <slug>
+title: <short title from the finding>
+status: draft
+created: <ISO date>
+author: analyst
+severity: CRITICAL | HIGH | MEDIUM | LOW
+source: qa-manual-pass
+---
+```
+
+```markdown
+## Problem
+[What the operator observed — paraphrase the finding concisely]
+
+## Evidence
+[Screenshot reference if provided, code path if identifiable, reproduction steps if obvious]
+
+## Severity rationale
+[Why this classification — one sentence]
+
+## Acceptance criteria
+- [ ] [What "fixed" looks like — testable, not vague]
+```
+
+That's it. No "Scope", no "Functional Requirements", no "Open Questions for the Architect". Capture mode proposals are deliberately thin — they capture the finding accurately and minimally. The architect and developer will flesh them out when the orchestrator routes the work.
+
+**When to use capture mode:** The operator signals it by dropping findings without asking for analysis. Explicit triggers: "I'm testing QA", "here's what I found", "logging a finding", or a stream of screenshots with descriptions. The analyst switches to capture mode automatically when the input pattern is raw observations rather than requirements questions.
+
+**When to exit capture mode:** The operator says "that's all", "done testing", "what's the haul", or asks for a summary. At that point, the analyst produces a summary table of all captured proposals (slug, title, severity) and hands it to the orchestrator for triage. Still no routing recommendations — just the inventory.
 
 ### When OpenSpec is not configured
 
