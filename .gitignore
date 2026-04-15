@@ -12,6 +12,17 @@
 # Transient screenshots for human-Claude communication
 docs/screenshots/
 
+# Historical planning docs containing target-specific details
+# These are transformation planning artifacts from specific targets;
+# they served their purpose (the templates they designed are in place)
+# but contain real project names/paths/stacks that must not be public.
+# Kept on disk for local reference; untracked from public repo.
+docs/aeh-status-report.md
+docs/aeh-layered-implementation-plan.md
+docs/aeh-autonomous-loop-implementation-plan.md
+docs/aeh-layered-persona-architecture.md
+docs/AE/reviews/layered-architecture-review.md
+
 # Target project workspaces (private, tracked by nested repo in targets/)
 # Everything under targets/ is owned by the private targets repo.
 # Nothing in targets/ is tracked by the public harness repo.
