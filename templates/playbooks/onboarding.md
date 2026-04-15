@@ -620,14 +620,16 @@ If existing setup was migrated, add:
   structure. Original files are preserved until you choose to remove them.
 ```
 
-### 6g. OpenSpec Setup (Recommended)
+### 6g. Standard SDLC Tools Setup
 
-Before proceeding to handoff, offer OpenSpec setup:
+AEH prescribes two standard SDLC tools for every project. Offer both during onboarding.
+
+#### OpenSpec (standard — recommended for all projects)
 
 ```
-OpenSpec is recommended for structured spec management. It integrates
-with the AEH role flow: analyst writes specs, architect writes designs
-and task breakdowns, developer reads tasks, reviewer checks spec currency.
+OpenSpec is AEH's specification substrate. Every feature flows through
+change proposals (analyst → architect → developer → reviewer) with the
+reviewer's §0 BLOCKING spec traceability check enforcing discipline.
 
 Set up OpenSpec now? [yes / not now / never for this project]
 ```
@@ -638,12 +640,54 @@ Set up OpenSpec now? [yes / not now / never for this project]
 
 **If "never":** Record in `profile.md` under `## Specification Management`: `policy: manual (spec.md)`. Personas fall back to `requirements.md` / `spec.md` conventions. The decision is reversible if the user explicitly asks to reconsider.
 
-After OpenSpec decision, add:
+#### context7 (standard — recommended for all projects)
 
 ```
-  Optional: Additional tools (Context7, Serena) can enhance your workflow.
-  Say `tools` to explore options.
+context7 provides current library documentation lookup via MCP. Agents
+call it before writing code that uses fast-moving library APIs — prevents
+training-data recall for libraries that changed after the agent's cutoff.
+
+Set up context7 now? [yes / not now]
 ```
+
+**If "yes":** Read `templates/tools/context7-setup.md`, generate the setup prompt adapted to this target, and add it to the prompt sequence. Record in `profile.md` under `## Development Tools`: `context7: configured`. The developer and architect overlays will need a §1a.PROJECT / §3a.PROJECT trigger list populated with the project's fast-moving libraries — generate that as part of the setup prompt.
+
+**If "not now":** Record in `profile.md` under `## Development Tools`: `context7: deferred`. Will be offered again via `tools`.
+
+#### Serena (assessed — recommended when codebase warrants it)
+
+Unlike OpenSpec and context7 (which benefit every project), Serena's value depends on codebase characteristics. Assess based on the Phase 2 reconnaissance findings:
+
+**Recommend Serena when ALL of:**
+- Codebase is >10k lines of source code (semantic navigation adds value over grep at scale)
+- Multiple languages or dual-layer architecture (e.g. backend JS + frontend TSX, Python + JS, Go + TS) where cross-layer find-references matters
+- The project will undergo significant refactoring or cross-module changes (state machine migrations, financial rewrites, architecture changes)
+- LSP support is available for the primary language(s) (TypeScript: excellent. Python: good. JavaScript-without-TS: weaker but usable. Go/Rust: excellent. Ruby: limited.)
+
+**Do NOT recommend Serena when ANY of:**
+- Codebase is <5k lines (grep is sufficient, semantic navigation is overhead)
+- Single-language, well-typed codebase where grep + Read covers navigation needs
+- The project is in maintenance mode with no planned refactoring
+- The container/runtime environment cannot support LSP servers (restricted containers, no package installation)
+
+**Present the assessment with rationale:**
+
+```
+Serena (semantic code navigation via LSP):
+  Codebase size:    <N>k lines — <above/below threshold>
+  Languages:        <list> — <multi-layer: yes/no>
+  Refactoring ahead: <assessment from transformation plan>
+  LSP quality:      <assessment for primary language>
+
+  Recommendation: <install / defer / skip>
+  Rationale: <1-2 sentences explaining why>
+```
+
+**If recommending:** Read `templates/tools/serena-setup.md`, generate the setup prompt with the correct language server config for this project's stack. Add to the prompt sequence.
+
+**If deferring:** Record in `profile.md` under `## Development Tools`: `serena: deferred (<rationale>)`. The orchestrator can re-assess when the project enters a heavy refactoring phase.
+
+**If skipping:** Record in `profile.md` under `## Development Tools`: `serena: not recommended (<rationale>)`. The assessment and rationale are preserved so future sessions don't re-evaluate unnecessarily.
 
 ### 6h. Sandbox Environment Variable Provisioning
 

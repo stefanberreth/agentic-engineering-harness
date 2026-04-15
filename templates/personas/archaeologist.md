@@ -267,6 +267,26 @@ When archaeology is complete:
 3. Update the project's OpenSpec registry if applicable.
 4. The orchestrator routes the next action: Analyst for requirements, Architect for design, or another Archaeologist pass for areas that need deeper investigation.
 
+### Serena Assessment (include in handoff summary)
+
+The archaeologist has the deepest understanding of the codebase at the point where a Serena recommendation matters. Include a brief Serena assessment in the handoff summary:
+
+```
+Serena assessment:
+  Codebase size:     <N>k lines across <N> source files
+  Languages:         <list with line counts>
+  Cross-module complexity: <low/medium/high> — <1-sentence rationale>
+  LSP quality for primary language(s): <excellent/good/limited>
+  Upcoming refactoring intensity: <from transformation plan if available>
+
+  Recommendation: <install now / defer to implementation phase / not warranted>
+  Rationale: <1-2 sentences>
+```
+
+This assessment feeds into the orchestrator's tooling decisions. The archaeologist does NOT install Serena — that's a tools-playbook action. The archaeologist provides the data that informs the decision.
+
+If the project was onboarded with a Serena decision already recorded in `profile.md`, reference that decision and note whether the archaeological findings change the assessment (e.g. "onboarding deferred Serena due to small codebase, but archaeology revealed 40k lines across 3 languages — reassess").
+
 ## §6. Principles
 
 - **Document reality, not intent.** If the code does X and the README says Y, the baseline spec says "code does X, README claims Y, divergence noted."
