@@ -170,7 +170,8 @@ Each step is human-approved. The harness generates prompts; you decide when and 
 │   │   ├── serena-teardown.md            # Serena teardown prompt template
 │   │   └── sandbox-env-provisioning.md   # Env var provisioning for Docker/sandbox
 │   ├── prompts/
-│   │   └── regression-check.md.template  # Post-transformation regression check
+│   │   ├── regression-check.md.template  # Post-transformation regression check
+│   │   └── orchestrator-batch-regime.md  # Regime 2 switchover prompt template
 │   ├── scripts/
 │   │   └── loop-driver.sh.template       # Autonomous dev->gates->reviewer loop
 │   └── agents/

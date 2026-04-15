@@ -141,7 +141,7 @@ Review harness files as a newcomer would encounter them:
 
 ### 8. OpenSpec Discipline Integrity (cross-template verification)
 
-**This dimension verifies that the OpenSpec-driven workflow is consistently described and enforced across ALL persona templates.** The a target project experience showed that OpenSpec can be defined in one template but silently bypassed by others — 150+ prompts of drift before the gap was caught. This dimension exists to prevent recurrence.
+**This dimension verifies that the OpenSpec-driven workflow is consistently described and enforced across ALL persona templates.** A real-world deployment showed that OpenSpec can be defined in one template but silently bypassed by others — 150+ prompts of drift before the gap was caught. This dimension exists to prevent recurrence.
 
 Verify each engineering persona's OpenSpec integration:
 

@@ -192,7 +192,7 @@ done
 - Listed in the review report with file:line
 - Assigned a severity: blocking if in operational documentation (traceability matrices, persona overlays, baseline specs, project README, CLAUDE.md, AGENTS.md), non-blocking but flagged if in low-traffic documentation (session logs, old reports)
 
-**Why this check exists:** the first live exercise of §0 (a target project OpenSpec restoration, 147 review) missed 21 dead links in a traceability matrix, 3 stale persona overlay references, and 3 baseline spec contradictions because §0.4 as originally written only looked at spec files themselves. Operational documents that reference specs by path are the drift carriers.
+**Why this check exists:** the first live exercise of §0 on a real target project missed 21 dead links in a traceability matrix, 3 stale persona overlay references, and 3 baseline spec contradictions because §0.4 as originally written only looked at spec files themselves. Operational documents that reference specs by path are the drift carriers.
 
 **Path currency verdict:**
 
