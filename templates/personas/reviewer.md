@@ -441,13 +441,13 @@ The absence check is complete when you can answer, for every new function: "if t
 **Library API Currency** *(when the change uses fast-moving library APIs)*
 LLM agents are particularly prone to writing stale library code from memory instead of verifying against current documentation. The reviewer catches this by spot-checking library API usage against current docs.
 
-- For each library listed in the project overlay's trigger list for library API verification, spot-check API usage in the diff against current documentation.
-- The project overlay specifies both the list of triggering libraries AND the verification mechanism (which documentation lookup tool/MCP/offline docs/manual process). This base template is tool-agnostic — it defines the discipline, not the implementation.
+- For each library listed in the project overlay's §1a.PROJECT trigger list, spot-check API usage in the diff against current documentation via context7.
+- context7 is an AEH-standard SDLC tool. If it is not configured in the project, flag this as a setup gap and fall back to comparing against existing project code.
 - **Staleness signals:** deprecated API calls, removed config options, outdated flag syntax, import paths that have moved, class/function names that have been renamed. Each is a blocking finding for any library whose version in the project's manifest is ≥ the agent's training cutoff.
 - **One-call-per-library-surface rule:** verify once per library per review, not per file. Cache mentally for the rest of the review.
 - **Non-blocking unless stale:** if the code uses current syntax correctly, this check adds no friction. The check is invisible when the developer did their own documentation lookup correctly — it only surfaces issues.
-- **When the lookup mechanism is unavailable:** fall back to comparing against the project's own existing code in the same library. If the same API is used consistently across the project and this change matches, PASS. If the change introduces a pattern not present elsewhere in the project, flag for manual verification.
-- **When no trigger list exists in the overlay:** skip this dimension and note it as a project-configuration gap in the review report. The reviewer does not invent a trigger list from the base template's examples.
+- **When context7 is unavailable:** fall back to comparing against the project's own existing code in the same library. If the same API is used consistently across the project and this change matches, PASS. If the change introduces a pattern not present elsewhere in the project, flag for manual verification.
+- **When no trigger list exists in the overlay:** skip this dimension and note it as a project-configuration gap in the review report.
 
 If the change adds new dependencies, library API currency applies to the new ones automatically (no way to verify against existing code since they're new).
 

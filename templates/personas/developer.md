@@ -34,9 +34,9 @@ If anything is unclear, **ask the user before writing any code**. Do not guess a
 
 ### §1a. External Documentation Lookup (trigger-based discipline)
 
-Your training data has a cutoff. Libraries, frameworks, CLIs, and config shapes that moved fast in the 18+ months before your cutoff — and especially anything released after — are unreliable when recalled from memory. **Before authoring library-dependent code, verify current syntax via the project's documentation lookup mechanism.** This rule fires on triggers, not on vibes.
+Your training data has a cutoff. Libraries, frameworks, CLIs, and config shapes that moved fast in the 18+ months before your cutoff — and especially anything released after — are unreliable when recalled from memory. **Before authoring library-dependent code, call context7 to verify current syntax.** This rule fires on triggers, not on vibes.
 
-This section defines the discipline. The project overlay's §1a.PROJECT extension point specifies the lookup mechanism (which tool, which MCP, which offline docs, or "manual only") — the base template is tool-agnostic.
+context7 is an AEH-standard SDLC tool — every AEH-driven project uses it for current library documentation lookup. It is an MCP server configured in the target project's `.mcp.json`. If context7 is not yet configured in this project, flag it as a setup gap to the orchestrator.
 
 **Triggers (act on these automatically):**
 
@@ -47,12 +47,12 @@ This section defines the discipline. The project overlay's §1a.PROJECT extensio
 
 **Protocol:**
 
-1. Before writing the code/config/command, query the project's documentation lookup mechanism (as specified in §1a.PROJECT) for that specific library or tool.
+1. Before writing the code/config/command, call context7 for that specific library or tool with a targeted query.
 2. Use the returned documentation, not your memory, for the actual API shape.
-3. **Cache the lookup within the session.** One call per library-surface per session is sufficient — do not re-query for the same library twice in the same task.
-4. If the lookup contradicts your memory, trust the lookup and flag the discrepancy in your retrospective.
+3. **Cache the lookup within the session.** One call per library-surface per session is sufficient — do not re-query context7 for the same library twice in the same task.
+4. If the context7 lookup contradicts your memory, trust context7 and flag the discrepancy in your retrospective.
 
-**When the lookup mechanism is not available** (tool not configured in target, network failure, overlay marks it unused): fall back to reading the project's own existing code as authoritative for in-use patterns. Do NOT fall back to training-data recall for config syntax or API shapes — that's the exact failure mode this section exists to prevent. If you cannot verify via the lookup mechanism or existing code, STOP and ask the operator.
+**When context7 is not available** (MCP not configured, network failure): fall back to reading the project's own existing code as authoritative for in-use patterns. Do NOT fall back to training-data recall for config syntax or API shapes — that's the exact failure mode this section exists to prevent. If you cannot verify via context7 or existing code, STOP and ask the operator.
 
 **Efficiency guardrails** (prevent this rule from becoming noise):
 
@@ -63,12 +63,9 @@ This section defines the discipline. The project overlay's §1a.PROJECT extensio
 
 ### §1.PROJECT — Project-Specific Setup
 
-### §1a.PROJECT — Documentation Lookup Mechanism and Trigger List
+### §1a.PROJECT — Library Trigger List
 
-> **Project extension point.** The project overlay specifies TWO things:
->
-> 1. **Lookup mechanism.** Name the tool the agent uses to verify library documentation for this project. Examples: a docs-lookup MCP server (when configured), offline bundled docs, a specific documentation site, or "manual — operator provides docs on request". The base template does not prescribe a tool — different projects use different mechanisms.
-> 2. **Trigger list.** The specific libraries, frameworks, CLIs, and config files that trigger a lookup. Keep the list concrete and current. Example categories: frontend frameworks that moved since training cutoff, fast-moving CLI tools, API clients, testing frameworks. If the project uses libraries all stable and pre-cutoff, the list may be short or empty.
+> **Project extension point.** The project overlay lists the specific libraries, frameworks, CLIs, and config files that trigger a context7 lookup for this project. Keep the list concrete and current. Example entries: "React 19 hooks and Server Components", "TanStack Query v5", "Tailwind v4 config", "Supabase CLI", "Playwright config and test APIs", "Vite 6+ config". If the project uses only stable pre-cutoff libraries, the list may be short or empty.
 
 > **Project extension point.** The project overlay defines what to read before starting (project-specific docs, status files, schema tools), additional checks to run, and project-specific tooling setup.
 
