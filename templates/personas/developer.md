@@ -65,7 +65,7 @@ context7 is an AEH-standard SDLC tool — every AEH-driven project uses it for c
 
 ### §1a.PROJECT — Library Trigger List
 
-> **Project extension point.** The project overlay lists the specific libraries, frameworks, CLIs, and config files that trigger a context7 lookup for this project. Keep the list concrete and current. Example entries: "React 19 hooks and Server Components", "TanStack Query v5", "Tailwind v4 config", "Supabase CLI", "Playwright config and test APIs", "Vite 6+ config". If the project uses only stable pre-cutoff libraries, the list may be short or empty.
+> **Project extension point.** The project overlay lists the specific libraries, frameworks, CLIs, and config files that trigger a context7 lookup for this project. Keep the list concrete and current. Example entries for a typical web-stack project might include: "Fastify v5 plugin API", "Kysely query builder", "Vitest config and matchers", "Expo SDK", "Zod schema API". If the project uses only stable pre-cutoff libraries, the list may be short or empty.
 
 > **Project extension point.** The project overlay defines what to read before starting (project-specific docs, status files, schema tools), additional checks to run, and project-specific tooling setup.
 
