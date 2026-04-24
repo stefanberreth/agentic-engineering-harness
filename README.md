@@ -83,7 +83,7 @@ These run in the AEH harness session (a separate Claude Code instance in the AEH
 
 | Role | What it does |
 |------|-------------|
-| **Orchestrator** | Manages the prompt execution pipeline. Enforces reviewer cadence (every 5 tasks or phase boundary -- non-discretionary). Pre-generation self-check refuses to create developer prompts without a governing spec. Tracks state across sessions. Two execution regimes: prompt-by-prompt (close oversight) and batch (self-chaining with phase-boundary review). |
+| **Orchestrator** | Manages the prompt execution pipeline. Enforces reviewer cadence (every 5 tasks or phase boundary -- non-discretionary). Pre-generation self-check refuses to create developer prompts without a governing spec. Tracks state across sessions. Three execution modes: prompt-by-prompt (Regime 1, close oversight), batch + phase-boundary review (Regime 2, higher velocity), and multi-prompt multi-role chain orchestration (proactive composition of autonomous chains with pre-flight readiness, mid-chain integration-verification gate, halt-condition catalogue, monitoring via scheduled wakeups, post-chain verdict). Report-Back discipline on every generated prompt: wall-clock field + `PROMPT COMPLETE` sentinel for chain-wrapper parse. |
 | **Strategist** | Business strategy and priorities -- runs in any LLM chat (optional, external to Claude Code) |
 | **Harness Reviewer** | Self-review of AEH's own quality across 10 dimensions: target detail leakage, prompt protocol, documentation currency, template consistency, isolation boundary, governance completeness, public-facing quality, OpenSpec discipline integrity, quality gate chain integrity, SDLC tool compliance |
 
@@ -113,6 +113,8 @@ Every feature flows through this structure:
 3. **Developer** reads `tasks.md` directly (the orchestrator does not paraphrase), implements, marks tasks complete, adds spec reference comments to tests and source
 4. **Reviewer** validates the implementation against the proposal via the BLOCKING §0 spec traceability check
 5. **On reviewer PASS**: spec deltas merge into `openspec/specs/`, the change archives to `openspec/changes/archive/`
+
+**The proposal is the single instruction set.** What the analyst writes in `proposal.md` -- requirements, scope, acceptance criteria -- serves as the architect's brief AND the reviewer's checklist. There is no separate "instructions for the reviewer" document; acceptance criteria play that role directly. The architect resolves open questions in `design.md`, the developer implements against `tasks.md`, and the reviewer checks each acceptance criterion in the original proposal. **The rigour of the proposal IS the quality of every downstream handoff.** A vague proposal produces a sloppy review; a precise proposal produces decisive gating. This single-authoring-event principle is what makes the OpenSpec + TDD + strict quality gate + reviewer routing chain actually function as a coherent SDLC rather than a relay of re-interpretations.
 
 The reviewer's §0 check enforces this end-to-end. Code that bypasses OpenSpec -- intentionally or by drift -- does not pass review.
 
@@ -178,10 +180,18 @@ On PASS          → deltas merge into openspec/specs/, change archives
                    ↓
 Orchestrator     → enforces reviewer cadence (every 5 tasks / phase boundary)
                    pre-generation self-check (no prompt without governing spec)
+                   pre-dispatch hygiene gate (CI green before new-CP dispatch)
                    tracks active change proposals in state file
 ```
 
 The chain is unbroken: the orchestrator can't generate a developer prompt without a governing spec, the developer can't start without finding that spec, the reviewer rejects work without spec traceability. Drift is caught structurally, not by vigilance.
+
+**For autonomous multi-prompt chains** (a single wall-clock window executing N prompts across one or more roles without operator-in-loop interaction between prompts), the chain adds two more gates on top of the base chain:
+
+- **Pre-flight readiness check** before chain launch — verifies gate infrastructure actually executes the assertions `tasks.md` specifies; verifies synthetic state (fixtures, storage states, test DB seed) is ready; verifies halt conditions fire as designed. Non-negotiable: skipping risks a chain running hours against infrastructure that cannot observe real application state.
+- **Integration-verification gate** between developer-batch completion and reviewer start — arbitrates at real-integration level (real DB, real service wiring, end-to-end test surface) that per-task unit tests intentionally mock for speed. Catches cross-task, schema, and composition-level integration bugs before they reach the reviewer.
+
+Chain halt-condition catalogue: non-zero exit, zero commits, reviewer ≠ PASS/WARN, `CHAIN_HALT` sentinel, mtime idle >15 min, wall-clock cap, scope-guard violation. Wrappers halt and write a summary; orchestrator scheduled-wakeup cadence surfaces state to the operator without polling.
 
 ## What AEH Is NOT
 
@@ -259,8 +269,10 @@ The chain is unbroken: the orchestrator can't generate a developer prompt withou
 - **Guided playbooks** -- `onboard` (7-phase assessment + transformation), `health` (recurring compliance check), `tools` (OpenSpec + context7 + optional Serena configuration)
 - **Agent permission governance** -- schema reference, detection patterns, recommended baselines. Catches secrets in permission rules, missing deny lists, filesystem scope violations
 - **Validation tooling** -- `bin/validate-personas.sh` checks base template structure, extension points, and project-specific content leakage
-- **Reviewer enforcement** -- §0 BLOCKING spec traceability check, mandatory reviewer cadence, evidence-based verdicts, domain-critical adversarial review extension points
-- **Execution regimes** -- prompt-by-prompt (Regime 1, close oversight) and batch execution with phase-boundary review (Regime 2, higher velocity). Both enforce reviewer gates.
+- **Reviewer enforcement** -- §0 BLOCKING spec traceability check, mandatory reviewer cadence, evidence-based verdicts, domain-critical adversarial review extension points. Visual-regression signal-quality ranking (operator eyeball > pixel-diff > sentinel-SSIM > DOM-skeleton-diff) for UI-heavy projects — reviewer cannot PASS on DOM-skeleton-diff alone.
+- **Execution regimes** -- prompt-by-prompt (Regime 1, close oversight), batch execution with phase-boundary review (Regime 2, higher velocity), and multi-prompt multi-role chain orchestration for autonomous wall-clock windows. All regimes enforce reviewer gates. Chain mode adds pre-flight readiness, integration-verification gate between dev batch and reviewer, pre-dispatch hygiene gate, halt-condition catalogue, and scheduled-wakeup monitoring from the orchestrator session.
+- **Chain-safe task specification** -- architect `§4a` structures `tasks.md` so chain-bound backend tasks declare mechanical completion signals (test file paths + CLI assertions), scope-bounded file-pattern allowlists, and commit-message format with change-slug tags. UI-subjective tasks split into a clearly-flagged Section B that is NOT chain-bound and executes prompt-by-prompt with operator review per surface.
+- **Two analyst intake paths** -- analyst `§7b` distinguishes heavyweight operator-authored requirements documents (ingested from conventional intake directories, digested with analyst authority to reject / refine / decompose / defer) from mid-session-surfaced horizontals captured during analyst/architect sessions and queued by the orchestrator for activation when a consumer proposal needs them. Different shapes, different handling, no BA-REQ expected for mid-session horizontals.
 
 ## Maturity Model
 
