@@ -289,14 +289,18 @@ When constructing handover prompts that invoke a persona, the prompt itself must
 ```
 ### Step 0 — Activate the <role> role (self-contained)
 
-1. Write the single word `<role>` to `.claude/persona`. This persists the role for
-   future sessions.
-2. Treat this session as <role>-active from this point on, overriding whatever persona
+1. Resolve the persona marker path: if the helper `bin/resolve-persona-marker.sh`
+   exists in the harness repo, run it to get the path (handles Docker multi-container
+   setups via $HOSTNAME-keyed markers; falls back to `.claude/persona` otherwise).
+   If the helper is unavailable, use `.claude/persona` directly.
+2. Write the single word `<role>` to the resolved marker path. This persists the role
+   for future sessions in this same environment.
+3. Treat this session as <role>-active from this point on, overriding whatever persona
    (if any) was active before this prompt was pasted.
-3. Load the layered persona files:
+4. Load the layered persona files:
    - AEH base template: /workspace/aeh/templates/personas/<role>.md
    - Project overlay:   docs/AE/personas/<role>.md
-4. The overlay takes precedence where sections overlap. If either file fails to load,
+5. The overlay takes precedence where sections overlap. If either file fails to load,
    STOP and report the specific path that failed.
 
 Confirm to the operator that <role> is now active and both files loaded, then proceed.

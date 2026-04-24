@@ -222,7 +222,14 @@ When a playbook is triggered, Claude must read the playbook file and follow its 
 
 ### Persona persistence
 
-The active persona is stored in `.claude/persona` as a single line (e.g. `reviewer`). This file is NOT tracked in git (add to `.gitignore`).
+The active persona is stored as a single line (e.g. `reviewer`) in a marker file whose path resolves via `bin/resolve-persona-marker.sh`:
+
+- **Single-directory-no-Docker setups** (default): marker is `.claude/persona` — unchanged legacy behaviour.
+- **Docker / container setups** with a non-trivial `$HOSTNAME`: marker is `.claude/persona.$HOSTNAME` — gives each container its own marker, avoiding collision when multiple AEH orchestrator sessions bind-mount the same harness directory from separate containers.
+
+Call `bin/resolve-persona-marker.sh` to get the resolved path for the current environment; both session-init reads and Step 0 writes use this resolver so the behaviour is consistent.
+
+The marker file (in either form) is NOT tracked in git — `.claude/persona` and `.claude/persona.*` are both gitignored. The resolver also performs opportunistic stale-marker cleanup on session init: per-hostname markers untouched for >30 days are removed, so container-rebuild churn doesn't accumulate cruft.
 
 Valid roles: `analyst`, `archaeologist`, `architect`, `developer`, `reviewer`, `harness-reviewer`, `orchestrator`
 
@@ -236,7 +243,7 @@ An absent or empty file means no role is active.
 
 ### On first message of every session
 
-1. Read `.claude/persona` (if it exists).
+1. Resolve the persona marker path via `bin/resolve-persona-marker.sh`, then read it if it exists (path is `.claude/persona` for non-Docker setups, `.claude/persona.$HOSTNAME` inside Docker containers).
 2. Read `targets/index.md` for landscape context.
 3. Output the session banner. **Keep it to 3 lines max.** Style: clean, minimal, terminal-native.
 
@@ -279,9 +286,9 @@ These are natural language triggers the user can say at any time. They are NOT C
 
 | User says | Action |
 |-----------|--------|
-| "switch" or "switch role" | Show role picker. Update `.claude/persona`. |
+| "switch" or "switch role" | Show role picker. Update the resolved persona marker (path via `bin/resolve-persona-marker.sh`). |
 | "role info" | Show one-line summary of each role + path to its definition file (`templates/personas/<role>.md`). Include the strategist as an optional external role. |
-| "ignore role" or "no role" | Clear `.claude/persona`. Work without persona constraints. |
+| "ignore role" or "no role" | Clear the resolved persona marker (path via `bin/resolve-persona-marker.sh`). Work without persona constraints. |
 | "onboard" or "onboard <path>" | Start the guided onboarding playbook for a new target project. Reads `templates/playbooks/onboarding.md` and follows it step-by-step. |
 | "health" or "health <slug>" | Run a health check on an existing target. Reads `templates/playbooks/health-check.md` and follows it step-by-step. |
 | "tools" or "tools <slug>" | Configure optional development tools for a target project. Reads `templates/playbooks/tools.md` and follows it step-by-step. |
@@ -322,6 +329,7 @@ If working on the harness itself:
 ├── LICENSE-FAQ.md                         # License clarifications (output ownership, SaaS, etc.)
 ├── CONTRIBUTING.md                        # How to contribute (prompt-first, BDFL model)
 ├── bin/
+│   ├── resolve-persona-marker.sh         # Resolves .claude/persona marker path (Docker-aware; legacy fallback)
 │   └── validate-personas.sh              # Structural validation for base templates + overlays
 ├── templates/
 │   ├── personas/

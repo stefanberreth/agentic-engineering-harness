@@ -212,6 +212,7 @@ Chain halt-condition catalogue: non-zero exit, zero commits, reviewer ≠ PASS/W
 ├── LICENSE-FAQ.md                         # License clarifications
 ├── CONTRIBUTING.md                        # How to contribute
 ├── bin/
+│   ├── resolve-persona-marker.sh         # Resolves .claude/persona marker path (Docker-aware; legacy fallback)
 │   └── validate-personas.sh              # Structural validation for base templates + overlays
 ├── templates/
 │   ├── personas/
