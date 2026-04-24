@@ -246,6 +246,22 @@ done
 
 Read each file systematically. Cross-reference claims against reality.
 
+**Extended scan sources (when reviewing against potential lift candidates, not just harness hygiene):**
+
+When the review's purpose includes surfacing lift candidates (patterns in a target project that belong in generic templates), extend the scan to sources beyond harness templates + feedback memory:
+
+- **Target-project decisions files:**
+  - Harness-side: `targets/<slug>/decisions.md` — process decisions captured per-target that may generalise
+  - Target-side: `docs/AE/decisions.md` in the target repo if maintained there
+- **Target-project reports and review history:**
+  - `targets/<slug>/review-history.md` — append-only longitudinal findings
+  - Target-side `docs/AE/reports/` — session reports, analyst intakes, reviewer reports
+- **Target-project session-learning reports (if produced by a prior uplift pass):**
+  - `targets/<slug>/session-learning-report-*.md` or equivalent
+  - `targets/<slug>/sibling-uplift-*` artefacts if the project has been through a similar review cycle
+
+Many generic process rules live ONLY in these target-side files — they were decided during delivery, never promoted to a generic template. Scanning them surfaces lift candidates that feedback-memory + persona-template review alone misses.
+
 ### 2. Produce Comments
 
 Create `comments.md` in the project root with this structure:

@@ -210,6 +210,64 @@ Distinct from the single-prompt autonomous loop above. A **multi-prompt chain** 
 
 **Rationale:** multi-prompt chains are where AEH's velocity-during-unattended-windows comes from. Done wrong, they amplify failure across hours of wall-clock. Done right, they let an operator disengage for an evening and return to 8–15 hours of equivalent work completed, verified, and ready for morning review. The discipline above is what separates the two outcomes in practice.
 
+#### Integration-verification gate (between developer batch and reviewer)
+
+Distinct from the pre-flight readiness check (pre-launch) and from per-task mechanical gates (mid-chain). The integration-verification gate fires **after a developer batch completes and before the reviewer prompt runs** — arbitrating at a real-integration level (real DB, real service wiring, real end-to-end test surface) that per-task unit tests intentionally mock away for speed.
+
+**Why it exists:**
+
+Per-task tests typically mock external services (DB, API dependencies, queues). That's correct for unit-test velocity. But the aggregate of N tasks implementing a coherent feature can have integration issues that no individual task surfaces — cross-task state assumptions, transaction-boundary bugs, seed-data race conditions, composition-level auth behaviour. Without an integration checkpoint, the reviewer receives the batch having seen only mock-level green signals and has to either re-run real integration themselves (slow, error-prone) or PASS on incomplete evidence.
+
+**Shape of the gate:**
+
+A prompt (or a wrapper invocation) that runs **between** the final developer commit of a batch and the reviewer's first read:
+
+1. Resets the test DB or provisions a clean target environment (fixture setup per project convention).
+2. Runs the real-integration test suite against that environment: end-to-end tests, service-boundary tests, any test marked `@integration` / `@e2e` / equivalent per project convention.
+3. Captures the output (pass/fail count, specific failures with evidence).
+4. If any real-integration test fails: halt the chain, surface the failure list to the operator, do NOT proceed to reviewer.
+5. If all pass: commit a short integration-verification evidence report (file paths + test counts + duration) and signal the reviewer prompt to proceed.
+
+**Concrete discipline:**
+
+- The integration-verification prompt is orchestrator-generated, dispatched between developer batch completion and reviewer start. Its prompt file is standard AEH shape: role (usually developer, running the tests it owns), governing spec (the batch's proposal), scope bounded to test execution + evidence commit, wall-clock field.
+- The integration-verification prompt has its OWN halt signal — if real-integration tests fail, the chain halts here, not at the reviewer. This shortens feedback loop on integration bugs.
+- Rationale: on first exercise in a sibling AEH project, this gate caught 5 real integration bugs across two change-proposals that per-task unit tests had let through. Bugs in that project had mock-level green signals. Without this gate, the reviewer either missed them (PASS on mock evidence) or re-ran integration themselves (costly). The gate moves the signal to the right place.
+
+**When to use:**
+
+- Any developer batch of 3+ tasks whose integration has not been exercised at real-environment level during the batch.
+- Any chain where tasks.md §4a allowed unit-test-only assertions at per-task granularity (which is most backend chains).
+- Any schema-migration-heavy proposal where migration-order issues manifest only at real-DB integration.
+
+**When NOT to use:**
+
+- Single-task proposals (no integration surface beyond the task's own tests).
+- Pure documentation / spec proposals (no integration concept).
+- Proposals whose tasks.md explicitly specified real-integration assertions at per-task level already (tasks.md overrides; no second gate needed).
+
+#### Pre-dispatch hygiene gate (before generating the next forward-change-proposal prompt)
+
+A cheap check the orchestrator runs **before dispatching a prompt that opens a new forward change proposal** (i.e., a new CP as opposed to a correction / residual / follow-up on the current CP): verify the project's CI is green on main before generating the prompt.
+
+**Purpose:** prevent cascading failure across CPs. If main-branch CI is red (e.g., a prior merge broke something, or a pending migration is stuck), dispatching a new CP prompt compounds the problem — the developer works against a broken base, tests that should pass don't, and debugging time gets spent on pre-existing failures rather than the new work.
+
+**Shape:**
+
+Before generating any new-CP dispatch prompt (not correction prompts — those may legitimately need to run despite CI red), the orchestrator checks:
+
+- Latest CI run on the project's main branch: passed / failed / running.
+- Working-tree clean on the main branch the CP will base from.
+- No unmerged long-running migrations blocking the next CP's work.
+
+If CI is red or the base isn't clean: halt CP dispatch. Route to a correction / clean-up prompt first, then retry CP dispatch after green CI.
+
+**Rationale:** surfaced on real AEH project delivery where skipping this check led to a CP dev batch diagnosing upstream issues rather than delivering its own scope — wasted hours before the orchestrator noticed the pre-existing red state.
+
+**When to apply:** before every forward-CP dispatch prompt in a multi-CP delivery sequence. Low cost to run; high cost to skip if CI state is already compromised.
+
+**When to waive (carefully):** if the forward CP is explicitly a CI-fix CP, the check is redundant. If the operator explicitly instructs dispatch despite red, log the waiver with rationale and proceed — operator override is legitimate but audit-worthy.
+
 ### §CHAIN.PROJECT — Chain-composition extensions
 
 > **Project extension point.** The project overlay names the specific chain wrapper scripts available in the target (`scripts/aeh-overnight-<chain-kind>.sh`), project-specific halt sentinels, and any per-chain CI/CD considerations (push gates, deployment hooks that must not fire from an autonomous chain).
@@ -443,15 +501,35 @@ Not every prompt needs the same level of detail. Calibrate verbosity to context:
 
 The lean prompt still includes: persona loading instruction, pre-flight check, TDD reminder, verify step, commit format, and report structure. It omits: paraphrased task description, speculative implementation guidance, and anticipated edge cases — the developer reads those from the source.
 
-#### Wall-clock discipline (mandatory in every generated prompt)
+#### Report-Back discipline (mandatory in every generated prompt)
 
-Every generated prompt MUST include a wall-clock field in its Report Back section, in the format:
+Every generated target-side prompt MUST end its Report Back section with **two** load-bearing conventions:
+
+**1. Wall-clock field**, in the format:
 
 ```
 Wall-clock: <start ISO timestamp> → <end ISO timestamp> = <duration>
 ```
 
 The target-side agent captures the start timestamp when reading the prompt and the end timestamp when the final commit-and-report-back completes. This field is non-optional; prompts that omit it lose the calibration signal the orchestrator needs to improve future estimates.
+
+**2. `PROMPT COMPLETE — <identifier>` sentinel** as the final line:
+
+```
+PROMPT COMPLETE — <prompt-number-or-slug>
+```
+
+One line, at the very end of the target-side session's output. Examples: `PROMPT COMPLETE — 221`, `PROMPT COMPLETE — sibling-uplift-02`, `PROMPT COMPLETE — a target project-trackA-corrections`.
+
+**Why:** the sentinel is a load-bearing parse target for autonomous chain wrappers (`scripts/aeh-overnight*.sh` patterns). The wrapper scans the session JSONL stream for this exact string to confirm clean completion before advancing to the next prompt in the chain. Without the sentinel, the wrapper can't distinguish "prompt completed successfully" from "prompt emitted final-sounding text but didn't actually finish" — ambiguity that silently breaks chains.
+
+**Discipline:**
+
+- Sentinel is the LAST line, after the wall-clock field, after any closing remarks.
+- Identifier matches the prompt's canonical name (NNN for numbered prompts, slug-dash-suffix for special-purpose prompts).
+- Prompts that DO NOT self-report (e.g., orchestrator-session prompts in the harness; freestyle shell kickoffs) don't need the sentinel — the discipline applies to **target-side prompts the orchestrator dispatches** and any prompt that may feed an autonomous chain wrapper.
+
+**Scope:** applies to all role-bound target-side prompts (analyst, architect, developer, reviewer, archaeologist). Also applies to interactive review prompts (e.g., Q&A sessions) — the sentinel fires once when the session commits its final state, even if the interaction was long.
 
 **Active-interactive time vs elapsed wall-clock (distinguish these in estimates):**
 
