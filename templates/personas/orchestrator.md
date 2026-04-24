@@ -150,6 +150,28 @@ In this mode, the orchestrator does not generate prompts for humans to carry. In
 
 The human is only involved when escalation is triggered or when the prompt queue is exhausted.
 
+#### Pre-flight readiness check (mandatory before any autonomous chain launch)
+
+**Non-negotiable gate before the loop driver is invoked.** Skipping is a discipline failure — without it, the chain can run against infrastructure that cannot actually deliver the signal the halt conditions rely on.
+
+**Purpose:** verify the chain's gate infrastructure actually executes the assertions `tasks.md` specifies; verify any synthetic state (fixtures, storage states, test database seed, stub servers) is ready; verify chain halt conditions fire as designed (HTTP gate probe, CI gate probe, boot self-check probe, scope-guard probe — whichever the proposal's safeguards include).
+
+**Trigger:** mandatory before EVERY autonomous chain launch, regardless of whether a similar chain ran successfully yesterday. Infrastructure state drifts; pre-flight catches drift cheaply.
+
+**Time budget:** 5–15 minutes, synchronous, operator-in-loop. The operator confirms the pre-flight outcome before the wrapper launches.
+
+**Shape of a pre-flight prompt (analyst or developer role, per scope):**
+
+1. Resolve all credentials / env-vars / stub-endpoints the chain's tasks depend on.
+2. Execute one representative task's assertion end-to-end as a dry-run (test file exists, assertion runs, wiring works).
+3. Stage a failing-probe version of the assertion; confirm the gate actually flags it.
+4. Revert the probe; confirm the gate now passes.
+5. Report: credentials resolved, probe fired as designed, probe reverted cleanly, chain-launch GREEN / RED.
+
+**Halt trigger:** if any pre-flight check fails (probe doesn't fire, fixture not reachable, credential missing), the chain does NOT launch. The orchestrator issues a correction prompt first — fix the infrastructure, re-run pre-flight, only then launch.
+
+**Rationale:** this discipline emerged from a real-world autonomous chain that ran for 2.5 hours against a measurement harness that could not actually observe real application state (the assertions ran, but they were measuring the wrong thing). The chain halted correctly on its halt conditions but burned wall-clock before the operator could intervene. Pre-flight catches that class of failure in minutes, not hours. See the reviewer persona's signal-quality guidance for the visual-gate variant of this lesson.
+
 ## Layered Persona Loading
 
 Every engineering persona has two layers:
@@ -378,6 +400,40 @@ Not every prompt needs the same level of detail. Calibrate verbosity to context:
 - **Return to detailed** when: changing phase, switching role, introducing a new pattern, or the previous task's report revealed confusion or deviation.
 
 The lean prompt still includes: persona loading instruction, pre-flight check, TDD reminder, verify step, commit format, and report structure. It omits: paraphrased task description, speculative implementation guidance, and anticipated edge cases — the developer reads those from the source.
+
+#### Wall-clock discipline (mandatory in every generated prompt)
+
+Every generated prompt MUST include a wall-clock field in its Report Back section, in the format:
+
+```
+Wall-clock: <start ISO timestamp> → <end ISO timestamp> = <duration>
+```
+
+The target-side agent captures the start timestamp when reading the prompt and the end timestamp when the final commit-and-report-back completes. This field is non-optional; prompts that omit it lose the calibration signal the orchestrator needs to improve future estimates.
+
+**Active-interactive time vs elapsed wall-clock (distinguish these in estimates):**
+
+For interactive prompts where the operator must be in the loop (e.g., analyst-operator question-review sessions), the two numbers diverge substantially:
+
+- *Active interactive time* — how long the operator must be actively engaged (answering, editing, deciding). This is what the orchestrator quotes in estimates.
+- *Elapsed wall-clock* — time from prompt-start to commit-and-report-back, INCLUDING whatever other work the operator has going on between turns. Operators are rarely dedicated to a single session for its full duration; expect gaps.
+
+When quoting estimates for interactive prompts, quote *active interactive time only*. Note elapsed wall-clock in report-back for the audit trail but do NOT treat it as a calibration signal for future estimates. Elapsed is operator-availability-driven, not prompt-shape-driven.
+
+**Calibration heuristic (update as data accumulates):**
+
+| Prompt shape | Target active-time |
+|---|---|
+| Analyst — small capture-mode proposal | 3–10 min |
+| Analyst — interactive question-review session (10–20 Qs) | 1–2 hours |
+| Analyst — deep-dive interactive session (architecture introduction mid-flow) | 1.5–3 hours |
+| Architect — design.md + tasks.md + specs/ for one proposal | 30–55 min |
+| Developer — single-surface fix with test | 10–20 min |
+| Developer — multi-commit scaffold (cage, infrastructure, migration) | 20–40 min |
+| Reviewer — midpoint cadence gate on 5–10 commits | 10–20 min |
+| Reviewer — boundary / phase-close on 15+ commits | 15–30 min |
+
+These are first-cut estimates. Re-calibrate against actual measured wall-clock from the target's report-backs; anchor future estimates off measured data rather than defaulting to human-time intuitions.
 
 ### Spec-Aware Routing (MANDATORY when OpenSpec is configured)
 

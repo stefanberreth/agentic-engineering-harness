@@ -110,49 +110,67 @@ For each task, specify:
 
 > **Project extension point.** The project overlay extends the generic task breakdown format with project-specific task categories (e.g., DB/API/UI/TEST patterns, migration-first ordering, audit event registration).
 
-## §5. Specification Document
+## §4a. Chain-Safe Task Specification (for tasks intended for autonomous developer chains)
 
-Produce `spec.md` with this structure:
+When a backend-heavy change proposal is intended to feed an autonomous developer chain (`scripts/aeh-overnight*.sh` or equivalent wrapper), `tasks.md` must satisfy six chain-safety conditions so the chain can halt correctly on mechanical signals without operator-in-loop intervention. Tasks that cannot meet these conditions are not chain-bound and go in a separate Section B (see below).
+
+**The six chain-safety conditions (all mandatory for Section A):**
+
+1. **Every task declares a mechanical completion signal** — a specific unit test, integration test, or testable CLI assertion that a chain wrapper can parse as PASS/FAIL. No UI-subjective gates (e.g., "looks right"), no human-eyeball-required outcomes.
+2. **Test file paths named per task up-front** — e.g., `tests/<module>/<feature>.test.ts` (or the project's equivalent convention) listed in the task so the chain knows what to wire against.
+3. **Gates composable with the project's deterministic gate harness** — test assertions runnable via `npm test` (or `pytest`, `cargo test`, etc., per project); typecheck + lint clean per task; no bespoke runners the chain would have to special-case.
+4. **Scope-bounded file-pattern allowlists per task** — each task names the file-pattern set it may touch. Cross-slug commits halt the chain.
+5. **Per-task commit-message format declared** — `[change:<slug>]` tag + task number reference (e.g., `(Task 4)` or `(T-NNN)`) in every commit body so §0.5 spec traceability passes.
+6. **No latent UI dependencies in chain-bound tasks** — if a task's outcome requires visual operator review, it doesn't belong in Section A; it goes into Section B.
+
+**Section A / Section B split:**
+
+Structure `tasks.md` with two clearly-labelled sections:
+
+- **Section A — Chain-safe backend tasks:** every task satisfies the six conditions above. The autonomous dev chain executes these top-to-bottom, halting on any mechanical gate failure.
+- **Section B — Operator-eyeball UI tasks:** tasks whose outcome requires visual operator review per surface. Executed post-chain in prompt-by-prompt mode with screenshot capture at the end of each task; NOT part of the chain.
+
+Both sections may share dependency ordering notes; the split is about gate shape, not about dependency.
+
+**When to apply:**
+
+- Backend-heavy proposals intended for autonomous chains (schema migrations, service modules, API endpoints, test-driven domain logic, infrastructure scaffolding).
+- Any proposal whose next phase is an autonomous dev chain launch.
+
+**When NOT to apply (no Section A / no autonomous chain):**
+
+- Per-surface UI wiring (opportunity-detail tabs, dashboard widgets, wizard step reshapes).
+- Portfolio / dashboard redesigns.
+- Design-system refactors.
+- Any proposal whose primary completion signal is "the operator agrees this looks right."
+
+For these, all tasks go in Section B and execute prompt-by-prompt with operator review per task.
+
+### §4a.PROJECT — Chain-Safety Extensions
+
+> **Project extension point.** The project overlay extends chain-safety with project-specific gate-harness details (deterministic-gates.sh path, project-specific test runner, halt-condition sentinels, scope-guard file-pattern conventions).
+
+## §5. Specification Document (legacy fallback — projects without OpenSpec only)
+
+**For target projects WITH OpenSpec configured (the default, recommended for anything beyond throwaway prototypes): skip this section.** The authoritative output structure is defined in §7 below — design.md + tasks.md + specs/ inside the change proposal directory. §7 supersedes §5.
+
+**For target projects WITHOUT OpenSpec (rare; discouraged for any project that will grow):** produce a single `spec.md` in the project root or a designated docs directory, using the structure below. Before proceeding, recommend OpenSpec setup via the tools playbook — OpenSpec gives spec-driven traceability, change-proposal-centric collaboration, and reviewer §0 BLOCKING enforcement that the flat `spec.md` approach cannot match.
 
 ```markdown
 # Technical Specification: [Project Name]
 
-## 1. Overview
-[Summary referencing requirements.md]
-
-## 2. Architecture
-### 2.1 System Diagram
-### 2.2 Component Breakdown
-### 2.3 Data Flow
-### 2.4 API Contracts
-### 2.5 Data Models
-
-## 3. Technology Stack
-[Decisions made with rationale]
-
-## 4. Cross-Cutting Concerns
-### 4.1 Security
-### 4.2 Error Handling
-### 4.3 Observability
-### 4.4 Configuration Management
-
-## 5. Implementation Plan
-### Phase 1: [Name]
-#### Task 1: ...
-#### Task 2: ...
-### Phase 2: [Name]
-#### Task 3: ...
-
-## 6. Risk Register
-[Technical risks, mitigations, contingencies]
-
-## 7. Glossary
-[Domain terms, abbreviations, conventions]
+## 1. Overview        [Summary referencing requirements.md]
+## 2. Architecture    [System diagram, components, data flow, API contracts, data models]
+## 3. Technology Stack [Decisions with rationale]
+## 4. Cross-Cutting   [Security, error handling, observability, config management]
+## 5. Implementation  [Phases and tasks; prefer §4a chain-safe shape for backend tasks]
+## 6. Risk Register   [Technical risks, mitigations, contingencies]
+## 7. Glossary        [Domain terms, abbreviations, conventions]
 ```
 
 ### §5.PROJECT — Document Template Extensions
 
-> **Project extension point.** The project overlay adds sections to the specification document template specific to the domain.
+> **Project extension point (pre-OpenSpec projects only).** The project overlay adds domain-specific sections to the flat `spec.md`. For OpenSpec projects, use `§7.PROJECT` or per-section extensions inside the change proposal directory instead.
 
 ## §6. Handoff
 
@@ -229,6 +247,18 @@ Every architect output must include this header block:
 **Task count:** <N> tasks across <M> phases
 **Recommended next role:** developer (start with task 1)
 ```
+
+### Commit discipline (minimum body requirement)
+
+When landing multiple commits per proposal (typical pattern: design.md + tasks.md + specs/ as three or more commits), each commit body must contain at least a one-paragraph summary **distinct from the subject line**. Subject-only commits with empty or duplicate bodies fail commit-history readability even when §0.5 tag-traceability passes.
+
+Per-commit-type body expectations:
+
+- **design.md commits:** summarise the architectural approach — what data model, state machine, or integration shape was chosen, and the key decision points that shaped it.
+- **tasks.md commits:** summarise chain-safe task count (Section A per §4a), UI-deferred task count (Section B), and any migration-ordering notes.
+- **specs/ delta commits:** enumerate which baselines were delta'd and why each delta was necessary (what the design required that the existing baseline did not cover).
+
+This applies to any multi-commit landing, not just architect output — a general commit-message discipline that the reviewer's §0.5 soft check reinforces on read-back.
 
 ### Handoff
 
