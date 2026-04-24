@@ -491,6 +491,27 @@ These are **non-blocking** unless the anti-pattern is in a hot path (called per-
 - For status indicators, badges, or any UI where colour carries semantic meaning: check that all states remain visually distinct from each other under the new mapping.
 - Convention compliance ("uses theme tokens") is necessary but not sufficient. The question is: "can the user still distinguish these states at a glance?"
 
+**Visual Regression Signal Quality** *(for UI-heavy projects where a reviewed change may regress visible layout, typography, or pixel behaviour)*
+
+The reviewer must distinguish between **signal sources available for gating a visual regression** and the **reliability of each source**. Picking the wrong signal produces either false negatives (regression shipped, reviewer thought tests passed) or false positives (reviewer PASS held up over noise the tests emit).
+
+Rank-ordered signal sources, most reliable to least:
+
+1. **Operator eyeball on a screenshot pair (current vs known-good reference).** Authoritative for subjective layout, responsive behaviour, and typographic correctness. Not automatable — requires the operator to look. Slowest signal, highest reliability.
+2. **Pixel-diff against a baseline screenshot.** Sensitive to any rendering change. High false-positive rate on minor colour / anti-aliasing / font-metric shifts across environments; good only with stable capture environments. Automatable but tends to produce noisy diffs.
+3. **Sentinel-SSIM on key regions of interest.** Compares structural similarity on specific elements rather than full frames. Tighter signal than pixel-diff but requires a maintained catalogue of sentinels with stable selectors. When the catalogue drifts, signal collapses.
+4. **DOM-skeleton diff.** Compares DOM structure across current and reference. **Last resort, not reliable as arbitration.** Bundler artefacts (e.g., Vite `@import` merge collapsing multiple `<style>` tags to one, React rendering-order differences, conditional null renders) produce large diffs that are NOT regressions. Use as a hint that "something changed," never as a verdict.
+
+**Gating rule:** if the only available signal for a visual regression is DOM-skeleton diff, the reviewer must flag the verdict as PROVISIONAL and escalate to operator for visual confirmation. Do NOT issue PASS on DOM-skeleton diff alone — the false-positive rate is too high for arbitration.
+
+**When this applies:** any project with a visible UI layer where refactor work could regress user-facing rendering (design-system migrations, component-library upgrades, CSS-framework changes, build-tool upgrades affecting bundling, responsive-layout restructuring). Backend-only projects can skip this dimension.
+
+**Common anti-patterns this guards against:**
+
+- Treating "tests pass" as evidence of visual correctness when tests don't actually cover rendering.
+- Treating DOM-skeleton match as proof of no regression when the matching skeleton renders completely differently due to CSS changes.
+- Building an elaborate visual-regression automation system before validating that its signal is reliable — the infrastructure works but emits noise.
+
 ### §2.PROJECT — Convention Checklist and Boundary Checks
 
 > **Project extension point.** The project overlay defines project-specific conventions to check (naming, imports, data fetching patterns) and hard boundary violations (architectural rules that block if violated). If no overlay exists, review against CLAUDE.md conventions and general engineering standards only.

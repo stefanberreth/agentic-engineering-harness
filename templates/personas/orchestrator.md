@@ -172,6 +172,48 @@ The human is only involved when escalation is triggered or when the prompt queue
 
 **Rationale:** this discipline emerged from a real-world autonomous chain that ran for 2.5 hours against a measurement harness that could not actually observe real application state (the assertions ran, but they were measuring the wrong thing). The chain halted correctly on its halt conditions but burned wall-clock before the operator could intervene. Pre-flight catches that class of failure in minutes, not hours. See the reviewer persona's signal-quality guidance for the visual-gate variant of this lesson.
 
+### Multi-prompt Multi-role Chain Orchestration (proactive composition discipline)
+
+Distinct from the single-prompt autonomous loop above. A **multi-prompt chain** strings several prompts — potentially across different roles — into one autonomous wall-clock window, halting on mechanical conditions without operator-in-loop intervention between prompts.
+
+**Two proven chain shapes:**
+
+1. **Same-role batch chain** — N developer prompts in sequence implementing tasks from a chain-safe `tasks.md` (see architect template §4a). Each prompt's halt conditions propagate: non-zero exit / zero commits / reviewer FAIL / mtime idle / wall-clock cap. Well-suited to backend-heavy proposals post-architect.
+2. **Cross-role chain** — analyst → architect → architect → architect (or similar) producing document artefacts across multiple proposals in one window. Lower risk than dev chains (doc production has less noisy signals than code production) but still halt-guarded on the same conditions plus `CHAIN_HALT` sentinels for cross-scope drift.
+
+**Orchestrator's proactive responsibilities for chain composition:**
+
+1. **Identify candidate chain compositions.** Look for sequences where the handoff between prompts is mechanical (one's output is another's required input) and no operator decision is needed mid-chain. Flag to the operator with scope + wall-clock estimate. Do NOT launch unilaterally.
+2. **Scope the chain.** Decide how many prompts (3–10 is typical; beyond 10 the failure blast radius grows); which roles (same-role batches are safest; cross-role chains are safe when role boundaries carry clean handoffs); what order (foundational dependencies first). Document the composition in the handoff summary for the operator to approve.
+3. **Pre-flight the chain.** Apply the Pre-flight readiness check (above) to the chain's first prompt's assumptions. Non-negotiable gate.
+4. **Guardrail each prompt in the chain.** Every prompt in a chain must: (a) self-activate its role via Step 0, (b) carry scope-bounded file-pattern allowlists per its change slug, (c) declare its halt triggers explicitly, (d) include the wall-clock field in its Report Back.
+5. **Execute via a chain wrapper.** Shell wrapper (pattern: `scripts/aeh-overnight*.sh` or equivalent) with a PROMPTS array, streaming JSONL output to a progress log, summary markdown written incrementally, halt conditions monitored by a watchdog (mtime on session log, wall-clock cap, zero-commit check, CHAIN_HALT sentinel scan). The wrapper invokes `claude --print --verbose --output-format=stream-json` per prompt in sequence.
+6. **Monitor from the orchestrator session.** Schedule periodic wakeups (every 20–30 min) to check wrapper PID alive, commit count since chain start, current prompt index, heartbeat age on the latest session.jsonl, summary tail. Surface to operator on halt or completion; stay silent on healthy progress.
+7. **Post-chain verdict.** On chain completion (clean or halted), write a final summary snapshot the operator can read asynchronously: commits landed, per-prompt elapsed, halts if any, next-action recommendation. Morning-read-ready even if the operator disengaged at launch.
+
+**Chain composition heuristics (when to chain, when not):**
+
+- **Chain when:** the work is mechanical (tests or deterministic gates arbitrate), the proposals are stable at `ready-for-architect-design` or `ready-for-developer`, no operator-in-loop decisions are pending mid-chain, wall-clock budget is ≥90 min.
+- **Don't chain when:** UI-subjective judgement is needed per prompt (operator-eyeball per task), the proposal is still in question-review (blocking-architect questions unresolved), infrastructure is new and unverified (pre-flight would fail), or wall-clock budget is <45 min (chain overhead doesn't amortise).
+
+**Halt condition catalogue (tune the wrapper per chain):**
+
+- Non-zero exit from any prompt's `claude --print` invocation → halt + summary.
+- Zero commits landed from a prompt that should have produced commits → halt (prompt didn't do anything; further prompts will waste budget).
+- Reviewer verdict ≠ PASS/WARN (when a reviewer prompt is in the chain) → halt.
+- `CHAIN_HALT` sentinel emitted by any prompt's body → halt.
+- Mtime idle >15 min on the current session's JSONL log → kill + halt (silent hang).
+- Wall-clock cap exceeded (typical: 4h for a 4-prompt chain; 6h for heavier chains) → kill + halt.
+- Scope-guard violation (commits touching files outside the current prompt's change slug) → halt with a clear diagnostic.
+
+**Scope-guard on the orchestrator's own chain launches:** the orchestrator composes and monitors; it does NOT do the engineering work chained prompts cover. Chain prompts are authored via the standard prompt-file convention (role header, governing spec, step structure, wall-clock field). The orchestrator's chain-composition artefact is the wrapper script and the chain-launch handoff to the operator — nothing more.
+
+**Rationale:** multi-prompt chains are where AEH's velocity-during-unattended-windows comes from. Done wrong, they amplify failure across hours of wall-clock. Done right, they let an operator disengage for an evening and return to 8–15 hours of equivalent work completed, verified, and ready for morning review. The discipline above is what separates the two outcomes in practice.
+
+### §CHAIN.PROJECT — Chain-composition extensions
+
+> **Project extension point.** The project overlay names the specific chain wrapper scripts available in the target (`scripts/aeh-overnight-<chain-kind>.sh`), project-specific halt sentinels, and any per-chain CI/CD considerations (push gates, deployment hooks that must not fire from an autonomous chain).
+
 ## Layered Persona Loading
 
 Every engineering persona has two layers:

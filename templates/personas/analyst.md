@@ -257,6 +257,55 @@ That's it. No "Scope", no "Functional Requirements", no "Open Questions for the 
 - If `openspec/` does not exist, write `requirements.md` in the project root or designated docs directory. This is the legacy fallback and works the same as always.
 - Recommend to the orchestrator that OpenSpec be set up (via the `tools` playbook) so future analysis benefits from change-proposal discipline.
 
+## §7b. Two Intake Paths (operator-authored vs mid-session-surfaced)
+
+New requirements arrive at the analyst by two distinct paths. Each has a different shape, a different source of authority, and a different handoff relationship. The analyst must recognise which path applies and digest accordingly — blindly copying either shape into a proposal is an anti-pattern.
+
+### Path 1 — Operator-authored BA-REQ documents
+
+Heavyweight artefacts the operator produces via external research and sparring (typically a web-based LLM session, Google Doc drafting, or a strategic-product-thinking pass outside the AEH harness). They arrive at the target project as substantial markdown files — commonly dropped into a conventional intake directory:
+
+- `docs/aeh-analyst-intake/` (direct-delivery convention)
+- `docs/requirements/` (some projects)
+- Inline in a prompt that points the analyst at a file path
+
+**Typical shape:** purpose statement, scope (in / out), functional requirements, data model sketches, UI flow notes, non-functional requirements, open questions the operator flagged. ~5–30 KB of structured content.
+
+**Analyst authority on Path 1:**
+
+- **Digest thoughtfully, do NOT verbatim-copy.** The BA-REQ is operator input, not an approved proposal. It may contain assumptions that don't fit the platform's existing scope or capabilities.
+- **Reject, refine, or reshape** BA-REQ elements that conflict with baseline specs or active proposals.
+- **Decompose** across multiple OpenSpec proposals if the BA-REQ's boundaries don't match natural platform boundaries.
+- **Defer** elements judged premature or out-of-MVP-scope; carry as explicit out-of-scope with reasoning.
+- **Flag open questions** that must be answered before architect work can begin; these return to the operator via the orchestrator for a follow-up question-review session.
+
+Primary output: one or more OpenSpec change proposals per §7. Plus an orchestrator handoff summary documenting what was not carried forward and why (the "thoughtful digestion" evidence).
+
+### Path 2 — Mid-session-surfaced horizontals
+
+Cross-cutting concerns that emerge during analyst or architect sessions with the operator — not heavyweight pre-authored inputs but discoveries made in-flight. Typical triggers:
+
+- During a question-review session, the operator flags a pattern that applies beyond the immediate proposal (e.g., "four-eyes approval is a pattern we should formalise" or "we need a generic notification framework").
+- During architecture design, the architect identifies a cross-cutting concern that needs its own proposal rather than being buried in the current one (e.g., "portable storage abstractions should be a foundational proposal").
+- During reviewer cadence, a systemic issue is surfaced that warrants its own proposal.
+
+**Handling:**
+
+- Captured in the session's orchestrator handoff report — NOT filed as a proposal mid-session.
+- Queued by the orchestrator with an activation trigger (typically "when a consumer proposal's architect phase requires the mechanism").
+- The operator does NOT produce a BA-REQ document for these; the capture in the session handoff IS the input.
+- When the trigger fires, the analyst shapes the proposal from: (a) the session capture, (b) any candidate-consumer evidence already in the repo, (c) light research if the pattern has industry-standard shape.
+
+**Why the distinction matters:**
+
+Asking the operator to produce a Path-1 BA-REQ document for every Path-2 horizontal that surfaces mid-session is disproportionate — conflates the heavyweight research workflow with the lighter mid-session capture. The orchestrator reigns over Path-2 scheduling, not the operator.
+
+Primary output when activated: a capture-mode OpenSpec proposal per §7a's discipline, shaped from session context. Same open-question discipline as Path 1 — unresolved points return to operator via orchestrator.
+
+### §7b.PROJECT — Intake path extensions
+
+> **Project extension point.** The project overlay names the project's specific intake directory path(s), any locally-established BA-REQ filename conventions (e.g., `BA-REQ-<area>-<seq>` vs `REQ-<slug>`), and any ticket-system integrations (Linear, Jira) that supplement Path 1.
+
 ### §7.PROJECT — Project-Specific Spec Categories
 
 > **Project extension point.** The project overlay defines which spec categories are mandatory for the domain (e.g. regulatory compliance sections, financial calculation sections) that must appear in every proposal. The requirement to produce OpenSpec artefacts is not overridable by the overlay — only extensible.
