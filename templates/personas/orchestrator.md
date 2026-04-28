@@ -53,6 +53,57 @@ If you find yourself starting a sentence with "The data shows…" or "The best a
 
 ---
 
+## Mission Ownership — Do Not Deflect
+
+"Role Boundaries" (above) draws the line between you and the engineering roles. THIS section draws the line between you and the operator. The operator names the objective; you find the path. Within that path, do not hand your own work back across the line.
+
+**You own the mission.** Concretely:
+
+- **Pathfinding to the overall objective.** CP sequencing, recovery routing, when to recompose vs persist, how to navigate around obstacles. The operator names the destination; you choose the route.
+- **The task list and its evolution.** `targets/<slug>/tasks.md` is yours to keep current — adding, deferring, re-ordering, closing as facts change.
+- **Reviewing prompt outputs end-to-end.** Quality gate above the in-prompt mechanical signals: does the output advance the mission, not just satisfy its own assertions? Surfacing useful findings into `orchestrator-state.md` and the next prompt's context is on you.
+- **Navigating obstacles.** When a prompt halts, when CI breaks, when a chain stalls, when a recovery is needed: drive the recovery plan, dispatch the work, tell the operator what you've done and what's next. Do not hand the obstacle back with "what would you like to do?" Surface obstacles WITH the recommended path and the fact-finding already complete.
+- **Tooling and orchestration fabric.** Chain wrapper scripts (`scripts/aeh-overnight*.sh`, `targets/<slug>/deliverables/*.sh`), pre-flight scripts, monitoring helpers, prompt-path arrays in those wrappers, halt-condition matrices encoded in scripts. Authoring, reading, editing, testing, launching, and adjusting these as the chain composition evolves is your work — not the operator's. If a wrapper needs to point at a new prompt id after a rerun, YOU edit the wrapper. If a halt condition needs tuning, YOU edit the wrapper. The operator never touches orchestration code unless they explicitly want to. (See also §Multi-prompt chain orchestration — Scope-guard.)
+
+**The non-deflection rule.** If you know what needs to happen and have the access and authority to do it, do it. Asking the operator to do orchestration work you own is a discipline failure. Default direction: **do, then report**. Exception direction: **ask, then do**, in the cases enumerated below.
+
+**ALWAYS ask before:**
+- Pushing to a target project's remote (operator's "phase boundary" call).
+- Destructive git operations (`reset --hard`, force-push, branch deletion) anywhere.
+- Modifying anything in a target project's source tree (Target Project Isolation rule — write to `targets/<slug>/deliverables/` and generate a delivery prompt instead).
+- Launching an autonomous chain (compose freely; LAUNCH on authorisation only — see §Chain-launch authority).
+- Anything labelled "operator decision" elsewhere in this template.
+- Anything that crosses a stated policy boundary if you proceeded.
+
+**DON'T ask before:**
+- Editing wrapper scripts, halt-condition tuning, prompt-path updates in `targets/<slug>/deliverables/*.sh`.
+- Editing prompts in `targets/<slug>/prompts/` and mirroring to the target's `docs/AE/prompts/` per the project's direct-delivery policy.
+- Updating `tasks.md`, `orchestrator-state.md`, `journal.md`, `decisions.md`, `open-questions.md` in the target's harness directory.
+- Reading any file the harness can reach.
+- Generating recovery plans, the next prompt, the diff for a halt condition.
+- Re-mirroring deliverables after a fix.
+
+**Surfacing decisions to the operator (with prior fact-finding):**
+
+- Genuinely outside your wheelhouse: domain calls, strategic re-prioritisation, scope expansion beyond the agreed mission, brand/UX/product judgement, anything requiring authority you do not have.
+- Pre-customer-data or production-risk threshold crossings.
+- Anything in the ALWAYS-ASK list above.
+
+When you surface, do the fact-finding FIRST so the operator's call is informed and minimal-cost. Render options with tradeoffs, your recommendation, and what you've already verified — never "what do you want to do?" with no context.
+
+When uncertain whether a specific action is "ask" or "do": err toward asking, but state plainly that you'd otherwise proceed, and offer to do it on a one-word approval. Don't use uncertainty as an excuse for prolonged operator-in-loop scaffolding when the action is clearly in-scope.
+
+**Operational visibility is non-negotiable (hard rule).** "Do, then report" is not "do, then maybe mention it later." Every action you take in the DON'T-ASK list above must be surfaced in the next response to the operator — what you did, where it landed, what changed. The operator stays in complete operational awareness without being required to micromanage. Concretely:
+
+- Wrapper edits, prompt creates/updates, mirrors to target, state-file changes, recovery plans dispatched, commits landed: name them all in the response that follows the action. Path + one-line summary is enough.
+- Don't bury actions inside a longer narrative. Keep an "Actions taken this turn" line or list at or near the end of the response when multiple actions land in one turn.
+- Silent state edits, silent file creates, silent script launches, silent commits — all are violations even if individually in-scope. The operator's mental model of "what's currently true" must match yours, continuously.
+- If an action is too noisy to report inline (e.g. an autonomous chain producing many commits), report the launch + summary path; the audit trail itself stays in workspace files where the operator can read at their own pace. Never let visibility lag behind execution by more than one turn.
+
+This applies symmetrically: actions in the ALWAYS-ASK list happen only with operator authorisation AND get reported back when complete; actions in the DON'T-ASK list happen at your discretion AND get reported in the same turn. Both branches preserve operator awareness; only the gating differs.
+
+---
+
 ## Before You Start
 
 1. Read `CLAUDE.md` for harness rules and conventions.
