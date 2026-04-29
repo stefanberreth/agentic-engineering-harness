@@ -2,134 +2,65 @@
   <img src="docs/Images/AEH-Round.png" alt="AEH" width="120">
 </p>
 
-# AEH -- Agentic Engineering Harness
+# AEH — Agentic Engineering Governance Harness
 
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2)](https://discord.gg/qnKVnJEuQz)
 [![Support on Ko-fi](https://img.shields.io/badge/Ko--fi-Support-FF5E5B)](https://ko-fi.com/stefanberreth)
 
-A meta-engineering toolkit for running structured, spec-driven software development with AI coding agents. Instead of letting an agent generate unreviewable volumes of code with no process, AEH gives each agent a focused engineering role, enforces specification traceability on every change, and gates all work through evidence-based review.
+A governance layer between you and AI coding agents. The harness imposes structure on agent work: separated engineering roles, spec-traceable change proposals, mandatory reviewer gates, and halt-condition-bounded autonomous chains. Code lands only via reviewed change proposals. Reviewers are mechanical gates, not advisory. Boundary reviews iterate until the verdict is PASS.
 
-## The Problem AEH Solves
+## Who it's for
 
-AI coding agents are powerful but undisciplined. Without structure, they produce code that:
-- Has no specification traceability (nobody can verify what was supposed to be built vs what was built)
-- Bypasses review (the agent generates and commits in one shot with no quality gate)
-- Uses stale library APIs (the agent recalls training data instead of checking current documentation)
-- Loses coherence across sessions (context dies when the session ends)
-- Drifts from the plan (the agent improvises instead of following the architect's design)
+You're running serious software work with Claude Code (or similar AI agents) and you've noticed that "let the agent do it" produces unreviewable volume, drifts off-spec, and bypasses any quality bar. AEH is the layer that puts agent work back inside an auditable SDLC: separated engineering roles, OpenSpec change proposals as the unit of work, structural reviewer gates, and execution regimes that range from one-prompt-at-a-time oversight to multi-hour autonomous chains with halt guardrails.
 
-AEH fixes this by separating concerns into engineering personas, routing all work through versioned specifications (OpenSpec), enforcing review at structural level (the reviewer cannot be bypassed), and persisting all state in committed files so any session can pick up where the last left off.
+You operate the harness. The harness routes work to agents, tracks state across sessions, and gates progression. Your project's code is modified only by your project's own session — the harness produces the prompts and reads results, never editing target code directly.
 
-## The Core Insight
+## What "governance" means here
 
-An AI coding agent given a focused role with clear boundaries produces dramatically better output than one agent asked to do everything. Separating concerns into distinct engineering personas -- the same separation that makes human teams effective -- makes AI teams effective too. Inspired by [Emmz Rendle's "How I Tamed Claude" talk at NDC London 2026](https://www.youtube.com/watch?v=pey9u_ANXZM).
+Not orchestration alone. Specific disciplines the harness imposes:
 
-## How It Works
+- **Multi-role pipeline.** Five engineering roles (Analyst, Architect, Developer, Reviewer, Archaeologist) plus an Orchestrator that routes work between them. Each role has a base methodology template plus a project-specific overlay. Roles cannot bypass each other — the architect cannot write code; the developer cannot author specs; the reviewer is the only PASS authority.
+- **No code without a governing spec.** Every change flows through OpenSpec: analyst writes a proposal, architect produces design + tasks, developer implements against `tasks.md`, reviewer validates against the proposal. The reviewer's §0 spec-traceability check is BLOCKING — code without a governing change slug fails review structurally, not by judgement.
+- **Mandatory reviewer cadence.** Every 5 developer tasks gets a reviewer pass; phase boundaries get full reviewer scrutiny. Cadence is non-discretionary — the orchestrator's pre-generation gate refuses to dispatch a 6th developer prompt if the 5th has not been reviewed.
+- **Boundary-iteration until clean.** When a phase-close reviewer finds CRITICAL issues, correction cycles spawn until the reviewer returns PASS. A recent downstream project's investor-entity-model change took 4 boundary-review iterations to close 4 CRITICAL findings — each iteration added a system-level guardrail (test surface, reviewer Domain Check entry, convention amendment) rather than just patching the symptom.
+- **Evolve-the-system principle.** Every fix pairs the targeted symptom-close with a guardrail. The next change proposal doesn't have the boundary reviewer playing whack-a-mole on the same class of issue.
+- **Two dispatch modes.** Operator-paced (one prompt at a time, copy-paste handoff, operator inspects each result) for sensitive or first-of-its-kind work. Chain execution (a shell wrapper invokes N prompts back-to-back) for established patterns — wall-clock cap, mtime watchdog, halt-on-`CHAIN_HALT`-sentinel, halt-on-reviewer-non-PASS, halt-on-zero-commits, halt-on-scope-violation. Operator disengages for hours; returns to a morning-readable summary.
+- **Restartable state.** Every persistent fact lives in committed files (`targets/<slug>/orchestrator-state.md`, `tasks.md`, `journal.md`, `decisions.md`, `open-questions.md`). Kill any session at any time; the next picks up from file state.
+- **Role discipline.** Harness-level engineering (chain wrappers, prompt files, persona overlays) stays with the orchestrator. Project-domain engineering routes to the appropriate engineering role. The orchestrator does not deflect its own work back to the operator; the operator stays in operational awareness without being required to micromanage.
 
-AEH operates on a strict separation: the harness never directly modifies your project's code. The harness produces plans, specifications, and prompts; your project's own Claude Code session executes them within your project's context, conventions, and permission model.
+## How it works (basic shape)
 
 ```
-IN AEH (orchestrator session)          IN YOUR PROJECT (engineering session)
-─────────────────────────────           ──────────────────────────────────────
+IN AEH (orchestrator session)         IN YOUR PROJECT (engineering session)
+─────────────────────────────         ──────────────────────────────────────
 onboard /path/to/project
-  → assessment (read-only)
+  → read-only assessment
   → transformation plan
-  → scaffold persona overlays
-  → generate prompts
-                                        Paste prompts one at a time:
-                                          "Read and execute
-                                           docs/AE/prompts/001-..."
+  → scaffold persona overlays + OpenSpec
+  → generate first prompts
+                                       Paste a prompt; it self-activates
+                                       its role and reads its governing spec.
 
-                                        Each prompt self-activates its role,
-                                        loads base + overlay persona,
-                                        reads the governing OpenSpec proposal,
-                                        implements against tasks.md,
-                                        commits with spec references.
+                                       Analyst → Architect → Developer
+                                          → Reviewer (every 5 tasks /
+                                                       phase boundary).
 
-                                        Reviewer pass every 5 tasks:
-                                          §0 BLOCKING spec traceability check
-                                          15+ review dimensions
-                                          evidence-based verdict (no rubber stamps)
-                                          corrections before next phase
+                                       Reviewer §0 BLOCKING: no governing
+                                       spec → automatic FAIL.
 
-health (periodic)
-  → delta report vs last assessment
-  → fix prompts if drift detected
-                                        Run fix prompts
+                                       PASS → spec deltas merge into
+                                       openspec/specs/, change archives.
+
+(periodic) health
+  → delta vs last assessment
+  → fix prompts if drift
+                                       Run fix prompts.
 ```
 
-Each step is human-approved. The harness generates prompts; you decide when and whether to execute them. Between sessions, all state lives in committed files -- kill a session at any point, start fresh, and the next agent picks up where the last left off.
+The harness produces plans, prompts, and state-tracking artifacts. Every step is human-approved; the operator decides when and whether to run anything. Chain execution mode trades step-by-step approval for halt-condition-bounded autonomy when the operator wants to step away.
 
-## The Engineering Personas
-
-AEH defines five engineering roles that run in your project's Claude Code session. These are not abstract concepts -- they are instruction files loaded into a session to shape the agent's behaviour for a specific type of work.
-
-Each persona has a **base template** (generic methodology, ships with AEH) and a **project overlay** (project-specific configuration, lives in your project). The agent loads both; the overlay extends the base with domain knowledge, hard boundaries, and project conventions.
-
-| Persona | What it does | Key discipline enforced |
-|---------|-------------|------------------------|
-| **Archaeologist** | Investigates existing codebases, produces verified baseline specs in `openspec/specs/baseline-*.md`. Runs upstream before the main loop. | Documents what EXISTS, not what should exist. Tags claims `[verified]` / `[unverified]`. |
-| **Analyst** | Gathers requirements, produces change proposals at `openspec/changes/<slug>/proposal.md`. QA finding capture mode for high-throughput intake. | Primary output is ALWAYS an OpenSpec artefact. No routing recommendations (that's the orchestrator's job). |
-| **Architect** | Designs solutions, writes `design.md` + `tasks.md` inside the change proposal directory. Verifies library APIs via context7 before writing examples. | Design lives in the change proposal, not a separate location. Tasks.md is the developer's authoritative source. |
-| **Developer** | TDD implementation. BLOCKING Step 0: identify governing spec before writing any code. Reads tasks from `openspec/changes/<slug>/tasks.md` directly. | No code without a governing spec. Spec reference comments in test files. Change slug in commit messages. context7 lookup before using fast-moving library APIs. |
-| **Reviewer** | Quality gate with 15+ review dimensions. §0 SPEC TRACEABILITY is BLOCKING -- runs first, gates everything. No governing spec = automatic FAIL. Evidence required for every verdict. | Code without spec traceability does not pass review, period. Library API currency spot-checks via context7. |
-
-The standard workflow: Archaeologist (once, for existing codebases) then Analyst → Architect → Developer → Reviewer in a loop. The reviewer's BLOCKING §0 check is the structural enforcement -- it catches any attempt to bypass the specification workflow, intentional or accidental.
-
-### Three Harness Roles
-
-These run in the AEH harness session (a separate Claude Code instance in the AEH directory), not in your project:
-
-| Role | What it does |
-|------|-------------|
-| **Orchestrator** | Manages the prompt execution pipeline. Enforces reviewer cadence (every 5 tasks or phase boundary -- non-discretionary). Pre-generation self-check refuses to create developer prompts without a governing spec. Tracks state across sessions. Three execution modes: prompt-by-prompt (Regime 1, close oversight), batch + phase-boundary review (Regime 2, higher velocity), and multi-prompt multi-role chain orchestration (proactive composition of autonomous chains with pre-flight readiness, mid-chain integration-verification gate, halt-condition catalogue, monitoring via scheduled wakeups, post-chain verdict). Report-Back discipline on every generated prompt: wall-clock field + `PROMPT COMPLETE` sentinel for chain-wrapper parse. |
-| **Strategist** | Business strategy and priorities -- runs in any LLM chat (optional, external to Claude Code) |
-| **Harness Reviewer** | Self-review of AEH's own quality across 10 dimensions: target detail leakage, prompt protocol, documentation currency, template consistency, isolation boundary, governance completeness, public-facing quality, OpenSpec discipline integrity, quality gate chain integrity, SDLC tool compliance |
-
-## OpenSpec -- The Specification Substrate
-
-[OpenSpec](https://openspec.dev/) is the organising unit for ALL engineering work in AEH-governed projects. It manages specifications as structured markdown files alongside your code. No MCP server, no dependencies -- just a directory convention that CLI agents read and write directly.
-
-```
-openspec/
-├── project.md                    # Project conventions (slug naming, status vocabulary)
-├── specs/
-│   ├── baseline-*.md             # Archaeologist output: verified ground truth
-│   └── <domain-id>.md           # Stable specs (archived from completed changes)
-└── changes/
-    ├── <active-slug>/            # In-flight change proposals
-    │   ├── proposal.md           # Analyst: requirements + acceptance criteria
-    │   ├── design.md             # Architect: solution design + decisions
-    │   ├── tasks.md              # Architect: ordered task breakdown (developer reads this)
-    │   └── specs/<id>.md         # Spec deltas (merged into specs/ on completion)
-    └── archive/<YYYY-MM>/<slug>/ # Completed proposals (historical record)
-```
-
-Every feature flows through this structure:
-
-1. **Analyst** creates `openspec/changes/<slug>/proposal.md` with requirements and acceptance criteria
-2. **Architect** fills in `design.md` (solution) and `tasks.md` (developer's work order)
-3. **Developer** reads `tasks.md` directly (the orchestrator does not paraphrase), implements, marks tasks complete, adds spec reference comments to tests and source
-4. **Reviewer** validates the implementation against the proposal via the BLOCKING §0 spec traceability check
-5. **On reviewer PASS**: spec deltas merge into `openspec/specs/`, the change archives to `openspec/changes/archive/`
-
-**The proposal is the single instruction set.** What the analyst writes in `proposal.md` -- requirements, scope, acceptance criteria -- serves as the architect's brief AND the reviewer's checklist. There is no separate "instructions for the reviewer" document; acceptance criteria play that role directly. The architect resolves open questions in `design.md`, the developer implements against `tasks.md`, and the reviewer checks each acceptance criterion in the original proposal. **The rigour of the proposal IS the quality of every downstream handoff.** A vague proposal produces a sloppy review; a precise proposal produces decisive gating. This single-authoring-event principle is what makes the OpenSpec + TDD + strict quality gate + reviewer routing chain actually function as a coherent SDLC rather than a relay of re-interpretations.
-
-The reviewer's §0 check enforces this end-to-end. Code that bypasses OpenSpec -- intentionally or by drift -- does not pass review.
-
-## Two Standard SDLC Tools
-
-AEH prescribes two tools as standard infrastructure for every project (analogous to "use git"):
-
-| Tool | Purpose | How it's used |
-|------|---------|---------------|
-| **[OpenSpec](https://openspec.dev/)** | Specification management | Filesystem-based. CLI agents read/write markdown files directly. No MCP server needed. Every persona knows where to read and write. |
-| **[context7](https://context7.com/)** | Current library documentation lookup | MCP server configured per-project in `.mcp.json`. Agents call it before writing code that uses fast-moving library APIs (React 19, TanStack Query, Tailwind v4, Playwright, Supabase CLI, etc.). Prevents training-data recall for libraries that changed after the agent's training cutoff. |
-
-Both are named in the base persona templates. They are development methodology tools, not project-technology-specific choices. Project-technology-specific tools (GitLab, Supabase, Snyk, specific CI providers, databases, deployment platforms) belong in project overlays, never in base templates.
-
-## Quick Start
+## Quick start
 
 ```bash
 git clone https://gitlab.com/stefanberreth/agentic-engineering-harness.git
@@ -137,206 +68,71 @@ cd agentic-engineering-harness
 claude
 ```
 
-Then say `onboard /path/to/your/project` to start the guided assessment.
+Then say `onboard /path/to/your/project`. The harness reads your project, runs a 10-category assessment, produces a ranked report (CRITICAL / HIGH / MEDIUM / LOW), generates a transformation plan, and scaffolds the agentic structure. No code in your project is modified during onboarding — the harness only reads and reports.
 
-AEH will:
-1. Read your project's structure, README, and any existing AI agent configuration
-2. Run a 10-category assessment checklist
-3. Produce a ranked inconsistency report (CRITICAL / HIGH / MEDIUM / LOW)
-4. Generate a transformation plan
-5. Scaffold persona overlay files with the layered base+overlay convention
-6. Set up OpenSpec (`openspec/specs/`, `openspec/changes/`, `openspec/project.md`, `AGENTS.md`)
-7. Create ready-to-execute prompts for setting up the agentic structure in your project
+## Maturity levels
 
-No code in your project is modified during onboarding. The harness only reads and reports.
-
-## The Quality Chain
-
-AEH's quality enforcement is structural, not advisory. Each link in the chain is enforced by a different persona:
-
-```
-Analyst produces → OpenSpec change proposal (proposal.md)
-                   ↓
-Architect fills  → design.md + tasks.md in the same proposal
-                   ↓
-Developer reads  → tasks.md directly (not a paraphrase)
-  ├─ BLOCKING Step 0: no code without governing spec
-  ├─ context7 lookup before fast-moving library APIs
-  ├─ spec reference comments in tests: // Validates: openspec/...
-  ├─ change slug in commits: feat(scope): desc [change:<slug>]
-  └─ TDD: test first, implement, refactor, commit
-                   ↓
-Reviewer gates   → §0 SPEC TRACEABILITY (BLOCKING, runs first)
-  ├─ Governing spec exists? (FAIL if not)
-  ├─ Implementation matches spec? (FAIL on unjustified deviation)
-  ├─ Test-to-spec linkage? (FAIL if no spec references in tests)
-  ├─ Spec currency? (FAIL if spec is stale after code changes)
-  ├─ Commit traceability? (WARN if no change slug)
-  └─ 15+ additional dimensions: absence check, security,
-     cross-module impact, library API currency, dependency health,
-     performance anti-patterns, structural hygiene, permissions...
-                   ↓
-On PASS          → deltas merge into openspec/specs/, change archives
-                   ↓
-Orchestrator     → enforces reviewer cadence (every 5 tasks / phase boundary)
-                   pre-generation self-check (no prompt without governing spec)
-                   pre-dispatch hygiene gate (CI green before new-CP dispatch)
-                   tracks active change proposals in state file
-```
-
-The chain is unbroken: the orchestrator can't generate a developer prompt without a governing spec, the developer can't start without finding that spec, the reviewer rejects work without spec traceability. Drift is caught structurally, not by vigilance.
-
-**For autonomous multi-prompt chains** (a single wall-clock window executing N prompts across one or more roles without operator-in-loop interaction between prompts), the chain adds two more gates on top of the base chain:
-
-- **Pre-flight readiness check** before chain launch — verifies gate infrastructure actually executes the assertions `tasks.md` specifies; verifies synthetic state (fixtures, storage states, test DB seed) is ready; verifies halt conditions fire as designed. Non-negotiable: skipping risks a chain running hours against infrastructure that cannot observe real application state.
-- **Integration-verification gate** between developer-batch completion and reviewer start — arbitrates at real-integration level (real DB, real service wiring, end-to-end test surface) that per-task unit tests intentionally mock for speed. Catches cross-task, schema, and composition-level integration bugs before they reach the reviewer.
-
-Chain halt-condition catalogue: non-zero exit, zero commits, reviewer ≠ PASS/WARN, `CHAIN_HALT` sentinel, mtime idle >15 min, wall-clock cap, scope-guard violation. Wrappers halt and write a summary; orchestrator scheduled-wakeup cadence surfaces state to the operator without polling.
-
-## What AEH Is NOT
-
-- **Not a framework or library.** No code to install, no dependencies, no build step.
-- **Not specific to any language or stack.** Templates are adapted per target project.
-- **Does not implement software.** It produces configuration, documentation, and process artifacts that *drive* implementation.
-- **Not Claude-exclusive.** Optimised for Claude Code, but the persona templates and governance criteria work with any LLM-based coding agent.
-- **Not a SaaS product.** It's an open-source side project that works well enough to share.
-
-## Project Structure
-
-```
-.
-├── CLAUDE.md                              # Claude's instructions for this project
-├── README.md                              # This file
-├── CHANGELOG.md                           # Version history
-├── LICENSE                                # AGPL-3.0
-├── LICENSE-FAQ.md                         # License clarifications
-├── CONTRIBUTING.md                        # How to contribute
-├── bin/
-│   ├── resolve-persona-marker.sh         # Resolves .claude/persona marker path (Docker-aware; legacy fallback)
-│   └── validate-personas.sh              # Structural validation for base templates + overlays
-├── templates/
-│   ├── personas/
-│   │   ├── archaeologist.md              # Codebase investigation (base template)
-│   │   ├── analyst.md                    # Requirements gathering (base template)
-│   │   ├── architect.md                  # Solution design (base template)
-│   │   ├── developer.md                  # TDD implementation (base template)
-│   │   ├── reviewer.md                   # Code review + §0 BLOCKING spec traceability (base template)
-│   │   ├── orchestrator.md               # Pipeline management + reviewer cadence enforcement
-│   │   ├── harness-reviewer.md           # Harness self-review (10 dimensions)
-│   │   └── strategist.md                 # Strategic advisor (optional, external)
-│   ├── project/
-│   │   ├── CLAUDE.md.template            # Scaffold for target project CLAUDE.md
-│   │   └── agents.md.template            # Cross-tool agent config scaffold
-│   ├── governance/
-│   │   ├── assessment-checklist.md       # 10-category agentic readiness evaluation
-│   │   └── review-criteria.md            # Quality rubric for config files
-│   ├── playbooks/
-│   │   ├── onboarding.md                 # 7-phase guided onboarding workflow
-│   │   ├── health-check.md              # Recurring compliance check + delta report
-│   │   └── tools.md                      # Development tool configuration (OpenSpec, context7, Serena)
-│   ├── tools/
-│   │   ├── README.md                     # Tool integration overview
-│   │   ├── tool-detection-patterns.md    # Detection patterns for tools + equivalents
-│   │   ├── openspec-setup.md             # OpenSpec setup prompt template
-│   │   ├── openspec-teardown.md          # OpenSpec teardown prompt template
-│   │   ├── context7-setup.md             # context7 setup prompt template
-│   │   ├── context7-teardown.md          # context7 teardown prompt template
-│   │   ├── serena-setup.md               # Serena setup prompt template
-│   │   ├── serena-teardown.md            # Serena teardown prompt template
-│   │   └── sandbox-env-provisioning.md   # Env var provisioning for Docker/sandbox
-│   ├── prompts/
-│   │   ├── regression-check.md.template  # Post-transformation regression check
-│   │   └── orchestrator-batch-regime.md  # Regime 2 switchover prompt template
-│   ├── scripts/
-│   │   └── loop-driver.sh.template       # Autonomous dev→gates→reviewer loop
-│   └── agents/
-│       ├── README.md                     # Agent-specific knowledge overview
-│       └── claude-code/
-│           ├── permissions.md            # Permission schema reference + anti-patterns
-│           ├── permission-detection-patterns.md
-│           └── permission-baselines.md   # Recommended configs by project archetype
-├── targets/                              # Private nested repo (your project workspaces)
-│   └── index.md                          # Registry of target projects + status
-└── docs/
-    ├── how-i-tamed-claude-ndc-london-2026.md
-    └── Images/                           # Project logos
-```
-
-## What AEH Provides
-
-- **Persona templates** -- base templates for five engineering roles and three harness roles, with `§.PROJECT` extension points for project-specific adaptation. Each engineering persona integrates OpenSpec as the specification substrate and context7 as the documentation lookup tool.
-- **Project templates** -- scaffolds for `CLAUDE.md` and `agents.md`, adapted per target project with two-file persona loading and Step 0 self-activation
-- **Governance criteria** -- assessment checklists (10 categories) and quality rubrics for evaluating agentic configuration
-- **Guided playbooks** -- `onboard` (7-phase assessment + transformation), `health` (recurring compliance check), `tools` (OpenSpec + context7 + optional Serena configuration)
-- **Agent permission governance** -- schema reference, detection patterns, recommended baselines. Catches secrets in permission rules, missing deny lists, filesystem scope violations
-- **Validation tooling** -- `bin/validate-personas.sh` checks base template structure, extension points, and project-specific content leakage
-- **Reviewer enforcement** -- §0 BLOCKING spec traceability check, mandatory reviewer cadence, evidence-based verdicts, domain-critical adversarial review extension points. Visual-regression signal-quality ranking (operator eyeball > pixel-diff > sentinel-SSIM > DOM-skeleton-diff) for UI-heavy projects — reviewer cannot PASS on DOM-skeleton-diff alone.
-- **Execution regimes** -- prompt-by-prompt (Regime 1, close oversight), batch execution with phase-boundary review (Regime 2, higher velocity), and multi-prompt multi-role chain orchestration for autonomous wall-clock windows. All regimes enforce reviewer gates. Chain mode adds pre-flight readiness, integration-verification gate between dev batch and reviewer, pre-dispatch hygiene gate, halt-condition catalogue, and scheduled-wakeup monitoring from the orchestrator session.
-- **Chain-safe task specification** -- architect `§4a` structures `tasks.md` so chain-bound backend tasks declare mechanical completion signals (test file paths + CLI assertions), scope-bounded file-pattern allowlists, and commit-message format with change-slug tags. UI-subjective tasks split into a clearly-flagged Section B that is NOT chain-bound and executes prompt-by-prompt with operator review per surface.
-- **Two analyst intake paths** -- analyst `§7b` distinguishes heavyweight operator-authored requirements documents (ingested from conventional intake directories, digested with analyst authority to reject / refine / decompose / defer) from mid-session-surfaced horizontals captured during analyst/architect sessions and queued by the orchestrator for activation when a consumer proposal needs them. Different shapes, different handling, no BA-REQ expected for mid-session horizontals.
-
-## Maturity Model
-
-Start where you are:
+Start where you are; deepen as the value compounds:
 
 | Level | What you get | Effort |
 |-------|-------------|--------|
-| **1. Assessment only** | Run `onboard`, get a ranked report. No changes made. | 15 minutes |
-| **2. Harness setup** | Persona overlays, session init, CLAUDE.md sections, OpenSpec scaffolding. Code untouched. | 1 session |
-| **3. Reviewer-implementer loop** | Fix assessment issues with human oversight. Reviewer cadence active. | 1-2 sessions |
-| **4. Domain deepening** | Archaeologist baseline specs, verified domain knowledge in personas, context7 trigger lists populated. | 1 session |
-| **5. Full workflow** | All personas active, OpenSpec change proposals for every feature, health checks, continuous governance, batch execution regime. | Ongoing |
+| 1 | Assessment report | 15 min |
+| 2 | Persona overlays + OpenSpec scaffolding | 1 session |
+| 3 | Reviewer-implementer loop fixing assessment findings | 1-2 sessions |
+| 4 | Archaeologist baseline specs + domain-deepened personas | 1 session |
+| 5 | Full workflow — every change flows through the chain | Ongoing |
 
-Most projects get significant value at level 2. Domain deepening (level 4) is where personas go from generic to accurate. Level 5 is where the harness pays for itself -- every new feature flows through a reviewable, restartable, spec-driven pipeline with no manual process overhead.
+Most projects get significant value at level 2. Level 4 is where personas go from generic to domain-accurate. Level 5 is where the harness pays for itself — every feature flows through a reviewable, restartable, spec-driven pipeline with no manual process overhead.
 
-## Core Principles
+## Standard tools
 
-1. **Spec-driven, not vibe-driven.** Every feature has a governing specification. The reviewer enforces this structurally -- code without spec traceability does not pass review.
-2. **Structure over speed.** A well-structured agentic setup is slower to start but dramatically more productive over time.
-3. **Restartability.** Kill a session at any point, start fresh, and it picks up where the last one left off by reading committed files.
-4. **Small increments.** One task, one commit, one reviewable change. Commit messages reference the governing change slug.
-5. **Human in the loop.** The AI proposes; the human decides. The orchestrator generates prompts; you decide when and whether to execute them.
-6. **Assessment before implementation.** Onboarding reads and reports. It never modifies your code.
-7. **Preserve what works.** Templates fill gaps -- they don't replace working instructions.
-8. **Verify, don't recall.** Agents call context7 for current library documentation instead of relying on training-data recall. This is methodology, not optional tooling.
+Two tools are baked into the base persona templates as standard SDLC infrastructure (analogous to "use git"):
 
-## Requirements
+- **[OpenSpec](https://openspec.dev/)** — specification substrate. Filesystem-based; CLI agents read and write markdown directly. No MCP server.
+- **[context7](https://context7.com/)** — current library documentation lookup. Per-project `.mcp.json`. Agents call it before writing code that uses fast-moving APIs (React 19, Tailwind v4, Playwright, etc.) instead of recalling stale training data.
 
-- [Claude Code](https://claude.ai/code) (CLI tool from Anthropic)
-- A software project you want to structure for agentic development
-- That's it. No dependencies, no installation, no build step.
+Project-specific tools (databases, deploy targets, CI providers) belong in project overlays — never in base templates.
+
+## Pointers to deeper docs
+
+- `CLAUDE.md` — the harness's own session instructions (every AEH session reads this first)
+- `templates/personas/` — the eight role definitions (5 engineering + Orchestrator + Harness Reviewer + optional Strategist)
+- `templates/governance/` — assessment checklist + reviewer quality rubric
+- `templates/playbooks/` — `onboard`, `health`, `tools`
+- `targets/index.md` — registry of projects under AEH governance
+- `docs/` — reference material, the originating talk transcript, deeper specs
+
+## What AEH is not
+
+- Not a framework or library — no install, no dependencies, no build step
+- Not language- or stack-specific — base templates are project-agnostic; overlays carry the project specifics
+- Not an implementation tool — it produces the configuration, documentation, and prompts that drive implementation; implementation happens in your project's own session
+- Not Claude-exclusive — optimised for Claude Code, but the persona templates and governance criteria work with any LLM-based coding agent
+- Not a SaaS product — open source, AGPL-3.0, side project
+
+## Inspiration
+
+Inspired by [Emmz Rendle's "How I Tamed Claude" (NDC London 2026)](https://www.youtube.com/watch?v=pey9u_ANXZM).
 
 ## Community
 
-- **Discord:** [Join the AEH Discord](https://discord.gg/qnKVnJEuQz)
-- **GitLab Issues:** [Report bugs and request features](https://gitlab.com/stefanberreth/agentic-engineering-harness/-/issues)
-- **Contributing:** See [CONTRIBUTING.md](CONTRIBUTING.md) -- we prefer prompts over patches
+- **Discord:** [Join](https://discord.gg/qnKVnJEuQz)
+- **GitLab Issues:** [Report bugs / request features](https://gitlab.com/stefanberreth/agentic-engineering-harness/-/issues)
+- **Contributing:** [CONTRIBUTING.md](CONTRIBUTING.md) — prompts preferred over patches
 
 ## Supporting AEH
 
-AEH is free, open source, and maintained by one person. If it saves you time:
+AEH is free, AGPL-3.0, maintained by one person. If it saves you time:
 
 - **[Support on Ko-fi](https://ko-fi.com/stefanberreth)**
 - **Star the repo**
-- **[Join the Discord](https://discord.gg/qnKVnJEuQz)**
 
-For organisations wanting to embed AEH in proprietary tooling or host it as a service without AGPL obligations, a commercial license is available -- contact Stefan Berreth.
-
-## Key Resources
-
-| Resource | Description |
-|----------|-------------|
-| [How I Tamed Claude (NDC London 2026)](https://www.youtube.com/watch?v=pey9u_ANXZM) | The talk that inspired this project |
-| [Claude Code Docs](https://docs.anthropic.com/en/docs/claude-code) | Official Claude Code documentation |
-| [OpenSpec](https://openspec.dev/) | Specification-driven development -- the spec substrate AEH uses |
-| [context7](https://context7.com/) | Current library documentation lookup -- standard SDLC tool in AEH |
+For organisations wanting to embed AEH in proprietary tooling or host it as a service without AGPL obligations, a commercial license is available — contact Stefan Berreth.
 
 ## License
 
-AGPL-3.0. See [LICENSE](LICENSE) and [LICENSE-FAQ.md](LICENSE-FAQ.md).
+AGPL-3.0. See [LICENSE](LICENSE) and [LICENSE-FAQ.md](LICENSE-FAQ.md). Generated outputs (personas, prompts, CLAUDE.md sections) belong to you under any license you choose. AGPL applies only to modifications of AEH itself if you offer them as a public service or distribute them externally.
 
-**TL;DR:** Use AEH freely -- personal projects, teams, entire organisations. All generated output (personas, prompts, CLAUDE.md sections) belongs to you under any license you choose. The AGPL only applies if you modify AEH itself and offer it as a public service or distribute it externally.
+---
 
-## Contact
-
-Stefan Berreth -- [gitlab.com/stefanberreth/agentic-engineering-harness](https://gitlab.com/stefanberreth/agentic-engineering-harness)
+Stefan Berreth — [gitlab.com/stefanberreth/agentic-engineering-harness](https://gitlab.com/stefanberreth/agentic-engineering-harness)
