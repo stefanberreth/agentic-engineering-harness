@@ -109,7 +109,7 @@ Project-specific tools (databases, deploy targets, CI providers) belong in proje
 - Not a framework or library -- no install, no dependencies, no build step
 - Not language- or stack-specific -- base templates are project-agnostic; overlays carry the specifics
 - Not an implementation tool -- it produces the configuration, documentation, and prompts that drive implementation
-- Not Claude-exclusive -- optimised for Claude Code; the persona templates work with any LLM-based coding agent
+- Not Claude-exclusive -- currently developed with Claude Code; the persona templates work with any LLM-based coding agent
 - Not a SaaS product -- open source, AGPL-3.0, side project
 
 ## Inspiration
