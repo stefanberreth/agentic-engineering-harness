@@ -72,19 +72,19 @@ claude
 
 Then say `onboard /path/to/your/project`. The harness reads your project, runs an assessment, produces a ranked report (CRITICAL / HIGH / MEDIUM / LOW), generates a transformation plan, and scaffolds the agentic structure. The assessment is read-only; nothing in your project changes without your explicit consent.
 
-## Maturity levels
+## On-ramps
 
-Pick the level that matches your appetite. You can stop at any level.
+Different ways to start, depending on where you're coming from. The on-ramps are sequential -- each builds on the previous -- but only the last is an ongoing mode of operation. The earlier ones are stepping stones that get you ready for it. You can pause between any two if other work intervenes.
 
-| Level | What you get | Effort |
-|-------|-------------|--------|
-| 1 | Assessment report only | 15 min |
-| 2 | Persona overlays + spec scaffolding | 1 session |
-| 3 | Reviewer-implementer loop fixing assessment findings | 1-2 sessions |
-| 4 | Baseline specs from existing code + domain-deepened personas | 1 session |
-| 5 | Full workflow -- every change flows through the pipeline | Ongoing |
+| On-ramp | What you do | Effort |
+|---------|-------------|--------|
+| Assessment | Run a read-only audit of an existing project; get a ranked report of what's missing or drifted | 15 min |
+| Scaffolding | Set up the role overlays and specification substrate in your project | 1 session |
+| Catch-up loop | Address what the assessment surfaced via the reviewer-implementer cycle | 1-2 sessions |
+| Domain deepening | Extract baseline specs from existing code and tune the roles to your domain (skip on greenfield) | 1 session |
+| Steady state | Every change flows through the pipeline | Ongoing |
 
-Many projects sit comfortably at level two or three. Level four is where personas go from generic to domain-accurate. Level five is where the harness pays for itself on a multi-month build.
+For a greenfield project the path is shorter: scaffolding, then steady state. For an existing codebase with substantial undocumented behaviour, the assessment and domain deepening on-ramps tend to pay back the most before steady state.
 
 ## Standard tools
 
