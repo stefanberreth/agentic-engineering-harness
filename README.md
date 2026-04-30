@@ -8,60 +8,59 @@
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2)](https://discord.gg/qnKVnJEuQz)
 [![Support on Ko-fi](https://img.shields.io/badge/Ko--fi-Support-FF5E5B)](https://ko-fi.com/stefanberreth)
 
-A working starting point for running serious software work with AI coding agents. AEH ships a complete, end-to-end agentic SDLC -- engineering roles, change-proposal flow, reviewer gates, autonomous chain execution, restartable state -- that runs out of the box, and is designed to be molded toward the specific practices of your team, department, or company. Pick what you need, amend what doesn't fit, drop what doesn't apply.
+A working starting point for running serious software work with AI coding agents. AEH brings the shape of a real engineering team to the work AI agents do: separated roles, spec-driven changes, regular review, and predictable handoffs. It runs out of the box and is designed to be molded toward the practices of your team, department, or company. Pick what you need, amend what does not fit, drop what does not apply.
+
+## Why a governance harness
+
+AI coding agents produce code at a rate human review does not naturally keep up with. Without structure, that work is hard to audit, hard to course-correct, and hard to hand off between people or sessions. AEH addresses that by giving the work an engineering shape -- the same separation of concerns that makes human teams effective. An analyst clarifies requirements, an architect chooses a design, a developer implements, a reviewer gates the result. Each role has its own focus and its own constraints, and the work moves through them in a way that leaves a clean trail behind it.
+
+The outcome is that AI work becomes governable. You can stop it, resume it, audit it, hand it off, and trust that the parts you have not personally watched were nonetheless reviewed.
 
 ## What you get out of the box
 
-AEH installs a default agentic pipeline:
+A complete agentic SDLC, ready to drive a real change from idea to merged code on day one:
 
-- A multi-role engineering team -- Analyst, Architect, Developer, Reviewer, Archaeologist, plus an Orchestrator coordinating them and an optional Strategist for external strategic conversations. Each role has a base methodology template and a project-specific overlay.
-- Specifications managed as OpenSpec change proposals -- analyst writes requirements, architect produces design and tasks, developer implements, reviewer validates against the proposal. Code references its governing spec.
-- Reviewer gates with a default cadence -- every five developer tasks plus phase boundaries. The orchestrator tracks the cadence and can refuse to dispatch new development work until the review is current.
-- Boundary-iteration discipline -- when a phase-close review finds critical issues, correction cycles run until the reviewer returns PASS. Each iteration typically adds a guardrail, not just a fix, so the same class of issue does not recur.
-- Two dispatch modes -- operator-paced (paste a prompt, watch the result) for sensitive or first-of-its-kind work, and chain execution (a shell wrapper invokes prompts in sequence with halt conditions: wall-clock cap, mtime watchdog, sentinel detection, reviewer-verdict gating) for established patterns where you want to step away.
-- Restartable state -- every persistent fact lives in committed files (`targets/<slug>/orchestrator-state.md`, `tasks.md`, `journal.md`, `decisions.md`, `open-questions.md`). Kill any session at any time; the next picks up from file state.
+- A multi-role engineering team -- Analyst, Architect, Developer, Reviewer, Archaeologist, plus an Orchestrator that coordinates them and an optional Strategist for external strategic conversations.
+- Specifications managed as change proposals, with code traceable to the spec it implements.
+- Reviewer gates at a regular cadence, with the orchestrator tracking that the cadence is held.
+- Correction-cycle discipline -- when a review finds something critical, the work iterates until the review passes.
+- Two ways to run -- closely supervised one step at a time, or batched into longer autonomous runs you can step away from.
+- Persistent state in committed files, so any session can stop and resume cleanly. Switch machines, change models, take a break, and pick up where you left off.
 
-This works end-to-end on day one. You can drive a real change through the full pipeline -- proposal, design, implementation, review, archive -- with the templates as shipped.
+The templates as shipped are a known-good default. They work without further tuning. Deeper docs explain each piece.
 
 ## How you bend it
 
 AEH is a starting point, not a contract. Every default is amendable:
 
-- **Persona overlays.** Each engineering role has a project overlay (`docs/AE/personas/<role>.md`) where you encode your team's hard boundaries, conventions, and domain knowledge. The base templates expose `Section.PROJECT` extension points specifically for this purpose. Add what your team needs; override what doesn't fit.
-- **Reviewer cadence.** The default is every five tasks plus phase boundaries. If your team wants every three, or every commit, or only at phase boundaries, change it in the orchestrator overlay. The cadence rule is enforced from the overlay, not hard-coded.
-- **Dispatch mode.** Operator-paced and chain execution are not exclusive. Use operator-paced for the sensitive stages of a change and chain-launch the rest, or run everything through one or the other. Per project, per phase, per change proposal -- whatever fits.
-- **Tool selection.** AEH ships with OpenSpec and context7 as the two default SDLC tools. Project-specific tools (databases, deploy targets, CI providers, secret stores, ticketing systems) live in project overlays so they don't pollute the base templates. Add yours; the harness has no opinion.
-- **Maturity entry point.** Adopt as much or as little as fits. Five maturity levels are documented below; many projects sit at level 2 or 3 and never need 4 or 5. There is value at each level; you do not have to commit to the full workflow on day one or ever.
-- **Skip what you don't need.** Greenfield project? Skip the archaeologist. No compliance audit? Trim the reviewer's regulatory checks. Solo developer with no team? Use operator-paced mode and skip the phase-boundary ceremony. The harness is opinionated about defaults, not dogmatic about adoption.
+- **Role definitions.** Each role has a generic methodology template plus a project-specific overlay where you encode your team's conventions, hard boundaries, and domain knowledge. Add what your team needs; override what does not fit.
+- **Review cadence.** The default cadence is sensible for most projects; if your team wants more or fewer review touchpoints, change it in the orchestrator overlay.
+- **Run mode.** Supervised and autonomous runs are not exclusive. Use one for sensitive stages of a change and the other for established patterns -- per project, per phase, per change, whatever fits.
+- **Tool choice.** AEH ships with two default development tools (one for specifications, one for current library documentation). Project-specific tools (databases, deploy targets, CI providers, secret stores, ticketing) live in project overlays so they do not pollute the base templates.
+- **Maturity entry point.** Adopt as much or as little as fits your appetite. Five maturity levels are documented below; many projects sit at level two or three and never need four or five.
+- **Skip what you do not need.** Greenfield project? Skip the archaeologist. No compliance audit? Trim the reviewer's regulatory checks. Solo developer? Skip the phase-boundary ceremony. The harness is opinionated about defaults, not dogmatic about adoption.
 
 The intent is that you read what AEH ships, see what fits your context, and tune the rest. The harness improves when you push back on its defaults; the templates are versioned and the overlays are yours.
 
 ## How it works
 
 ```
-IN AEH (orchestrator session)         IN YOUR PROJECT (engineering session)
------------------------------         --------------------------------------
-onboard /path/to/project
-  -> read-only assessment
-  -> transformation plan
-  -> scaffold persona overlays + OpenSpec
-  -> generate first prompts
-                                       Paste a prompt; it self-activates
-                                       its role and reads its governing spec.
+HARNESS SESSION                        PROJECT SESSION
+(manages the pipeline)                 (does the engineering work)
 
-                                       Analyst -> Architect -> Developer
-                                       -> Reviewer (cadence per overlay).
+assess and plan
+generate prompts
+                                        execute prompts as the role
+                                        they activate
 
-                                       PASS -> spec deltas merge into
-                                       openspec/specs/, change archives.
+                                        analyst -> architect ->
+                                        developer -> reviewer
+                                        (cadence per overlay)
 
-(periodic) health
-  -> delta vs last assessment
-  -> fix prompts if drift
-                                       Run fix prompts.
+                                        on PASS, archive and continue
 ```
 
-Two sessions, two scopes. The harness session manages the pipeline -- state, prompts, cadence, chain wrappers. Your project's own session executes the prompts and modifies the code. Most teams keep these separate; the separation gives a clean audit trail and predictable permission boundaries. Some teams collapse them and that works too if the audit trail is not a priority. The default keeps them separate; the choice is yours.
+Two sessions, two scopes. The harness session manages the pipeline; your project's own session executes the work. Most teams keep these separate, because the separation gives a clean audit trail and predictable permission boundaries. Some teams collapse them, and that works too if the audit trail is not a priority. The default keeps them separate; the choice is yours.
 
 ## Quick start
 
@@ -71,7 +70,7 @@ cd agentic-engineering-harness
 claude
 ```
 
-Then say `onboard /path/to/your/project`. The harness reads your project, runs a 10-category assessment, produces a ranked report (CRITICAL / HIGH / MEDIUM / LOW), generates a transformation plan, and scaffolds the agentic structure. The assessment is read-only; nothing in your project changes without your explicit consent.
+Then say `onboard /path/to/your/project`. The harness reads your project, runs an assessment, produces a ranked report (CRITICAL / HIGH / MEDIUM / LOW), generates a transformation plan, and scaffolds the agentic structure. The assessment is read-only; nothing in your project changes without your explicit consent.
 
 ## Maturity levels
 
@@ -80,28 +79,28 @@ Pick the level that matches your appetite. You can stop at any level.
 | Level | What you get | Effort |
 |-------|-------------|--------|
 | 1 | Assessment report only | 15 min |
-| 2 | Persona overlays + OpenSpec scaffolding | 1 session |
+| 2 | Persona overlays + spec scaffolding | 1 session |
 | 3 | Reviewer-implementer loop fixing assessment findings | 1-2 sessions |
-| 4 | Archaeologist baseline specs + domain-deepened personas | 1 session |
+| 4 | Baseline specs from existing code + domain-deepened personas | 1 session |
 | 5 | Full workflow -- every change flows through the pipeline | Ongoing |
 
-Many projects sit comfortably at level 2 or 3. Level 4 is where personas go from generic to domain-accurate. Level 5 is where the harness pays for itself on a multi-month build.
+Many projects sit comfortably at level two or three. Level four is where personas go from generic to domain-accurate. Level five is where the harness pays for itself on a multi-month build.
 
 ## Standard tools
 
-Two tools are baked into the base persona templates as default SDLC infrastructure (analogous to "use git"):
+Two tools are baked into the base persona templates as default development infrastructure:
 
-- **[OpenSpec](https://openspec.dev/)** -- specification substrate. Filesystem-based; CLI agents read and write markdown directly. No MCP server.
-- **[context7](https://context7.com/)** -- current library documentation lookup. Per-project `.mcp.json`. Agents call it before writing code that uses fast-moving APIs, instead of recalling stale training data.
+- **[OpenSpec](https://openspec.dev/)** -- specification substrate.
+- **[context7](https://context7.com/)** -- current library documentation lookup, so agents check current API shape instead of recalling stale training data.
 
 Project-specific tools (databases, deploy targets, CI providers) belong in project overlays, not base templates.
 
 ## Pointers to deeper docs
 
 - `CLAUDE.md` -- harness session instructions
-- `templates/personas/` -- base role templates and the `Section.PROJECT` extension points
+- `templates/personas/` -- base role templates
 - `templates/governance/` -- assessment checklist + reviewer quality rubric
-- `templates/playbooks/` -- `onboard`, `health`, `tools`
+- `templates/playbooks/` -- onboarding, health, tool configuration
 - `targets/index.md` -- registry of projects under AEH governance
 - `docs/` -- reference material, talk transcript, deeper specs
 
