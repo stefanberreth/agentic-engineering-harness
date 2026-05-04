@@ -126,7 +126,7 @@ This is not part of AEH. It is one of several control-in-depth layers AEH assume
 
 ## Prerequisites
 
-Have these in place before running `claude` and `onboard`:
+You need those to be in place or at hand before getting started:
 
 - **A coding-agent runtime.** Claude Code (or an equivalent LLM coding-agent CLI) installed and authenticated.
 - **Source-control access.** Git installed locally; access credentials for your remote -- GitHub, GitLab, Bitbucket, or self-hosted -- via SSH key or personal access token, depending on your setup.
