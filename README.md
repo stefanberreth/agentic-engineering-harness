@@ -12,23 +12,35 @@
 
 AEH is a governance harness for software work driven by AI coding agents. It puts the work inside an engineering shape -- separated roles, spec-first changes, closed-loop quality gates, explicit handoffs -- so the work stays auditable, restartable, and amendable across sessions, days, and teammates.
 
-It is for operators and teams whose work has to meet **mature, enterprise-grade SDLC needs, principles, and requirements**: review gates that are not bypassable, change records you can audit a year later, regression safety on a long-lived codebase, division of concerns across roles that actually do different things, the ability to pause and resume cleanly, and a pipeline that holds up to compliance scrutiny. None of this is unique to enterprise -- a serious open-source project, a pre-IPO platform, or a regulated startup all carry the same realities.
+<p align="center">
+  <img src="docs/Images/Screenshot%202026-05-04%20at%2015.04.37.png" alt="AEH role architecture: an operator works through the orchestrator, which routes work to analyst, architect, developer, and reviewer; the team produces specifications and code that compose the final product." width="780">
+</p>
 
-This is a different problem than what fast-prototype tooling solves. Lovable and similar single-shot or low-stakes builders give you a fast path from idea to a running thing -- valuable in their own right and optimised for speed of first artefact. "Prompt, magic, code, product, done" is the right shape for those situations; it is not the right shape when you are building software that has to be reviewed, regression-tested, audited, handed off, and operated under real-world stress for months or years. AEH targets the latter. Different problems, different categories; not in competition.
+It is for operators and teams whose work has to meet **mature, enterprise-grade SDLC needs, principles, and requirements**: review gates that are not bypassable, change records you can audit a year later, regression safety on a long-lived codebase, division of concerns across roles that actually do different things, and the ability to pause and resume cleanly.
+
+This is a different problem than what democratised AI app builders solve. That category -- single-shot AI tools that produce a working app from a prompt -- gives you a rapid path from idea to a running thing, accessible to non-engineers, and is the right shape when speed of first artefact is what matters. It is not the right shape when you are building software that has to be reviewed, regression-tested, audited, handed off across teammates, and operated under real-world stress for months or years. To anyone who has shipped serious software in a team, the difference is obvious. To anyone being told that AI magic now means you can fire your engineering function, it may need spelling out: the two are not the same job.
 
 Currently developed with Claude Code; the persona templates work with any LLM-based coding agent.
 
+## What AEH is not
+
+- Not a framework or library -- no install, no dependencies, no build step
+- Not language- or stack-specific -- base templates are project-agnostic; overlays carry the specifics
+- Not an implementation tool -- it produces the configuration, documentation, and prompts that drive implementation
+- Not Claude-exclusive -- currently developed with Claude Code; the persona templates work with any LLM-based coding agent
+- Not a SaaS product -- open source, AGPL-3.0, side project
+
 ## Why this exists
 
-AI coding agents produce code at a rate human review does not naturally keep up with. Without structure, that work is hard to audit, hard to course-correct, and hard to hand off across people or sessions. AEH addresses that by giving the work an engineering shape -- the same separation of concerns that makes human teams effective. An analyst clarifies requirements, an architect chooses a design, a developer implements, a reviewer gates the result. Each role has its own focus and its own constraints, and the work moves through them in a way that leaves a clean trail behind it.
+AI coding agents produce code at a rate human review does not naturally keep up with. Without structure, that work is hard to audit, hard to course-correct, and hard to hand off across people or sessions. AEH addresses that by giving the work an engineering shape -- the same separation of concerns that makes human teams effective. An analyst clarifies requirements, an architect chooses a design, a developer implements, a reviewer gates the result. Each role has its own focus and its own constraints, and the work moves through them in a way that produces the complete documentation of a specification-first-driven software project reliably and consistently.
 
 The outcome is that AI work becomes governable. You can stop it, resume it, audit it, hand it off, and trust that the parts you have not personally watched were nonetheless reviewed.
 
 ## Inner mechanics
 
-The discipline AEH installs is an engineering pattern mature teams will recognise:
+The discipline AEH installs is an engineering pattern experienced teams will recognise:
 
-- **Spec-first.** Every change starts with a written proposal: requirements, scope, acceptance criteria. The proposal is the single instruction set for everything downstream -- it briefs the architect, anchors the developer, and is the reviewer's checklist. **The rigour of the proposal is the quality of every downstream handoff.** A vague proposal produces a sloppy review; a precise one produces decisive gating.
+- **Spec-first.** Every change starts with a written proposal: requirements, scope, acceptance criteria. The proposal is the single instruction set for everything downstream -- it briefs the architect, anchors the developer, and is the reviewer's checklist.
 - **Specifications managed as artefacts.** AEH uses [OpenSpec](https://openspec.dev/) as the substrate -- specifications live as markdown files alongside code, change proposals are directories under version control, completed proposals archive into a dated history. No service to run; CLI agents read and write the files directly.
 - **Closed-loop quality gating.** Each role's output is checked against the proposal before the next role takes it forward. The reviewer's spec-traceability check is structural, not advisory: code without a governing change proposal does not pass.
 - **Test-driven implementation.** Developers write the test before the change, watch it fail, write the change, watch it pass. Standard TDD; AEH's contribution is enforcing that the test references the spec it validates.
@@ -36,7 +48,9 @@ The discipline AEH installs is an engineering pattern mature teams will recognis
 - **Restartable persistent state.** Every persistent fact lives in committed files. Kill any session at any time; the next picks up cleanly. Switch machines, change models, take a break, come back.
 - **Evolve-the-system.** When a review finds something critical, the correction adds a guardrail (a test surface, a reviewer check, a convention) so the same class of issue does not recur. Each fix tightens the system rather than just patching a symptom.
 
-The shapes are not novel. What AEH brings is a known-good default arrangement of them, ready to drive a real change end-to-end on day one, that you mold to your team's specifics through project overlays.
+AEH ships a known-good default arrangement of these patterns, ready to drive a real change end-to-end on day one, molded to your team's specifics through project overlays.
+
+**On the relationship to Jira and agile workflows.** OpenSpec terminology overlaps cleanly with what most teams already use: a change proposal maps to an epic, the tasks file maps to subtasks, the change slug maps to the ticket id, the reviewer's PASS / WARN / FAIL / BLOCK maps to workflow transitions, and the archive directory maps to the "done" status. What OpenSpec does not do, and is not trying to: sprint planning, velocity tracking, stakeholder visibility for non-engineers, time tracking, cross-team dependency coordination. Those remain Jira's strengths. The reason filesystem-and-version-control suits an agentic-coding-dominant workflow is that agents read and write the spec directly, with no API auth surface inside the agent runtime, and the spec diffs alongside the code in the same PR. If you bring Jira in, the natural integration points are: use the Jira ticket id as the change slug, sync at proposal-open and archive-close, optionally mirror verdicts to workflow transitions. Critically, integrating Jira does not mechanically change the AEH workflow -- proposal.md remains the single instruction set, agents still read it from disk, and the Jira layer is metadata for stakeholder visibility, not a source-of-truth migration.
 
 ## The roles
 
@@ -60,14 +74,18 @@ The coordinating roles:
 
 The standard engineering loop is **Analyst -> Architect -> Developer -> Reviewer**, with the Archaeologist running upstream on existing codebases and the Strategist available externally when you want a higher-level conversation. Each prompt names its role and its governing spec. Each role's report carries a verdict -- **PASS / WARN / FAIL / BLOCK** -- with evidence, written to files. The Orchestrator reads the report, decides the next move (advance to the next role, generate a correction prompt, escalate to the operator), and writes the next prompt. Verdicts and reasoning are auditable after the fact because the reports and decisions are committed alongside the code they govern. Humans can review, other agents can review, future sessions can replay. Nothing important is in chat alone.
 
-Two sessions, two scopes. The harness session manages the pipeline (state, prompts, cadence, chain composition). Your project's own session executes the prompts and modifies the code. Most teams keep them separate because the separation gives a clean audit trail and predictable permission boundaries; some collapse them and that works too if the audit trail is not a priority. The default keeps them separate; the choice is yours.
+<p align="center">
+  <img src="docs/Images/Screenshot%202026-05-04%20at%2015.04.52.png" alt="The prompt-execution loop: the orchestrator issues a mandate, the agent executes against the workspace (text, code, files), returns a report, and the orchestrator decides whether to correct and iterate or advance." width="720">
+</p>
+
+Two sessions, two scopes. The harness session manages the pipeline (state, prompts, cadence, chain composition). Your project's own session executes the prompts and modifies the code. Most teams keep them separate for the audit trail and predictable permission boundaries; collapsing them works too where the audit trail is not a priority. The default keeps them separate.
 
 ## Operation modes
 
-A spectrum, not a binary. Three named points along it:
+Three modes along a spectrum:
 
 - **Conversational.** You dialogue with any role mid-session for investigations, decisions, and document edits before anything commits. Useful for exploring a domain, debating a design choice, or refining a proposal interactively before dispatch.
-- **Operator-paced.** You read each generated prompt, paste it into the role's session, watch the result, then decide the next move. The orchestrator drives the pipeline but the operator approves each step. Default for sensitive or first-of-its-kind work.
+- **Operator-paced.** You read each generated prompt, paste it into the role's session, watch the result, then decide the next move. This is where review happens -- you can dialogue with the role on the prompt before pasting, edit the prompt file directly, or amend it after a partial run. The orchestrator drives the pipeline but the operator approves and shapes each step. Default for sensitive or first-of-its-kind work.
 - **Autonomous chained.** A wrapper invokes prompts back-to-back with halt conditions. You step away. The chain handles implementation, test runs, and end-to-end browser-based testing where the project requires it. On clean completion you get a morning-readable summary; on halt the wrapper writes a diagnostic the orchestrator picks up next session. Default for established patterns where the discipline is proven.
 
 The choice is per-change, per-phase, per-project. Mix freely.
@@ -90,13 +108,27 @@ Either way, the on-ramp is incremental. You can pause between any two stages whi
 | Domain deepening | Extract baseline specs + tune roles to your domain (skip on greenfield) | 1 session |
 | Steady state | Every change flows through the pipeline | Ongoing |
 
-Onboarding is also where you mold the harness to your project. The persona overlays carry your team's conventions, your hard boundaries (security, regulatory, performance), and your domain knowledge. The base templates ship as a known-good default; the overlays are where the harness adapts to how you actually work.
+Onboarding is where you lay the foundation and start molding the harness to your project. The persona overlays carry your team's conventions, your hard boundaries (security, regulatory, performance), and your domain knowledge. The base templates ship as a known-good default; the overlays are where the harness adapts to how you actually work.
 
 ## Required infrastructure
 
-AEH governs the work; it does not isolate it. An agent running with permission to edit your code, run tests, push commits, and call external APIs is operationally serious. Run agents in dedicated, isolated, ephemeral development sandboxes (dev-containers, throwaway VMs, scoped Docker contexts) where the blast radius of an unexpected agent action is bounded.
+AEH governs the work, and while it adds instruction guardrails into the persona definitions to keep every agentic role inside their lane, it does not protect you from your AI taking rogue actions that are within reach of your coding agent and can cause harm. It is your job to create a safe agentic coding environment. If you are a seasoned technologist, you will know exactly what this means. If you kinda know but don't have the muscle memory to set up a safe development environment, ask your AI to help you, or ask a human who does know and is willing to help. Briefly: if you get what the following means, do it first; if not, find help to guide you.
+
+An agent running with permission to edit your code, run tests, push commits, and call external APIs is operationally serious. Run agents in dedicated, isolated, ephemeral development sandboxes (dev-containers, throwaway VMs, scoped Docker contexts) where the blast radius of an unexpected agent action is bounded.
 
 This is not part of AEH. It is one of several control-in-depth layers AEH assumes you have independently. AEH provides governance, traceability, and review discipline; sandboxing provides the safety boundary; your CI/CD provides the deploy gate; your secrets management provides credential isolation. You want all of them.
+
+## Prerequisites
+
+Have these in place before running `claude` and `onboard`:
+
+- **A coding-agent runtime.** Claude Code (or an equivalent LLM coding-agent CLI) installed and authenticated.
+- **Source-control access.** Git installed locally; access credentials for your remote -- GitHub, GitLab, Bitbucket, or self-hosted -- via SSH key or personal access token, depending on your setup.
+- **A context7 API key.** Register at [context7.com](https://context7.com/) and have the key available for AEH to wire into the agent's MCP configuration during onboarding. Free tier is sufficient for most projects.
+- **OpenSpec.** No key required. AEH scaffolds the directory structure during onboarding; OpenSpec is filesystem-only.
+- **Optional, project-specific.** Database access, deploy targets, secret stores, ticketing systems -- these live in your project's normal environment, not in AEH onboarding.
+
+A deeper environment-setup and first-onboarding guide is on the roadmap; for now this list is the orientation.
 
 ## Quick start
 
@@ -108,18 +140,26 @@ claude
 
 Then say `onboard /path/to/your/project`. The harness reads your project, runs the assessment, produces the ranked report, generates a transformation plan, and scaffolds the agentic structure. The assessment is read-only; nothing in your project changes without your explicit consent.
 
-## What AEH is not
+## Where things live
 
-- Not a framework or library -- no install, no dependencies, no build step
-- Not language- or stack-specific -- base templates are project-agnostic; overlays carry the specifics
-- Not an implementation tool -- it produces the configuration, documentation, and prompts that drive implementation
-- Not Claude-exclusive -- currently developed with Claude Code; the persona templates work with any LLM-based coding agent
-- Not a SaaS product -- open source, AGPL-3.0, side project
+### In your project (after AEH onboarding)
 
-## Pointers to deeper docs
+- `CLAUDE.md` -- Claude-Code-specific instructions for your project's session
+- `AGENTS.md` -- cross-tool agent config (read by other coding-agent runtimes too)
+- `docs/AE/personas/<role>.md` -- your project-specific overlays for each role; encode conventions, hard boundaries, domain knowledge
+- `docs/AE/prompts/` -- the handover point: AEH writes prompts here, your project's session reads and executes them
+- `docs/AE/reports/` -- target-side reports (verdicts, halt reports, retrospectives)
+- `docs/AE/reviews/` -- reviewer outputs
+- `openspec/project.md` -- project conventions (slug naming, status vocabulary)
+- `openspec/specs/baseline-*.md` -- verified ground truth from the Archaeologist
+- `openspec/specs/<id>.md` -- stable specs (archived from completed change proposals)
+- `openspec/changes/<slug>/` -- active change proposals (proposal.md, design.md, tasks.md, specs/)
+- `openspec/changes/archive/<YYYY-MM>/<slug>/` -- completed change proposals, dated history
+
+### In this harness repo
 
 - `CLAUDE.md` -- harness session instructions
-- `templates/personas/` -- base role templates
+- `templates/personas/` -- base role templates (engineering + coordinating)
 - `templates/governance/` -- assessment checklist + reviewer quality rubric
 - `templates/playbooks/` -- onboarding, health, tool configuration
 - `targets/index.md` -- registry of projects under AEH governance
