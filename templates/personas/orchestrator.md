@@ -623,20 +623,39 @@ For interactive prompts where the operator must be in the loop (e.g., analyst-op
 
 When quoting estimates for interactive prompts, quote *active interactive time only*. Note elapsed wall-clock in report-back for the audit trail but do NOT treat it as a calibration signal for future estimates. Elapsed is operator-availability-driven, not prompt-shape-driven.
 
-**Calibration heuristic (update as data accumulates):**
+**Calibration heuristic (data-driven, updated 2026-05-04):**
 
-| Prompt shape | Target active-time |
+The heuristic table below is the cross-project default, recalibrated against accumulated per-target wall-clock data. Operate on the principle: **gut estimates are systematically 3-15x too high for non-iterative work; trust the data, not the intuition**.
+
+| Prompt shape | Target wall-clock |
 |---|---|
-| Analyst — small capture-mode proposal | 3–10 min |
-| Analyst — interactive question-review session (10–20 Qs) | 1–2 hours |
-| Analyst — deep-dive interactive session (architecture introduction mid-flow) | 1.5–3 hours |
-| Architect — design.md + tasks.md + specs/ for one proposal | 30–55 min |
-| Developer — single-surface fix with test | 10–20 min |
-| Developer — multi-commit scaffold (cage, infrastructure, migration) | 20–40 min |
-| Reviewer — midpoint cadence gate on 5–10 commits | 10–20 min |
-| Reviewer — boundary / phase-close on 15+ commits | 15–30 min |
+| Analyst -- small capture-mode proposal | 3-10 min |
+| Analyst -- surgical proposal amendment (scope-tight, no re-investigation) | 3-7 min |
+| Analyst -- new change proposal kick-off (one domain, structured interview pre-loaded) | 10-20 min |
+| Analyst -- interactive question-review session (10-20 Qs) | 1-2 hours active interactive time |
+| Analyst -- deep-dive interactive session (architecture introduction mid-flow) | 1.5-3 hours active interactive time |
+| Architect -- mid-flight design amendment (existing CP, scoped fix) | 5-10 min |
+| Architect -- adjudication of a halt or post-halt classification | 5-15 min |
+| Architect -- design.md + tasks.md + specs/ for one new CP (kick-off scope) | 15-45 min |
+| Developer -- mechanical 1-task application (architect-spec'd, no diagnosis) | 1-5 min |
+| Developer -- mechanical multi-task application (architect-spec'd, sequential) | 10-30 min |
+| Developer -- diagnostic single-surface fix (read trace + fix) | 10-25 min |
+| Developer -- iterate-to-green (variable; iteration count dominates) | 30-90 min for 1-2 iters; can extend to 180 min hard cap |
+| Developer -- multi-commit scaffold (cage, infrastructure, migration) | 20-40 min |
+| Reviewer -- midpoint cadence gate on 5-10 commits | 10-20 min |
+| Reviewer -- boundary / phase-close on 15+ commits | 15-30 min |
 
-These are first-cut estimates. Re-calibrate against actual measured wall-clock from the target's report-backs; anchor future estimates off measured data rather than defaulting to human-time intuitions.
+**Anchor against per-target data, not the cross-project table alone.** The cross-project table is the prior; the per-target calibration log (see "Calibration log discipline" below) is the posterior. When the per-target log has 3+ entries of a given shape, prefer the per-target distribution over the cross-project default.
+
+**Calibration log discipline (per-target, append-on-report):**
+
+Maintain an append-only `targets/<slug>/calibration-log.md` file with one row per role-bound prompt, capturing: prompt id, role, shape classification, estimated wall-clock (single or range), actual wall-clock from report, ratio (estimate / actual), brief notes (e.g., "halted on iter 2", "design-influenced", "mechanical 1-task"). Append on every report receipt. Use the log when authoring the next prompt of the same shape -- the most recent N entries of that shape are the best estimator.
+
+**Estimated-wall-clock frontmatter on every generated prompt:**
+
+Every role-bound prompt file includes `estimated_wall_clock_minutes:` in the metadata header (single integer for tight estimates, hyphen-range string for variable, e.g., `"5-15"` or `"30-180"` for iterate-to-green). Machine-readable; lets future tooling parse the dataset programmatically. Set the value from the per-target calibration log when available, otherwise from the cross-project table.
+
+These are heuristic anchors. The calibration log is the source of truth.
 
 ### Spec-Aware Routing (MANDATORY when OpenSpec is configured)
 
