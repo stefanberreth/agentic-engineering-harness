@@ -1,6 +1,6 @@
-<p align="center">
-  <img src="https://gitlab.com/stefanberreth/agentic-engineering-harness/-/raw/main/docs/Images/AEH-Round.png" alt="AEH" width="120">
-</p>
+<div align="center">
+<img src="https://gitlab.com/stefanberreth/agentic-engineering-harness/-/raw/main/docs/Images/AEH-Round.png" alt="AEH" width="120">
+</div>
 
 # AEH -- Agentic Engineering Governance Harness
 
@@ -12,9 +12,9 @@
 
 AEH is a governance harness for software work driven by AI coding agents. It puts the work inside an engineering shape -- separated roles, spec-first changes, closed-loop quality gates, explicit handoffs -- so the work stays auditable, restartable, and amendable across sessions, days, and teammates.
 
-<p align="center">
-  <img src="https://gitlab.com/stefanberreth/agentic-engineering-harness/-/raw/main/docs/Images/Screenshot%202026-05-04%20at%2015.04.37.png" alt="AEH role architecture: an operator works through the orchestrator, which routes work to analyst, architect, developer, and reviewer; the team produces specifications and code that compose the final product." width="780">
-</p>
+<div align="center">
+<img src="https://gitlab.com/stefanberreth/agentic-engineering-harness/-/raw/main/docs/Images/Screenshot%202026-05-04%20at%2015.04.37.png" alt="AEH role architecture: an operator works through the orchestrator, which routes work to analyst, architect, developer, and reviewer; the team produces specifications and code that compose the final product." width="780">
+</div>
 
 ## Who is this for?
 
@@ -38,9 +38,9 @@ AI coding agents produce code at a rate human review does not naturally keep up 
 
 The outcome is that AI work becomes governable. You can stop it, resume it, audit it, hand it off, and trust that the parts you have not personally watched were nonetheless reviewed.
 
-<p align="center">
-  <img src="https://gitlab.com/stefanberreth/agentic-engineering-harness/-/raw/main/docs/Images/Screenshot%202026-05-04%20at%2015.12.55.png" alt="End-to-end flow: an operator drives the agentic engineering harness, which produces source changes that flow through GitLab (revision control and CI/CD) into deployment and documentation publishing, ending in a live product and a stakeholder-readable docs portal." width="780">
-</p>
+<div align="center">
+<img src="https://gitlab.com/stefanberreth/agentic-engineering-harness/-/raw/main/docs/Images/Screenshot%202026-05-04%20at%2015.12.55.png" alt="End-to-end flow: an operator drives the agentic engineering harness, which produces source changes that flow through GitLab (revision control and CI/CD) into deployment and documentation publishing, ending in a live product and a stakeholder-readable docs portal." width="780">
+</div>
 
 ## Inner mechanics
 
@@ -80,9 +80,9 @@ The coordinating roles:
 
 The standard engineering loop is **Analyst -> Architect -> Developer -> Reviewer**, with the Archaeologist running upstream on existing codebases and the Strategist available externally when you want a higher-level conversation. Each prompt names its role and its governing spec. Each role's report carries a verdict -- **PASS / WARN / FAIL / BLOCK** -- with evidence, written to files. The Orchestrator reads the report, decides the next move (advance to the next role, generate a correction prompt, escalate to the operator), and writes the next prompt. Verdicts and reasoning are auditable after the fact because the reports and decisions are committed alongside the code they govern. Humans can review, other agents can review, future sessions can replay. Nothing important is in chat alone.
 
-<p align="center">
-  <img src="https://gitlab.com/stefanberreth/agentic-engineering-harness/-/raw/main/docs/Images/Screenshot%202026-05-04%20at%2015.04.52.png" alt="The prompt-execution loop: the orchestrator issues a mandate, the agent executes against the workspace (text, code, files), returns a report, and the orchestrator decides whether to correct and iterate or advance." width="720">
-</p>
+<div align="center">
+<img src="https://gitlab.com/stefanberreth/agentic-engineering-harness/-/raw/main/docs/Images/Screenshot%202026-05-04%20at%2015.04.52.png" alt="The prompt-execution loop: the orchestrator issues a mandate, the agent executes against the workspace (text, code, files), returns a report, and the orchestrator decides whether to correct and iterate or advance." width="720">
+</div>
 
 Two sessions, two scopes. The harness session manages the pipeline (state, prompts, cadence, chain composition). Your project's own session executes the prompts and modifies the code. Most teams keep them separate for the audit trail and predictable permission boundaries; collapsing them works too where the audit trail is not a priority. The default keeps them separate.
 
