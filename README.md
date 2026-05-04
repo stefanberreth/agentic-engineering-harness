@@ -36,6 +36,10 @@ AI coding agents produce code at a rate human review does not naturally keep up 
 
 The outcome is that AI work becomes governable. You can stop it, resume it, audit it, hand it off, and trust that the parts you have not personally watched were nonetheless reviewed.
 
+<p align="center">
+  <img src="docs/Images/Screenshot%202026-05-04%20at%2015.12.55.png" alt="End-to-end flow: an operator drives the agentic engineering harness, which produces source changes that flow through GitLab (revision control and CI/CD) into deployment and documentation publishing, ending in a live product and a stakeholder-readable docs portal." width="780">
+</p>
+
 ## Inner mechanics
 
 The discipline AEH installs is an engineering pattern experienced teams will recognise:
@@ -164,6 +168,27 @@ Then say `onboard /path/to/your/project`. The harness reads your project, runs t
 - `templates/playbooks/` -- onboarding, health, tool configuration
 - `targets/index.md` -- registry of projects under AEH governance
 - `docs/` -- reference material, talk transcript, deeper specs
+
+## Documentation portal (optional but recommended)
+
+The structured markdown AEH produces -- change proposals, design docs, reports, reviews, ADRs, persona overlays, baseline specifications -- is naturally suited to a static documentation portal. The recommended setup uses [MkDocs](https://www.mkdocs.org/) with the [Material theme](https://squidfunk.github.io/mkdocs-material/), built on every push and published via your project's CI/CD pipeline.
+
+What you get: a navigable, searchable, stakeholder-readable portal of the project's specifications, design decisions, review history, and policy documents -- generated from the same files agents read and write during normal work. No duplication of effort; the portal is a rendered view of the source-of-truth files in the repo.
+
+What it requires:
+
+- Python 3.x with `mkdocs` and `mkdocs-material` (`pip install mkdocs mkdocs-material`)
+- An `mkdocs.yml` configuration at the repo root, with the navigation tree mapped to your `docs/` and `openspec/` directories
+- A CI/CD job that runs `mkdocs build` on every push to main and publishes the output to your hosting target
+- Optional: plugins for mermaid diagrams, broken-link checking, and a build-time mirror of `openspec/specs/` and `openspec/changes/archive/` into `docs/` so the portal renders specifications and historical change proposals alongside the rest of the docs tree
+
+Where it becomes available:
+
+- **GitLab Pages**: `https://<group>.gitlab.io/<project>/` once the CI job's `pages` artifact lands. Custom domain via DNS CNAME.
+- **GitHub Pages**: `https://<user>.github.io/<project>/` via a GitHub Actions workflow that builds and publishes.
+- **Self-hosted**: any static-site host (S3 + CloudFront, Netlify, Cloudflare Pages, your own nginx) -- `mkdocs build` produces a `site/` directory of plain HTML.
+
+This is not part of AEH itself; AEH does not currently scaffold the MkDocs setup. It is the recommended publishing layer on top of the structured documentation AEH already produces -- a practical way to give stakeholders, future engineers, and review participants a polished view of "what does this project look like as a system" without spelunking through git.
 
 ## Inspiration
 
