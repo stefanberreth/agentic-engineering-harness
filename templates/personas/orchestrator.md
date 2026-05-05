@@ -274,7 +274,7 @@ Distinct from the single-prompt autonomous loop above. A **multi-prompt chain** 
 - Non-zero exit from any prompt's `claude --print` invocation → halt + summary.
 - Zero commits landed from a prompt that should have produced commits → halt (prompt didn't do anything; further prompts will waste budget).
 - Reviewer verdict ≠ PASS/WARN (when a reviewer prompt is in the chain) → halt.
-- `CHAIN_HALT` sentinel emitted by any prompt's body → halt.
+- `<<<CHAIN_HALT>>>` sentinel emitted by any prompt's body → halt. **Sentinel form is the delimited triple-bracketed string** (not bare `CHAIN_HALT`), to prevent wrapper-grep false positives where the prompt body itself describes halt protocol using the literal string -- the bare `CHAIN_HALT` form will appear in any prompt's instruction text, and a wrapper grepping for it will false-positive halt even when no actual emission occurred (this bit a real chain on 2026-05-04). The wrapper grep pattern is `grep -F "<<<CHAIN_HALT>>>"`. Existing chains using the bare form remain functional only if the prompt body never references the literal string in instructions; new chains use the delimited form unconditionally.
 - Mtime idle >15 min on the current session's JSONL log → kill + halt (silent hang).
 - Wall-clock cap exceeded (typical: 4h for a 4-prompt chain; 6h for heavier chains) → kill + halt.
 - Scope-guard violation (commits touching files outside the current prompt's change slug) → halt with a clear diagnostic.
