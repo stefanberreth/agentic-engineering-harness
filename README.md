@@ -10,7 +10,7 @@
 
 ## What is this?
 
-AEH is a governance harness for professional software work. It is driven by AI coding agents and requires competent leadership, management and "team member" guidance. It turns AI native prompting and results into the shape enterprise software delivery requires: separated roles, spec-first changes, closed-loop quality gates, explicit handoffs, etc., so the work stays auditable, restartable, and amendable across sessions, scope changes, and handoffs between humans and AI agents (or any combination thereof) without ambiguity and unmanaged risk.
+AEH is a governance harness for professional software work. It is powered by AI coding agents and driven by your own competent leadership, management and "team member" guidance and development. It turns AI native prompting and results into the shape enterprise software delivery requires: separated roles, spec-first changes, closed-loop quality gates, explicit handoffs, etc., so the work stays auditable, restartable, and amendable across sessions, scope changes, and handoffs between humans and AI agents (or any combination thereof) without ambiguity and unmanaged risk.
 
 The framework harness requires from you a solid understanding of both, enterprise software development lifecycle (SDLC) roles and processes, as well as the capability to lead, steer, course correct and develop engineering teams that live them to become meaningfully productive for you.
 
