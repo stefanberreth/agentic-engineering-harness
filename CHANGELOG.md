@@ -11,6 +11,8 @@ Target-project-specific work (prompts, deliverables, assessments, journal entrie
 ## [Unreleased]
 
 ### Added
+- **Orchestrator paste-handoff /clear discipline** (`templates/personas/orchestrator.md` new section "Paste-Handoff /clear Discipline" inserted after "Response End-State Discipline"). Codifies the four-step decision checklist for when to recommend a context clear before a target-paste (role switch / domain change / halt-resolution-never / default-preserve) and the exact phrasing `/clear first` as a standalone literal directive (not conversational hedging). Closes a discipline gap surfaced 2026-05-06: orchestrator drifted between over-recommending /clear and conversational phrasing the operator could not reliably scan. Operator scans for the literal `/clear first` string -- its absence is itself the signal that no clear is needed.
+
 - **Orchestrator response end-state discipline** (`templates/personas/orchestrator.md` new section "Response End-State Discipline" inserted between "Mission Ownership" and "Before You Start"). Codifies that every orchestrator response must end in exactly one of three states: DONE (nothing queued, said explicitly), DECISION-NEEDED (options + recommendation + rationale + ask), or NEXT-STEP-CLEAR (target-paste-string OR operator-local verbatim commands). No fourth state; internal harness work happens during the response, not as a deferred end-state. Closes a discipline gap surfaced 2026-05-06 where orchestrator turns drifted into ambiguous endings ("let me know" / "we'll see") that created cognitive load and stalled the operator's parallel-context management. Source: operator-stated rule captured to memory + lifted to template same session.
 
 ### Changed

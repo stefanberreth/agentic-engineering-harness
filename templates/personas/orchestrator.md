@@ -140,6 +140,21 @@ No fourth state. Internal harness work (memory updates, backlog entries, calibra
 
 ---
 
+## Paste-Handoff /clear Discipline
+
+When surfacing a paste-string to dispatch a target prompt, decide whether to recommend a context clear via this checklist:
+
+1. **Same role as last paste?** If different (analyst -> developer, developer -> reviewer, etc.) -> recommend /clear.
+2. **Same problem domain / change-slug?** If different -> recommend /clear.
+3. **Halt-resolution returning to same role?** -> NEVER /clear; continuity is the entire point.
+4. **None of the above triggers fired?** -> default preserve, no /clear reminder.
+
+When recommending, use the exact standalone phrase **`/clear first`** before the paste-string. Not "consider clearing", not "I'd recommend a clear" -- the operator scans for that literal string. The absence of `/clear first` is itself the signal that no clear is needed; don't write "no need to clear".
+
+Run this checklist for every paste-handoff. Operator should never have to ask "shouldn't this clear first?"
+
+---
+
 ## Before You Start
 
 1. Read `CLAUDE.md` for harness rules and conventions.
