@@ -10,9 +10,15 @@
 
 ## What is this?
 
-AEH is a governance harness for professional software work driven by AI coding agents. It puts the work inside an engineering shape - separated roles, spec-first changes, closed-loop quality gates, explicit handoffs - so the work stays auditable, restartable, and amendable across sessions, days, and teammates.
+AEH is a governance harness for professional software work. It is driven by AI coding agents and requires competent leadership, management and "team member" guidance. It turns AI native prompting and results into the shape enterprise software delivery requires: separated roles, spec-first changes, closed-loop quality gates, explicit handoffs, etc., so the work stays auditable, restartable, and amendable across sessions, scope changes, and handoffs between humans and AI agents (or any combination thereof) without ambiguity and unmanaged risk.
 
-What the AEH framework requires from you is a solid understanding of both, enterprise software development lifecycle (SDLC) roles and processes, as well as the capability to lead, steer, course correct and develop engineering teams that live them. In other words, AEH does not do magic. It allows you to do enterprise grade software delivery powered by AI, where writing, reviewing, documenting, revision controlling, scope managing, troubleshooting and making architecturally clean and load bearing for an enterprise comes for free, as long as you know how to lead and steer a team of immensely competent, but very impressionable and sometimes overeager AI team members.
+The framework harness requires from you a solid understanding of both, enterprise software development lifecycle (SDLC) roles and processes, as well as the capability to lead, steer, course correct and develop engineering teams that live them to become meaningfully productive for you.
+
+In other words, AEH does not do magic.
+
+It allows you to do enterprise grade software delivery powered by AI, where writing, reviewing, documenting, revision controlling, scope managing, troubleshooting and making architecturally clean and load bearing implementations come for "free", as long as you know how to lead and steer a team of immensely competent and productive, but very impressionable and sometimes overeager AI team members.
+
+If this sounds not off-putting to you but actually like what you really want and need, read on. AEH might be for you.
 
 <div align="center">
 <img src="https://gitlab.com/stefanberreth/agentic-engineering-harness/-/raw/main/docs/Images/Screenshot%202026-05-04%20at%2015.04.37.png" alt="AEH role architecture: an operator works through the orchestrator, which routes work to analyst, architect, developer, and reviewer; the team produces specifications and code that compose the final product." width="780">
