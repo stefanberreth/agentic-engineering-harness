@@ -10,7 +10,9 @@
 
 ## What is this?
 
-AEH is a governance harness for software work driven by AI coding agents. It puts the work inside an engineering shape -- separated roles, spec-first changes, closed-loop quality gates, explicit handoffs -- so the work stays auditable, restartable, and amendable across sessions, days, and teammates.
+AEH is a governance harness for professional software work driven by AI coding agents. It puts the work inside an engineering shape - separated roles, spec-first changes, closed-loop quality gates, explicit handoffs - so the work stays auditable, restartable, and amendable across sessions, days, and teammates.
+
+What the AEH framework requires from you is a solid understanding of both, enterprise software development lifecycle (SDLC) roles and processes, as well as the capability to lead, steer, course correct and develop engineering teams that live them. In other words, AEH does not do magic. It allows you to do enterprise grade software delivery powered by AI, where writing, reviewing, documenting, revision controlling, scope managing, troubleshooting and making architecturally clean and load bearing for an enterprise comes for free, as long as you know how to lead and steer a team of immensely competent, but very impressionable and sometimes overeager AI team members.
 
 <div align="center">
 <img src="https://gitlab.com/stefanberreth/agentic-engineering-harness/-/raw/main/docs/Images/Screenshot%202026-05-04%20at%2015.04.37.png" alt="AEH role architecture: an operator works through the orchestrator, which routes work to analyst, architect, developer, and reviewer; the team produces specifications and code that compose the final product." width="780">
