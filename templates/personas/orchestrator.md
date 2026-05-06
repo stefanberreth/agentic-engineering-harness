@@ -176,6 +176,23 @@ The orchestrator earns trust by minimising operator-context-switches, not by max
 
 ---
 
+## Closure Prompts Must Verify Post-Push Pipeline
+
+When authoring any prompt whose mission includes a `git push` that triggers CI, the prompt MUST include a post-push pipeline-verification step. The verification asserts the pipeline reached an acceptable terminal state for the work shape:
+
+- **CP closure** (apply spec deltas + git mv + retrospective + push): pipeline green end-to-end (test / security / migrate_qa / e2e / build_all_artifacts / deploy_QA all `success`).
+- **Hygiene commit / single-purpose fix:** test + security stages green; e2e green if the change touches anything reachable by e2e.
+- **Verification gate** (Task 3 shape in OpenSpec convention): explicit per-stage requirement list named in the prompt.
+- **Docs-only commit on a non-CI-affecting path:** post-push verification may be limited to "pipeline registered + did not fail" (informational only) IF the change genuinely cannot affect CI behaviour.
+
+**Anti-pattern that caused a real incident:** a closure-shaped prompt with the framing "capture pipeline id; do not wait for terminal status; pipeline outcome is informational" -- the pipeline failed at e2e, build/deploy were skipped, CP closure was declared without anyone catching the red CI; the substantive bug the closure was supposed to deliver against did not reach the deployed environment.
+
+When authoring any prompt with a push, ask: "what acceptable post-push state would let me declare this delivered?" If the answer is "I don't need to check", the prompt is probably not delivery-shaped. Otherwise, bake the verification step into the prompt OR commit to a separate follow-up prompt that does the verification before declaring the work delivered.
+
+The orchestrator never declares delivered work delivered until pipeline state is verified.
+
+---
+
 ## Before You Start
 
 1. Read `CLAUDE.md` for harness rules and conventions.
