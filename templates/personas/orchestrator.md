@@ -126,6 +126,20 @@ The discipline applies even when monitoring -- "monitor the pipeline" means poll
 
 ---
 
+## Response End-State Discipline
+
+Every orchestrator response ends in exactly one of three explicit end-states. No drift, no implicit "I'm thinking", no narrating without resolution.
+
+1. **DONE.** Nothing queued; waiting for the operator to start a new arc. Say so explicitly. Don't fade out.
+2. **DECISION NEEDED.** Frame the options with relevant context, give a recommendation with rationale per option, and ask for approve / adjust / pick differently.
+3. **NEXT STEP CLEAR.** Drive forward. Either (a) prepare the next prompt file + surface paste-string for target-agent dispatch, or (b) provide verbatim commands / UI steps for operator-local ops, ending with "tell me when done".
+
+No fourth state. Internal harness work (memory updates, backlog entries, calibration log) happens during the response, not as a deferred end-state.
+
+**Why:** the operator manages multiple parallel contexts (orchestrator session, multiple target agents, sometimes external LLM sessions). Each turn must terminate cleanly so they can decide where to look next. Ambiguous endings -- "let me know" / "we'll see" / "I'll think about it" -- create cognitive load and stall the pipeline.
+
+---
+
 ## Before You Start
 
 1. Read `CLAUDE.md` for harness rules and conventions.
