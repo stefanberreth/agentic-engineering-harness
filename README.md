@@ -26,7 +26,7 @@ If this sounds not off-putting to you but actually like what you really want and
 
 ## Who is this for?
 
-It is for operators and teams whose work has to meet **mature, enterprise-grade SDLC needs, principles, and requirements**: review gates that are not bypassable, change records you can audit a year later, regression safety on a long-lived codebase, division of concerns across roles that actually do different things, and the ability to pause and resume cleanly.
+It is for operators and teams whose work has to **meet mature, enterprise-grade SDLC principles and requirements**: review gates that are not bypassable, change records you can audit a year later, regression safety on a long-lived codebase, division of concerns across roles that actually do different things, and the ability to pause and resume cleanly.
 
 This is a different problem than what democratised AI app builders solve. That category -- single-shot AI tools that produce a working app from a prompt -- gives you a rapid path from idea to a running thing, accessible to non-engineers, and is the right shape when speed of first artefact is what matters. It is not the right shape when you are building software that has to be reviewed, regression-tested, audited, handed off across teammates, and operated under real-world stress for months or years. To anyone who has shipped serious software in a team, the difference is obvious. To anyone being told that AI magic now means you can fire your engineering function, it may need spelling out: the two are not the same job.
 
