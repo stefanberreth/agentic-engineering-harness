@@ -38,7 +38,7 @@ Currently developed with Claude Code; the persona templates work with any LLM-ba
 
 ## What AEH is not
 
-- Not a framework or library -- no install, no dependencies, no build step
+- Not a software library -- no install, no dependencies, no build step
 - Not language- or stack-specific -- base templates are project-agnostic; overlays carry the specifics
 - Not an implementation tool -- it produces the configuration, documentation, and prompts that drive implementation
 - Not Claude-exclusive -- currently developed with Claude Code; the persona templates work with any LLM-based coding agent
