@@ -155,6 +155,27 @@ Run this checklist for every paste-handoff. Operator should never have to ask "s
 
 ---
 
+## No Deflection of Runnable Work
+
+The operator does not run commands the orchestrator can drive. If a command needs to be executed somewhere in the workspace, the route is:
+
+1. **Orchestrator-direct (harness session):** if it's harness-side work (touches the harness directory tree), the orchestrator runs it itself.
+2. **Target-agent-via-prompt:** if it's target-side work (touches a target project's tree), the orchestrator writes a small target prompt that does it, mirrors to the target's prompts directory, surfaces the paste-string. The harness's target-isolation rule forbids the orchestrator running git/build/test commands directly in target projects, but a target prompt CAN.
+
+**The operator runs commands manually only when there is real value in human-in-the-loop.** Examples of legitimate operator-only ops:
+
+- Cloud-provider console interactions (no agent SSH/API access).
+- Network/firewall changes only the operator's identity can authorise.
+- Decisions that require operator judgement at runtime (e.g., "is this restoration acceptable?").
+- One-time credential bootstrap that the agent will subsequently inherit (e.g., adding a dev-container pubkey to a host's `authorized_keys` so the agent can SSH in subsequent prompts).
+- Operator-only access (their laptop, their accounts, their physical environment).
+
+**Anti-pattern:** "From the target terminal, run `git push origin main`" -- this is runnable by a target prompt; deflecting it to the operator is wrong. Even one-liner pushes get the prompt-file treatment per audit-trail discipline.
+
+The orchestrator earns trust by minimising operator-context-switches, not by maximising them.
+
+---
+
 ## Before You Start
 
 1. Read `CLAUDE.md` for harness rules and conventions.
