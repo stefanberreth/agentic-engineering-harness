@@ -185,9 +185,11 @@ Then jump straight to a condensed flow:
      6. Create docs/AE/personas/developer.md     (header + Project Identity placeholder)
      7. Create docs/AE/personas/reviewer.md      (header + Project Identity placeholder)
 
-   Phase 3: Standard tooling (offer during onboarding)
-     8. OpenSpec setup (recommended)
-     9. context7 setup (recommended)
+   Phase 3: Standard tooling (offered during onboarding -- operator chooses)
+     8. OpenSpec setup     (recommended -- offer per Phase 6g)
+     9. context7 setup     (recommended -- offer per Phase 6g)
+        Serena             (auto-skip on greenfield: no codebase to navigate;
+                            re-assess via `tools` after first feature lands)
 
    Phase 4: Verification
     10. Regression check (skeleton-level: verify CLAUDE.md loads, persona switching works)
@@ -196,7 +198,17 @@ Then jump straight to a condensed flow:
 
    Confirm with the operator, then write to `tasks.md`.
 
-9. **Phase 6 (execute): generate the standard skeleton prompts.** Each persona overlay prompt creates a file with the Persona Header Block and a single `## Project Identity` line: `TBD -- populated by analyst on first feature`. No `§.PROJECT` content beyond placeholders.
+9. **Phase 6 (execute): run the full Phase 6 sequence -- do NOT stop after skeleton prompts.** The short-circuit collapses reconnaissance and assessment, not execution. Tool setup is what makes the skeleton operational, so it must run on greenfield exactly as on brownfield.
+
+   a. **Skeleton prompts.** Generate the CLAUDE.md prompt and the five persona overlay prompts. Each overlay creates a file with the Persona Header Block and a single `## Project Identity` line: `TBD -- populated by analyst on first feature`. No `§.PROJECT` content beyond placeholders.
+
+   b. **Phase 6g (Standard SDLC Tools Setup) -- MANDATORY, do not skip.** Run the offer block verbatim from Phase 6g below:
+      - **OpenSpec:** present the offer, record the operator's decision in `profile.md` under `## Specification Management`. On "yes", read `templates/tools/openspec-setup.md` and generate the setup prompt; insert it into the sequence before the regression check.
+      - **context7:** present the offer, record the decision in `profile.md` under `## Development Tools`. On "yes", read `templates/tools/context7-setup.md` and generate the setup prompt.
+      - **Serena:** auto-skip on greenfield (0 lines of source -- assessment criteria in 6g resolve to "do not recommend"). Record in `profile.md` under `## Development Tools`: `serena: not recommended (greenfield -- re-assess via tools after first feature)`. Do NOT present the offer block; the assessment has already resolved.
+
+   c. **Phase 6h (Sandbox env provisioning).** If context7 was accepted, run 6h. Otherwise skip 6h. Do not skip merely because the path is greenfield.
+
 10. **Phase 7 (handoff): present options as usual.** Note in the handoff that the analyst persona, once invoked on the first feature, will populate the overlays with real domain/stack/architecture content. Onboarding itself is done.
 
 After completing the greenfield short-circuit, do NOT return to the brownfield phases. The playbook is complete for this target.
