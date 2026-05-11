@@ -111,6 +111,96 @@ Proceed to Phase 2.
 [2/7] Reconnaissance
 ```
 
+### 2.0 Greenfield Detection (run first)
+
+Before any deep reconnaissance, run a fast greenfield check. The target is **greenfield** if ALL of the following hold:
+
+- Zero source files (no files in `src/`, `lib/`, `app/`, language-specific roots, etc.; ignore `.git/`, `.gitignore`, `LICENSE`).
+- No package/build manifest (`package.json`, `pyproject.toml`, `Cargo.toml`, `go.mod`, `*.csproj`, `Makefile`, etc.), or a manifest that exists but declares no dependencies and no scripts.
+- No agent config (`CLAUDE.md`, `.claude/`, `agents.md`, `.mcp.json`).
+- No CI/CD config (`.github/`, `.gitlab-ci.yml`, `Jenkinsfile`).
+- Documentation is at most a default-template README from GitHub/GitLab/etc.
+
+If greenfield: declare it in one line and switch to the **Greenfield Short-Circuit** below. Do NOT proceed to 2a-2d, do NOT interview the operator about domain, stack, or team. The skeleton is generic; project content is filled in by the analyst persona on the first feature, not by this playbook.
+
+If brownfield (anything substantive exists): proceed to 2a normally.
+
+### Greenfield Short-Circuit
+
+Present a one-line declaration:
+
+```
+[2/7] Reconnaissance -- <project-name>
+
+Greenfield repository detected (empty or default-template-only).
+Skipping reconnaissance and assessment depth. Proceeding to skeleton generation.
+```
+
+Then jump straight to a condensed flow:
+
+1. **Skip 2a-2d entirely.** No structural snapshot, no existing-setup detection, no specialist-prompt collection. Re-offer specialist prompts after the skeleton is in place if the operator asks.
+2. **Skip Phase 3a (assessment checklist).** Every item is N/A on a greenfield. Write `targets/<slug>/assessment.md` with a single line: `Greenfield project. Assessment N/A until first feature.`
+3. **Skip Phase 3b (review criteria).** Nothing to review.
+4. **Skip Phase 3c (existing setup migration).** Nothing to migrate.
+5. **Skip Phase 3d (inconsistency report).** Nothing to be inconsistent with. Write `targets/<slug>/inconsistencies.md` with a single line: `Greenfield project. No inconsistencies.`
+6. **Run Phase 3e (create workspace).** Write `profile.md` with placeholder fields:
+
+   ```markdown
+   # Profile: <slug>
+
+   Path:   <absolute-path>
+   Slug:   <slug>
+   Status: greenfield -- AE skeleton onboarding
+
+   Stack:  TBD (populated by analyst on first feature)
+   Domain: TBD (populated by analyst on first feature)
+   Team:   TBD (operator confirms when relevant)
+
+   Prompt delivery policy: <ask the operator: direct | manual>
+
+   ## Specification Management
+   policy: TBD (offered in Phase 6 Standard SDLC Tools Setup)
+
+   ## Development Tools
+   context7: TBD
+   serena: TBD
+   ```
+
+   Ask only the prompt-delivery-policy question. Do NOT ask domain/stack/team questions -- those are explicitly out of scope for onboarding.
+
+7. **Skip Phase 4 (report).** There is nothing to report. Note in the journal that the target was onboarded as greenfield.
+8. **Phase 5 (plan): use the standard greenfield plan.** Identical for every greenfield target -- no per-project tailoring needed:
+
+   ```
+   Transformation plan: <project-name> (greenfield skeleton)
+
+   Phase 1: Foundation
+     1. Create target CLAUDE.md (session init + role selection + working rules)
+     2. Create docs/AE/ directory structure
+
+   Phase 2: Persona overlays (scaffolded with placeholders)
+     3. Create docs/AE/personas/archaeologist.md (header + Project Identity placeholder)
+     4. Create docs/AE/personas/analyst.md       (header + Project Identity placeholder)
+     5. Create docs/AE/personas/architect.md     (header + Project Identity placeholder)
+     6. Create docs/AE/personas/developer.md     (header + Project Identity placeholder)
+     7. Create docs/AE/personas/reviewer.md      (header + Project Identity placeholder)
+
+   Phase 3: Standard tooling (offer during onboarding)
+     8. OpenSpec setup (recommended)
+     9. context7 setup (recommended)
+
+   Phase 4: Verification
+    10. Regression check (skeleton-level: verify CLAUDE.md loads, persona switching works)
+    11. Retrospective
+   ```
+
+   Confirm with the operator, then write to `tasks.md`.
+
+9. **Phase 6 (execute): generate the standard skeleton prompts.** Each persona overlay prompt creates a file with the Persona Header Block and a single `## Project Identity` line: `TBD -- populated by analyst on first feature`. No `§.PROJECT` content beyond placeholders.
+10. **Phase 7 (handoff): present options as usual.** Note in the handoff that the analyst persona, once invoked on the first feature, will populate the overlays with real domain/stack/architecture content. Onboarding itself is done.
+
+After completing the greenfield short-circuit, do NOT return to the brownfield phases. The playbook is complete for this target.
+
 ### 2a. Structural Snapshot
 
 Read the following (where they exist) and note which are present/absent:
