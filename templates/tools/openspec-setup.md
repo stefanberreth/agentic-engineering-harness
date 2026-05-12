@@ -13,17 +13,13 @@ Specification-driven development. OpenSpec manages specs and change proposals as
 
 ---
 
-## MCP Server: When to Use It and When Not To
+## OpenSpec for Claude Code = a directory convention
 
-OpenSpec offers an MCP server (`openspec-mcp`) that exposes commands like `create_spec`, `propose_change`, and `list_specs` as MCP tools.
+For Claude Code (and any CLI agent with direct filesystem access), OpenSpec is fundamentally two directories plus a CLAUDE.md section. The agent reads/writes markdown in `openspec/specs/` and `openspec/changes/` directly. There is no daemon, no server, no required toolchain. Setup is complete when the directories exist and CLAUDE.md tells the agent the convention.
 
-**Do NOT set up the MCP server for CLI agents with filesystem access (Claude Code, Aider, etc.).** These agents can already read, write, and list files in `openspec/specs/` and `openspec/changes/` directly. The MCP server adds a brittle intermediary (npx startup, package resolution, process management) for zero functional gain. Spec files are markdown -- there is nothing the MCP server provides that `Read`, `Write`, and `Glob` don't already do better and more reliably.
+**Do NOT introduce Node, npm, npx, or the OpenSpec CLI as part of AEH setup.** They are not required and surfacing them confuses operators who reasonably ask "do I need to install Node for this?" The answer is no.
 
-**The MCP server is only appropriate when:**
-- The agent runs in a sandboxed environment without direct filesystem access (web UIs, hosted playgrounds)
-- The agent framework has no native file tools and relies entirely on MCP for all I/O
-
-If neither of these applies -- and for Claude Code they never do -- skip the MCP server entirely and set up OpenSpec as a directory convention only.
+The OpenSpec CLI (`npx openspec ...`) and the OpenSpec MCP server (`openspec-mcp`) exist for other use cases (sandboxed agents without filesystem access, CLI-based spec validation by humans). Neither is part of an AEH-driven Claude Code setup. If the operator later wants the CLI for their own reasons -- e.g. running `openspec validate` manually -- they can install Node then; that decision is independent of AEH onboarding.
 
 ---
 
@@ -39,15 +35,9 @@ openspec/
 └── changes/     # Change proposals
 ```
 
-### 2. Initialise OpenSpec (if the CLI is available)
+Add a `.gitkeep` to each so the directories are tracked before the first spec is written.
 
-```bash
-npx openspec init --tools claude
-```
-
-If the CLI is not available or the user prefers manual setup, the directory structure from step 1 is sufficient.
-
-### 3. Add OpenSpec subsection to CLAUDE.md
+### 2. Add OpenSpec subsection to CLAUDE.md
 
 Under the `## Development Tools` section (create the section if it doesn't exist), add:
 
@@ -56,21 +46,20 @@ Under the `## Development Tools` section (create the section if it doesn't exist
 
 Specification-driven development. Specs live in `openspec/specs/`, change proposals in `openspec/changes/`.
 
-Read spec files directly -- no MCP server needed. Create new specs by writing markdown files to the appropriate directory.
+Read spec files directly -- no MCP server, no CLI required. Create new specs by writing markdown files to the appropriate directory.
 
 Docs: https://openspec.dev/
 ```
 
-### 4. Add to `.gitignore` (if needed)
+### 3. Add to `.gitignore` (if needed)
 
 No `.gitignore` changes needed -- OpenSpec files are intended to be version-controlled.
 
 ---
 
-## MCP Server Setup (sandboxed environments only)
+## Appendix: MCP Server Setup (sandboxed environments only)
 
-> Only use this section if the target agent lacks direct filesystem access.
-> For Claude Code and other CLI agents, skip this entirely.
+> This appendix is NOT part of the AEH-generated setup prompt. It exists only for the rare case where the target agent has no filesystem access (hosted playgrounds, certain web UIs). For Claude Code and other CLI agents, do not include any of this in the generated prompt.
 
 Add the OpenSpec server entry to `.mcp.json`:
 
