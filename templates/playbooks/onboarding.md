@@ -469,11 +469,29 @@ Existing setup: <N> instruction sources detected
   (say "show migration" for details)
 ```
 
-**Ask the user:**
+### 4a. Scope boundary -- read before asking anything
 
-> Which severity levels do you want to address? (e.g. "critical and high", "all", "critical only")
+The inconsistency report is a set of *findings*, not an onboarding work list.
+**Onboarding (Phases 5-6) only ever stands up the AEH skeleton. It never fixes
+inconsistencies.** Fixing them touches application code, configuration, and
+non-AE docs -- that is downstream archaeologist and reviewer-implementer work,
+explicitly out of onboarding scope (see the Phase 6 scope boundary).
 
-Record their choice in `targets/<slug>/decisions.md`.
+Do NOT ask "which severity levels do you want to address" as a plan-scoping
+question. It implies the onboarding plan will address them; it will not. Asking
+it that way is a known derailment.
+
+Instead, state where the findings go:
+
+> The findings above are recorded in inconsistencies.md and review-history.md.
+> Onboarding does not fix them -- it stands up the AEH structure around the
+> project. The findings become a handoff artifact the archaeologist and the
+> reviewer-implementer loop consume later. Phase 7 is where you choose whether
+> to queue that remediation now or onboard only.
+
+No severity-scoped decision is recorded here. The Phase 7 option choice is the
+only scope decision, and it is recorded in `targets/<slug>/decisions.md` at
+that point.
 
 ---
 
@@ -483,35 +501,48 @@ Record their choice in `targets/<slug>/decisions.md`.
 [5/7] Plan
 ```
 
-Generate `targets/<slug>/transformation-plan.md` based on:
-- Assessment findings and user's chosen severity scope
-- Existing setup migration recommendations
-- Standard AE harness transformation phases
+**The onboarding plan is always the AEH harness skeleton -- nothing else.** It
+never contains inconsistency-remediation tasks and never carries severity tags
+(`[CRITICAL]`, `[HIGH]`): those issues touch application code, config, and
+non-AE docs, which is downstream archaeologist and reviewer-implementer work,
+not onboarding. The plan content is governed only by:
+- Whether the target is greenfield or brownfield
+- Existing setup migration recommendations (which existing role files merge
+  into which persona overlays)
+- The standard AEH harness setup phases
 
-Present the plan as a numbered task list:
+A brownfield plan differs from the greenfield plan only in that persona
+overlays merge existing instruction content instead of scaffolding bare
+placeholders. Present the plan as a numbered task list:
 
 ```
-Transformation plan: <project-name>
+Transformation plan: <project-name> (brownfield -- AEH skeleton only)
 
 Phase 1: Foundation
-  1. [CRITICAL] Create consolidated CLAUDE.md           ~1 prompt
-  2. [CRITICAL] Resolve contradictory instructions       ~1 prompt
+  1. Merge AE sections into CLAUDE.md (session init, role selection,
+     context mgmt) -- merge-and-confirm against existing file   ~1 prompt
+  2. Create docs/AE/ directory structure (personas/, prompts/)  ~1 prompt
+  3. Add AE entries to .gitignore                               (folded in)
 
-Phase 2: Personas (overlay scaffolding)
-  3. [HIGH] Scaffold docs/AE/personas/ with overlay files ~1 prompt
-  4. [HIGH] Populate overlays (merge existing content)    ~1-5 prompts
+Phase 2: Persona overlays (docs/AE/personas/)
+  4-8. archaeologist / analyst / architect / developer / reviewer
+       -- new where no equivalent exists; merge-and-refactor
+       where existing role files exist                          ~1-5 prompts
 
-Phase 3: Governance
-  5. [MEDIUM] Add assessment checklist                   ~1 prompt
-  6. [MEDIUM] Document branch strategy                   ~1 prompt
+Phase 3: Standard tooling (offered during execute -- operator chooses)
+  9-11. OpenSpec / context7 / Serena (per Phase 6g)             ~0-3 prompts
+
+Phase 4: Verification
+  12. Regression check (skeleton-level)                         ~1 prompt
+  13. Retrospective                                             ~1 prompt
 
 Total: <N> prompts
 ```
 
-Tasks based on existing setup migration should note the approach:
+A persona task that merges an existing role file should note the source:
 
 ```
-  3. [HIGH] Scaffold persona overlays (merge from CLAUDE.md > Dev Rules + AE base templates)
+  6. architect overlay (merge-and-refactor from roles/ARCHITECT_ROLE.md)
 ```
 
 **Ask the user:**

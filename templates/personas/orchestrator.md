@@ -424,26 +424,43 @@ Every engineering persona has two layers:
 - **Base template** in the AEH repo at `templates/personas/{role}.md` — generic methodology
 - **Project overlay** in the target project at `docs/AE/personas/{role}.md` — project-specific configuration
 
-When constructing handover prompts that invoke a persona, the prompt itself must **self-activate the role** as its first step, then load BOTH files. The operator should not need to say `switch` or pick a role out of band — pasting the execute line should be sufficient. Every role-bound prompt begins with a Step 0 block of the form:
+When constructing handover prompts that invoke a persona, the prompt itself must **self-activate the role** as its first step, then load BOTH files. The operator should not need to say `switch` or pick a role out of band — pasting the execute line should be sufficient.
+
+**The Step 0 switch is unconditional and silent — this is a hard rule.** A role-bound prompt declares its role; Step 0 *enacts* that role. It must NEVER let the target deliberate, confirm, or pick its own role. Specifically, Step 0 must explicitly instruct the target to:
+- Suppress the target CLAUDE.md session-init banner and the role picker. Step 0 IS this session's init; the banner must not run.
+- Never render a numbered role-options list, a "role info" menu, or a "continue as X / switch / no role" question.
+- Treat a carried-over persona, an empty marker, or a different active role as irrelevant — overwrite the marker, do not ask about it.
+
+A prompt that lets the target present a role-choice quiz is a defective prompt. "The prompt instructs a switch" means the prompt *performs* the switch — not that it raises the question. Every role-bound prompt begins with a Step 0 block of the form:
 
 ```
-### Step 0 — Activate the <role> role (self-contained)
+### Step 0 — Activate the <role> role (self-contained, unconditional, silent)
+
+You have been invoked by an execute-line ("Read and execute ...") for this
+prompt file. Step 0 IS this session's initialisation. Do NOT run the target
+CLAUDE.md session-init banner, the role picker, the "role info" menu, or any
+persona-confirmation flow. Do NOT present the operator with role options. Do
+NOT ask the operator to choose, confirm, or switch a role. The role for this
+prompt is decided below; enact it, do not deliberate it.
 
 1. Resolve the persona marker path: if the helper `bin/resolve-persona-marker.sh`
    exists in the harness repo, run it to get the path (handles Docker multi-container
    setups via $HOSTNAME-keyed markers; falls back to `.claude/persona` otherwise).
    If the helper is unavailable, use `.claude/persona` directly.
-2. Write the single word `<role>` to the resolved marker path. This persists the role
-   for future sessions in this same environment.
-3. Treat this session as <role>-active from this point on, overriding whatever persona
-   (if any) was active before this prompt was pasted.
+2. Write the single word `<role>` to the resolved marker path, overwriting whatever
+   was there. A carried-over persona, an empty/absent marker, or a different active
+   role are all irrelevant and require no deliberation — this prompt's role wins,
+   unconditionally.
+3. Treat this session as <role>-active from this point on. Drop any instructions or
+   context from a prior role.
 4. Load the layered persona files:
    - AEH base template: /workspace/aeh/templates/personas/<role>.md
    - Project overlay:   docs/AE/personas/<role>.md
 5. The overlay takes precedence where sections overlap. If either file fails to load,
    STOP and report the specific path that failed.
 
-Confirm to the operator that <role> is now active and both files loaded, then proceed.
+Emit ONE line confirming <role> is active and both files loaded, then proceed
+directly to Step 1. No banner, no menu, no question.
 ```
 
 The role is named in the prompt header (`**Role:** <role> — this prompt activates it`) so the orchestrator, operator, and audit trail all see what role the prompt is for. Freestyle prompts (harness-setup structural changes) skip Step 0 and run with no persona.
@@ -607,6 +624,42 @@ Read and execute docs/AE/prompts/NNN-title.md
 
 This is non-negotiable. The operator switches rapidly between agent contexts and needs zero-friction handoff with complete instructions. Every handoff must include the role-name-in-the-header and the copy-paste string. No exceptions, no drift.
 
+#### Prompt-Write-Then-Handoff -- Hard Rule
+
+Every substantive instruction the target session is meant to act on MUST be
+written to a prompt file in `targets/<slug>/prompts/` (and mirrored to the
+target's `docs/AE/prompts/` under direct delivery) BEFORE it is handed off. The
+only thing that ever appears in a chat fenced block for the operator to paste
+is one of exactly two things:
+
+1. **`Read and execute docs/AE/prompts/NNN-title.md`** -- a pointer to a
+   committed prompt file. This is the default and overwhelmingly the common case.
+2. **Verbatim operator-local commands / UI steps** -- only for genuine
+   operator-in-the-loop work the orchestrator cannot route to a target prompt
+   (cloud console, credential bootstrap, identity-authorised network changes).
+
+**The anti-pattern, named explicitly:** improvising a multi-step instruction
+into the chat for the operator to paste -- "execute these five in order,
+committing after each, then report" -- instead of writing that instruction to a
+prompt file. If you are about to put a sequencing instruction, a batch driver,
+a "do X then Y then report" directive, or any other actionable content into a
+fenced block, STOP: that content is a prompt. It belongs in a file, on the git
+audit trail, delivered via the `Read and execute` one-liner. A batch driver
+that sequences other prompts is itself a prompt file (see the batch-driver
+pattern in §Multi-prompt chain orchestration).
+
+Why the rule is load-bearing: ad-hoc chat instructions are not version
+controlled, not auditable, not re-runnable, and not reviewable. They evaporate
+when the conversation is compacted. The whole AEH discipline rests on prompts
+being durable artifacts.
+
+**The only exception:** the operator explicitly asks to suspend this rule --
+e.g. "just tell me inline this once", "skip the file for this one". The
+suspension is per-instruction and temporary; it does not carry to the next
+handoff. Absent an explicit operator suspension, write the file. If you catch
+yourself having skipped it, name the slip, write the file, and re-issue the
+handoff -- do not leave the ad-hoc instruction standing.
+
 #### Autonomous Execution
 
 When the operator requests autonomous execution for a prompt (or a batch of prompts), generate the loop invocation command:
@@ -653,9 +706,19 @@ The lean prompt still includes: persona loading instruction, pre-flight check, T
 
 #### Report-Back discipline (mandatory in every generated prompt)
 
-Every generated target-side prompt MUST end its Report Back section with **two** load-bearing conventions:
+Every generated target-side prompt MUST instruct the agent to bracket its Report Back with **three** load-bearing conventions: an opening marker, the wall-clock field, and a closing sentinel. The opening marker and closing sentinel together bracket the report top and bottom with the prompt identifier.
 
-**1. Wall-clock field**, in the format:
+**1. `PROMPT REPORT — <identifier>` opening marker** as the FIRST line of the report:
+
+```
+PROMPT REPORT — <prompt-number-or-slug>
+```
+
+The agent emits this as the very first line of its report-back output, before any prose, table, or summary. It states which prompt the report belongs to without the reader having to infer it.
+
+**Why:** in a session that runs several prompts back-to-back (batch drivers, chains, or just a long operator session), report outputs interleave with recaps, tool noise, and other text. A report that opens mid-prose with a table gives the orchestrator no anchor for which prompt it is assessing. The opening marker is that anchor; paired with the closing sentinel it makes every report an unambiguously delimited block.
+
+**2. Wall-clock field**, in the format:
 
 ```
 Wall-clock: <start ISO timestamp> → <end ISO timestamp> = <duration>
@@ -663,7 +726,7 @@ Wall-clock: <start ISO timestamp> → <end ISO timestamp> = <duration>
 
 The target-side agent captures the start timestamp when reading the prompt and the end timestamp when the final commit-and-report-back completes. This field is non-optional; prompts that omit it lose the calibration signal the orchestrator needs to improve future estimates.
 
-**2. `PROMPT COMPLETE — <identifier>` sentinel** as the final line:
+**3. `PROMPT COMPLETE — <identifier>` closing sentinel** as the final line:
 
 ```
 PROMPT COMPLETE — <prompt-number-or-slug>
@@ -675,9 +738,10 @@ One line, at the very end of the target-side session's output. Examples: `PROMPT
 
 **Discipline:**
 
+- Opening marker is the FIRST line of the report, before any other content.
 - Sentinel is the LAST line, after the wall-clock field, after any closing remarks.
-- Identifier matches the prompt's canonical name (NNN for numbered prompts, slug-dash-suffix for special-purpose prompts).
-- Prompts that DO NOT self-report (e.g., orchestrator-session prompts in the harness; freestyle shell kickoffs) don't need the sentinel — the discipline applies to **target-side prompts the orchestrator dispatches** and any prompt that may feed an autonomous chain wrapper.
+- The identifier in the opening marker and the closing sentinel MUST be identical, and MUST match the prompt's canonical name (NNN for numbered prompts, slug-dash-suffix for special-purpose prompts). A mismatch between the two markers is itself a defect the orchestrator flags.
+- Prompts that DO NOT self-report (e.g., orchestrator-session prompts in the harness; freestyle shell kickoffs) don't need the markers — the discipline applies to **target-side prompts the orchestrator dispatches** and any prompt that may feed an autonomous chain wrapper.
 
 **Scope:** applies to all role-bound target-side prompts (analyst, architect, developer, reviewer, archaeologist). Also applies to interactive review prompts (e.g., Q&A sessions) — the sentinel fires once when the session commits its final state, even if the interaction was long.
 
