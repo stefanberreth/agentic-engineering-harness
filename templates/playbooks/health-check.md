@@ -202,6 +202,21 @@ Check the target project's agent permission configuration for drift, sprawl, and
 
 Report findings for inclusion in the delta report (Phase 4) under the Spec Health section.
 
+### 3l. Role Activation Check
+
+Verify that the layered-persona loading mechanism is intact -- a target-side role must be able to load both its base template and its overlay from within the target tree.
+
+1. **Base templates present:** Check that `docs/AE/personas/_base/` exists and contains the role base templates (archaeologist, analyst, architect, developer, reviewer). Flag any missing base template.
+2. **Overlay headers point target-side:** For each overlay in `docs/AE/personas/`, read the `AEH Base:` header line. It must point at the target-side path `docs/AE/personas/_base/<role>.md`. Flag any overlay whose header points at a harness path (`templates/personas/...`) or any other path outside the target tree.
+3. **Loadability:** If the base directory exists with all role templates present and every overlay header points target-side, role activation is loadable. Otherwise flag the drift.
+
+| Check | Status | Finding |
+|-------|--------|---------|
+| `docs/AE/personas/_base/` present with role templates | pass/FAIL | [N] base templates missing |
+| Overlay headers point at `docs/AE/personas/_base/<role>.md` | pass/FAIL | [N] overlays point at a harness path |
+
+Report findings as role-activation items in the delta report (Phase 4).
+
 ---
 
 ## Phase 4: Delta Report
@@ -223,6 +238,7 @@ Compare the fresh assessment against the baseline. Categorise every finding:
 | **Permission drift** | Permission config degraded, accumulated sprawl, or new security issues |
 | **Instruction leak** | New role-like content appeared outside AE structure |
 | **Spec drift** | OpenSpec specs are stale, orphaned, incomplete, or missing frontmatter |
+| **Role activation drift** | Base templates missing from `docs/AE/personas/_base/`, or overlay headers pointing at a harness path |
 | **Structural hygiene** | Filesystem clutter, agent detritus, directory disorganisation (independent of baseline) |
 
 ### Report Format
@@ -248,6 +264,7 @@ Write to `targets/<slug>/health-check-<YYYY-MM-DD>.md`:
 | Permission drift | <N> |
 | Instruction leaks | <N> |
 | Spec drift | <N> |
+| Role activation drift | <N> |
 | Structural hygiene | <N> |
 
 ## New Issues
@@ -293,6 +310,15 @@ _(Only present when OpenSpec is configured. Omit this section if `openspec/specs
 | Stale specs | pass/WARN | [N] active specs with updated >90 days ago |
 | Abandoned proposals | pass/WARN | [N] proposals missing design.md or tasks.md |
 | Spec-code drift | pass/WARN | [N] specs describe features not found in code |
+
+## Role Activation
+
+| Check | Status | Finding |
+|-------|--------|---------|
+| `docs/AE/personas/_base/` present with role templates | pass/FAIL | [N] base templates missing |
+| Overlay headers point at `docs/AE/personas/_base/<role>.md` | pass/FAIL | [N] overlays point at a harness path |
+
+_(A target-side role can only activate if both its base template and overlay load from within the target tree. A missing base directory or a harness-path header means roles cannot load.)_
 
 ## Structural Hygiene
 
@@ -350,6 +376,7 @@ Baseline: <date> (<N> days ago)
   Permission drift:  <N>
   Instruction leaks: <N>
   Spec drift:        <N>
+  Role activation drift: <N>
   Structural hygiene: <N>
 
 Full report: targets/<slug>/health-check-<date>.md

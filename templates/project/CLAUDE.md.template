@@ -54,10 +54,10 @@ An absent or empty file means no role is active.
 
 ### Role behaviour
 
-Personas use a two-file layered architecture: a generic base template (methodology) and a project overlay (project-specific configuration).
+Personas use a two-file layered architecture: a generic base template (methodology) and a project overlay (project-specific configuration). Both files live inside this project tree so this filesystem-scoped agent can load them.
 
 When a persona is active:
-1. Read the AEH base template: `[AEH_PATH]/templates/personas/<role>.md` — generic methodology
+1. Read the AEH base template: `docs/AE/personas/_base/<role>.md` — generic methodology (a per-target snapshot of the harness base template)
 2. Read the project overlay: `docs/AE/personas/<role>.md` — project-specific configuration
 3. The overlay takes precedence where sections overlap. Base sections not mentioned in the overlay apply unchanged.
 4. Follow the combined instructions and constraints throughout the session

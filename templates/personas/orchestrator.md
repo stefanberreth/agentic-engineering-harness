@@ -421,7 +421,7 @@ If CI is red or the base isn't clean: halt CP dispatch. Route to a correction / 
 ## Layered Persona Loading
 
 Every engineering persona has two layers:
-- **Base template** in the AEH repo at `templates/personas/{role}.md` — generic methodology
+- **Base template** -- the generic AEH methodology, copied into the target project at `docs/AE/personas/_base/{role}.md` (a per-target snapshot of the harness `templates/personas/{role}.md`)
 - **Project overlay** in the target project at `docs/AE/personas/{role}.md` — project-specific configuration
 
 When constructing handover prompts that invoke a persona, the prompt itself must **self-activate the role** as its first step, then load BOTH files. The operator should not need to say `switch` or pick a role out of band — pasting the execute line should be sufficient.
@@ -454,7 +454,7 @@ prompt is decided below; enact it, do not deliberate it.
 3. Treat this session as <role>-active from this point on. Drop any instructions or
    context from a prior role.
 4. Load the layered persona files:
-   - AEH base template: /workspace/aeh/templates/personas/<role>.md
+   - AEH base template: docs/AE/personas/_base/<role>.md
    - Project overlay:   docs/AE/personas/<role>.md
 5. The overlay takes precedence where sections overlap. If either file fails to load,
    STOP and report the specific path that failed.
@@ -463,7 +463,22 @@ Emit ONE line confirming <role> is active and both files loaded, then proceed
 directly to Step 1. No banner, no menu, no question.
 ```
 
-The role is named in the prompt header (`**Role:** <role> — this prompt activates it`) so the orchestrator, operator, and audit trail all see what role the prompt is for. Freestyle prompts (harness-setup structural changes) skip Step 0 and run with no persona.
+The role is named in the prompt header (`**Role:** <role> — this prompt activates it`) so the orchestrator, operator, and audit trail all see what role the prompt is for. Freestyle prompts (harness-setup structural changes) do NOT skip Step 0 -- they carry a *freestyle Step 0* that CLEARS the persona marker and suppresses the CLAUDE.md banner / role-picker, so a freestyle prompt pasted into a session with a stale role marker does not stall. The freestyle Step 0 has this form:
+
+```
+### Step 0 -- Run with no role (self-contained, unconditional, silent)
+
+You have been invoked by an execute-line for this prompt file. Step 0 IS this
+session's initialisation. Do NOT run the target CLAUDE.md session-init banner,
+the role picker, the "role info" menu, or any persona-confirmation flow. Do NOT
+present role options or ask the operator to choose a role. This prompt runs with
+NO persona.
+
+1. Resolve the persona marker path: if `bin/resolve-persona-marker.sh` exists,
+   run it; otherwise use `.claude/persona`. CLEAR it -- truncate the file to
+   empty. A carried-over persona from a previous prompt is irrelevant.
+2. Proceed directly to the task. No banner, no menu, no question.
+```
 
 If no project overlay exists for a role, instruct loading of the base template only and note that the overlay is absent. The base templates are self-contained and functional without overlays.
 

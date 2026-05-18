@@ -179,21 +179,23 @@ Then jump straight to a condensed flow:
      2. Create docs/AE/ directory structure
 
    Phase 2: Persona overlays (scaffolded with placeholders)
-     3. Create docs/AE/personas/archaeologist.md (header + Project Identity placeholder)
-     4. Create docs/AE/personas/analyst.md       (header + Project Identity placeholder)
-     5. Create docs/AE/personas/architect.md     (header + Project Identity placeholder)
-     6. Create docs/AE/personas/developer.md     (header + Project Identity placeholder)
-     7. Create docs/AE/personas/reviewer.md      (header + Project Identity placeholder)
+     3. Place AEH base persona templates -> docs/AE/personas/_base/ (5 files, inline-carried prompt)
+     4. Create docs/AE/personas/archaeologist.md (header + Project Identity placeholder)
+     5. Create docs/AE/personas/analyst.md       (header + Project Identity placeholder)
+     6. Create docs/AE/personas/architect.md     (header + Project Identity placeholder)
+     7. Create docs/AE/personas/developer.md     (header + Project Identity placeholder)
+     8. Create docs/AE/personas/reviewer.md      (header + Project Identity placeholder)
 
    Phase 3: Standard tooling (offered during onboarding -- operator chooses)
-     8. OpenSpec setup     (recommended -- offer per Phase 6g)
-     9. context7 setup     (recommended -- offer per Phase 6g)
+     9. OpenSpec setup     (recommended -- offer per Phase 6g)
+    10. context7 setup     (recommended -- offer per Phase 6g)
         Serena             (auto-skip on greenfield: no codebase to navigate;
                             re-assess via `tools` after first feature lands)
 
    Phase 4: Verification
-    10. Regression check (skeleton-level: verify CLAUDE.md loads, persona switching works)
-    11. Retrospective
+    11. Regression check (skeleton-level: verify CLAUDE.md loads, persona switching works)
+    12. Role-activation smoke test (HARD GATE -- see below)
+    13. Retrospective
    ```
 
    Confirm with the operator, then write to `tasks.md`.
@@ -209,9 +211,9 @@ Then jump straight to a condensed flow:
 
    c. **Phase 6h (Sandbox env provisioning).** If context7 was accepted, run 6h. Otherwise skip 6h. Do not skip merely because the path is greenfield.
 
-10. **Phase 7 (handoff): present options as usual.** Note in the handoff that the analyst persona, once invoked on the first feature, will populate the overlays with real domain/stack/architecture content. Onboarding itself is done.
+10. **Phase 7 (handoff): present options as usual.** Note in the handoff that the analyst persona, once invoked on the first feature, will populate the overlays with real domain/stack/architecture content. Onboarding itself is done -- but onboarding cannot be declared complete until the Role-Activation Completion Gate (Phase 4, see section 6i) has passed.
 
-After completing the greenfield short-circuit, do NOT return to the brownfield phases. The playbook is complete for this target.
+After completing the greenfield short-circuit, do NOT return to the brownfield phases. The playbook is complete for this target. Onboarding cannot be declared complete until the Role-Activation Completion Gate (section 6i) has passed.
 
 ### 2a. Structural Snapshot
 
@@ -525,16 +527,19 @@ Phase 1: Foundation
   3. Add AE entries to .gitignore                               (folded in)
 
 Phase 2: Persona overlays (docs/AE/personas/)
-  4-8. archaeologist / analyst / architect / developer / reviewer
+  4. Place AEH base persona templates -> docs/AE/personas/_base/
+     (5 files, inline-carried prompt)                           ~1 prompt
+  5-9. archaeologist / analyst / architect / developer / reviewer
        -- new where no equivalent exists; merge-and-refactor
        where existing role files exist                          ~1-5 prompts
 
 Phase 3: Standard tooling (offered during execute -- operator chooses)
-  9-11. OpenSpec / context7 / Serena (per Phase 6g)             ~0-3 prompts
+  10-12. OpenSpec / context7 / Serena (per Phase 6g)            ~0-3 prompts
 
 Phase 4: Verification
-  12. Regression check (skeleton-level)                         ~1 prompt
-  13. Retrospective                                             ~1 prompt
+  13. Regression check (skeleton-level)                         ~1 prompt
+  14. Role-activation smoke test (HARD GATE -- see below)        ~1 prompt
+  15. Retrospective                                             ~1 prompt
 
 Total: <N> prompts
 ```
@@ -542,7 +547,7 @@ Total: <N> prompts
 A persona task that merges an existing role file should note the source:
 
 ```
-  6. architect overlay (merge-and-refactor from roles/ARCHITECT_ROLE.md)
+  7. architect overlay (merge-and-refactor from roles/ARCHITECT_ROLE.md)
 ```
 
 **Ask the user:**
@@ -578,20 +583,22 @@ For each approved task, in order:
 
 ### 6a. Generate Deliverable — Layered Persona Convention
 
-Personas use a two-file layered architecture:
-- **Base template** (`templates/personas/<role>.md` in the AEH repo) — generic methodology, unchanged per project
-- **Project overlay** (`docs/AE/personas/<role>.md` in the target project) — project-specific configuration extending the base
+Personas use a two-file layered architecture. **Both files live inside the target project tree** so a target-side Claude -- which is filesystem-scoped to its own project and cannot read the harness -- can load them:
+- **Base template** -- the generic AEH role methodology. Copied into the target at `docs/AE/personas/_base/<role>.md`: a per-target snapshot of the harness `templates/personas/<role>.md`, re-synced if the harness base template materially changes.
+- **Project overlay** (`docs/AE/personas/<role>.md` in the target project) -- project-specific configuration extending the base.
 
 The five engineering personas are: **archaeologist**, **analyst**, **architect**, **developer**, **reviewer**. The archaeologist runs upstream (before the Analyst → Architect → Developer → Reviewer loop) to produce baseline specs of existing codebases. For greenfield projects with no existing code, the archaeologist overlay is scaffolded but not immediately invoked.
 
 **When generating persona deliverables:**
 
-1. **Scaffold overlay files**, not monolithic personas. Each overlay must start with the Persona Header Block:
+1. **Place the base templates.** Onboarding generates a base-template-placement prompt that creates `docs/AE/personas/_base/` in the target and writes the five AEH base persona templates (archaeologist, analyst, architect, developer, reviewer) into it. The prompt carries the base-template content inline -- the self-containment rule applies; the target session has no harness access. This is the foundation the overlays' headers point at; it runs in Phase 2, before the role-activation smoke test (Phase 4).
+
+2. **Scaffold overlay files**, not monolithic personas. Each overlay must start with the Persona Header Block:
 
 ```markdown
 # [Role] Persona: [Project Name]
 
-> **AEH Base:** `templates/personas/<role>.md`
+> **AEH Base:** `docs/AE/personas/_base/<role>.md`
 > Load the base template first. This file provides project-specific
 > configuration that extends, overrides, or parameterises the base.
 > **Precedence rules:**
@@ -605,11 +612,11 @@ The five engineering personas are: **archaeologist**, **analyst**, **architect**
 [1-2 lines: project name, domain, tech stack summary]
 ```
 
-2. **Populate `§.PROJECT` extension points** from the base template with project-specific content. Read the base template to identify which extension points exist (e.g. `§1.PROJECT`, `§HR.PROJECT`, `§ENV.PROJECT`) and fill in those that apply to this project.
+3. **Populate `§.PROJECT` extension points** from the base template with project-specific content. Read the base template to identify which extension points exist (e.g. `§1.PROJECT`, `§HR.PROJECT`, `§ENV.PROJECT`) and fill in those that apply to this project.
 
-3. **Merge existing instructions** from the reconnaissance catalogue into the appropriate overlay extension points. Do not duplicate base methodology — only add project-specific rules, conventions, constraints, and domain knowledge.
+4. **Merge existing instructions** from the reconnaissance catalogue into the appropriate overlay extension points. Do not duplicate base methodology — only add project-specific rules, conventions, constraints, and domain knowledge.
 
-4. **For projects with existing codebases**, include the archaeologist overlay with investigation tools, priority areas, and known documentation gaps populated from the reconnaissance.
+5. **For projects with existing codebases**, include the archaeologist overlay with investigation tools, priority areas, and known documentation gaps populated from the reconnaissance.
 
 Write overlay deliverables to `targets/<slug>/deliverables/`. These are the working copies — the prompt embeds their content for delivery.
 
@@ -632,7 +639,7 @@ This prevents loss of changes made between deliverable preparation and prompt ex
 
 **Exception**: For brand-new files that don't exist yet in the target project (e.g. creating a new persona overlay file), the prompt can write directly without a merge step.
 
-**Persona prompt convention:** Prompts that create persona overlay files must instruct the target-side Claude to create files at `docs/AE/personas/<role>.md`. Each prompt must note that the overlay works in conjunction with the AEH base template — the CLAUDE.md in the target project describes the two-file loading convention. The prompt itself must NOT reference harness-side paths (self-containment rule still applies); the overlay's header block contains the base template path as documentation for the operator.
+**Persona prompt convention:** Prompts that create persona overlay files must instruct the target-side Claude to create files at `docs/AE/personas/<role>.md`. Each prompt must note that the overlay works in conjunction with the AEH base template — the CLAUDE.md in the target project describes the two-file loading convention. The prompt itself must NOT reference harness-side paths (self-containment rule still applies); the overlay's header block points at the target-side base template `docs/AE/personas/_base/<role>.md`, which the base-template-placement prompt has put in place. That path is operative, not merely documentation -- the role's Step 0 loads the base from it.
 
 Write the prompt following the standard format (see CLAUDE.md > Prompt File Format) to `targets/<slug>/prompts/`.
 
@@ -880,6 +887,14 @@ This is a convenience -- the key never appears in any file that's version-contro
 
 **Generality:** This mechanism supports any passthrough variable. When new variables are added to the sandbox's `PASSTHROUGH_VARS` array, add them to `templates/tools/sandbox-env-provisioning.md` and they'll be picked up here automatically.
 
+### 6i. Role-Activation Completion Gate
+
+Onboarding MUST NOT be declared complete until role activation is proven end to end. The skeleton-level regression check verifies files are present; it does NOT prove a role can load. Onboarding prompts are freestyle (no role), so onboarding otherwise never exercises a role -- the gap stays invisible until the first role-bound prompt, post-onboarding. That is the defect this gate closes.
+
+Before Phase 7 handoff, dispatch ONE trivial role-bound prompt (any one engineering role -- archaeologist is the natural choice). The prompt self-activates the role via Step 0 and must confirm that BOTH files loaded from within the target tree: the base template at `docs/AE/personas/_base/<role>.md` and the overlay at `docs/AE/personas/<role>.md`. The role then emits a one-line confirmation and stops -- no investigation work is required; this is a loading smoke test.
+
+If either file fails to load, onboarding is NOT complete. Fix the placement and re-run the gate. This is gate-first applied to onboarding itself: no 'onboarding complete' without a gate that proves the outcome 'roles can activate.'
+
 Proceed to Phase 7.
 
 ---
@@ -1031,6 +1046,7 @@ Do NOT mark a target as "maintaining" in `targets/index.md` until:
 1. **Open questions reviewed.** Every item in `targets/<slug>/open-questions.md` is either resolved (with date and outcome) or explicitly deferred (with rationale). No item may sit unmarked.
 2. **Retrospective received.** The target-side retrospective prompt has been executed and `docs/AE/retrospective.md` exists in the target project -- OR the user confirms the retrospective session was lost and a `health` check will substitute.
 3. **Review history baseline created.** `targets/<slug>/review-history.md` exists with at least one entry from the initial assessment findings.
+4. **Role-Activation Completion Gate passed.** The Phase 4 role-activation smoke test (see section 6i) has been run and confirmed that a role loaded both its base template (`docs/AE/personas/_base/<role>.md`) and its overlay from within the target tree. Onboarding cannot be declared complete until this gate passes.
 
 If any of these are missing, the target stays in "reviewing" phase. This gate prevents the drift that comes from marking a project as done while loose ends remain untracked.
 
