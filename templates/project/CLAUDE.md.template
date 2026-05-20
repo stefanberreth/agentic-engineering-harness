@@ -27,6 +27,10 @@ An absent or empty file means no role is active.
 
 ### On first message of every session
 
+**Dispatch-prompt invocation -- skip the banner entirely.** If the first user message of this session matches `Read and execute docs/AE/prompts/...` (or a tool-call reading a file at that path is the very first action), DO NOT output the session banner and DO NOT wait for confirmation. The prompt file's Step 0 is the session initialiser -- it overwrites the persona marker authoritatively (silent, no asking) and loads the persona files itself. Proceed directly to reading the prompt and executing it. The banner exists for interactive role-choice sessions; a dispatch-prompt invocation bypasses it by design.
+
+For all other first messages, proceed with the banner flow below.
+
 1. Read `.claude/persona` (if it exists).
 2. Output the session banner. **Keep it to 3 lines max.**
 
