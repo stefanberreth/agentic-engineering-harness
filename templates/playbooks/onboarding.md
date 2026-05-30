@@ -156,17 +156,19 @@ Then jump straight to a condensed flow:
    Domain: TBD (populated by analyst on first feature)
    Team:   TBD (operator confirms when relevant)
 
-   Prompt delivery policy: <ask the operator: direct | manual>
+   Prompt delivery policy: direct (default -- operator may opt out to manual)
 
    ## Specification Management
-   policy: TBD (offered in Phase 6 Standard SDLC Tools Setup)
+   policy: openspec (default in-scope -- operator may opt out in Phase 6g)
 
    ## Development Tools
-   context7: TBD
-   serena: TBD
+   context7: in-scope (default -- operator may opt out in Phase 6g)
+   serena: TBD (codebase-dependent assessment in Phase 6g)
    ```
 
-   Ask only the prompt-delivery-policy question. Do NOT ask domain/stack/team questions -- those are explicitly out of scope for onboarding.
+   Do NOT ask domain/stack/team questions -- those are explicitly out of scope for onboarding.
+
+   **Delivery policy: do NOT ask -- default to `direct`.** Direct delivery (harness writes prompts to both `targets/<slug>/prompts/` and `<target-path>/docs/AE/prompts/`) is the only mode under which the orchestrator's standard handoff one-liner (`Read and execute docs/AE/prompts/NNN-title.md`) actually works -- target-side Claude sessions are filesystem-scoped to the target project tree and cannot read harness-side paths. Set `policy: direct` in `profile.md` without asking. If the operator explicitly volunteers a preference for manual delivery, honour it AND surface the trade-off ("under manual you'll need to copy each prompt to the target tree before pasting the handoff -- direct is the default for that reason"); record the decision in `decisions.md` with the reason.
 
 7. **Skip Phase 4 (report).** There is nothing to report. Note in the journal that the target was onboarded as greenfield.
 8. **Phase 5 (plan): use the standard greenfield plan.** Identical for every greenfield target -- no per-project tailoring needed:
@@ -186,9 +188,9 @@ Then jump straight to a condensed flow:
      7. Create docs/AE/personas/developer.md     (header + Project Identity placeholder)
      8. Create docs/AE/personas/reviewer.md      (header + Project Identity placeholder)
 
-   Phase 3: Standard tooling (offered during onboarding -- operator chooses)
-     9. OpenSpec setup     (recommended -- offer per Phase 6g)
-    10. context7 setup     (recommended -- offer per Phase 6g)
+   Phase 3: Standard tooling (default in-scope; operator may opt out per Phase 6g)
+     9. OpenSpec setup     (default -- opt out per Phase 6g)
+    10. context7 setup     (default -- opt out per Phase 6g)
         Serena             (auto-skip on greenfield: no codebase to navigate;
                             re-assess via `tools` after first feature lands)
 
@@ -204,9 +206,9 @@ Then jump straight to a condensed flow:
 
    a. **Skeleton prompts.** Generate the CLAUDE.md prompt and the five persona overlay prompts. Each overlay creates a file with the Persona Header Block and a single `## Project Identity` line: `TBD -- populated by analyst on first feature`. No `§.PROJECT` content beyond placeholders.
 
-   b. **Phase 6g (Standard SDLC Tools Setup) -- MANDATORY, do not skip.** Run the offer block verbatim from Phase 6g below:
-      - **OpenSpec:** present the offer, record the operator's decision in `profile.md` under `## Specification Management`. On "yes", read `templates/tools/openspec-setup.md` and generate the setup prompt; insert it into the sequence before the regression check.
-      - **context7:** present the offer, record the decision in `profile.md` under `## Development Tools`. On "yes", read `templates/tools/context7-setup.md` and generate the setup prompt.
+   b. **Phase 6g (Standard SDLC Tools Setup) -- MANDATORY, do not skip.** Run the offer block verbatim from Phase 6g below. OpenSpec and context7 are default in-scope; the operator may opt out, but the offer presents installation as the default path:
+      - **OpenSpec:** default scope. Present the opt-out confirmation block from Phase 6g; if operator does NOT opt out (silence / yes / continue), read `templates/tools/openspec-setup.md` and generate the setup prompt; insert it into the sequence before the regression check. Record the decision in `profile.md` under `## Specification Management`.
+      - **context7:** default scope. Present the opt-out confirmation block from Phase 6g; if operator does NOT opt out, read `templates/tools/context7-setup.md` and generate the setup prompt. Record the decision in `profile.md` under `## Development Tools`.
       - **Serena:** auto-skip on greenfield (0 lines of source -- assessment criteria in 6g resolve to "do not recommend"). Record in `profile.md` under `## Development Tools`: `serena: not recommended (greenfield -- re-assess via tools after first feature)`. Do NOT present the offer block; the assessment has already resolved.
 
    c. **Phase 6h (Sandbox env provisioning).** If context7 was accepted, run 6h. Otherwise skip 6h. Do not skip merely because the path is greenfield.
@@ -420,7 +422,7 @@ targets/<slug>/
 **profile.md** must include:
 - Project name and path
 - Tech stack summary
-- Prompt delivery policy (ask the user now -- see CLAUDE.md for the standard question)
+- Prompt delivery policy (default `direct`; do NOT ask -- see CLAUDE.md § "Selective exception: Direct Prompt Delivery (default)" for the rationale and the rare opt-out conditions)
 - Key structural features noted during reconnaissance
 - Existing setup summary (if applicable)
 
@@ -762,37 +764,49 @@ If existing setup was migrated, add:
 
 ### 6g. Standard SDLC Tools Setup
 
-AEH prescribes two standard SDLC tools for every project. Offer both during onboarding.
+AEH prescribes two standard SDLC tools — **OpenSpec** and **context7** — as default in-scope for every project. They are load-bearing for successful agentic engineering (spec traceability + current library documentation) and almost every software project benefits from them. The default during onboarding is to set both up; the operator may opt out, but doing so should be a deliberate choice, not the default outcome.
 
-#### OpenSpec (standard — recommended for all projects)
+A third tool — **Serena** — remains conditional on codebase characteristics (see below).
+
+#### OpenSpec (standard — default in-scope)
 
 ```
 OpenSpec is AEH's specification substrate. Every feature flows through
 change proposals (analyst → architect → developer → reviewer) with the
 reviewer's §0 BLOCKING spec traceability check enforcing discipline.
 
-Set up OpenSpec now? [yes / not now / never for this project]
+Default: set up OpenSpec as part of onboarding scope.
+
+  [Y -- proceed with setup (default)]
+  [opt-out -- skip OpenSpec for this project (rare; you know better)]
+  [defer -- offer again via `tools` later]
 ```
 
-**If "yes":** Read `templates/tools/openspec-setup.md`, generate the setup prompt adapted to this target, and add it to the prompt sequence (insert before the regression check prompt). Record the decision in `profile.md` under a `## Specification Management` section: `policy: openspec`.
+**Default behavior (Y / silence / "continue" / "yes"):** Read `templates/tools/openspec-setup.md`, generate the setup prompt adapted to this target, and add it to the prompt sequence (insert before the regression check prompt). Record the decision in `profile.md` under a `## Specification Management` section: `policy: openspec`.
 
-**If "not now":** Record in `profile.md` under `## Specification Management`: `policy: deferred`. OpenSpec will be offered again when the user runs `tools`.
+**If operator explicitly opts out ("opt-out" / "skip" / "never"):** Record in `profile.md` under `## Specification Management`: `policy: manual (spec.md)`. Personas fall back to `requirements.md` / `spec.md` conventions. The decision is reversible via `tools`. Note the operator-stated reason in `decisions.md` so future sessions don't second-guess.
 
-**If "never":** Record in `profile.md` under `## Specification Management`: `policy: manual (spec.md)`. Personas fall back to `requirements.md` / `spec.md` conventions. The decision is reversible if the user explicitly asks to reconsider.
+**If operator defers ("not now" / "defer" / "later"):** Record in `profile.md` under `## Specification Management`: `policy: deferred`. OpenSpec will be offered again when the user runs `tools`. The default-in-scope status is preserved -- defer is "not yet", not "no".
 
-#### context7 (standard — recommended for all projects)
+#### context7 (standard — default in-scope)
 
 ```
 context7 provides current library documentation lookup via MCP. Agents
 call it before writing code that uses fast-moving library APIs — prevents
 training-data recall for libraries that changed after the agent's cutoff.
 
-Set up context7 now? [yes / not now]
+Default: set up context7 as part of onboarding scope.
+
+  [Y -- proceed with setup (default)]
+  [opt-out -- skip context7 for this project (rare; you know better)]
+  [defer -- offer again via `tools` later]
 ```
 
-**If "yes":** Read `templates/tools/context7-setup.md`, generate the setup prompt adapted to this target, and add it to the prompt sequence. Record in `profile.md` under `## Development Tools`: `context7: configured`. The developer and architect overlays will need a §1a.PROJECT / §3a.PROJECT trigger list populated with the project's fast-moving libraries — generate that as part of the setup prompt.
+**Default behavior (Y / silence / "continue" / "yes"):** Read `templates/tools/context7-setup.md`, generate the setup prompt adapted to this target, and add it to the prompt sequence. Record in `profile.md` under `## Development Tools`: `context7: configured`. The developer and architect overlays will need a §1a.PROJECT / §3a.PROJECT trigger list populated with the project's fast-moving libraries — generate that as part of the setup prompt.
 
-**If "not now":** Record in `profile.md` under `## Development Tools`: `context7: deferred`. Will be offered again via `tools`.
+**If operator explicitly opts out:** Record in `profile.md` under `## Development Tools`: `context7: declined (operator opt-out)`. Note the reason in `decisions.md`. Reversible via `tools`.
+
+**If operator defers:** Record in `profile.md` under `## Development Tools`: `context7: deferred`. Will be offered again via `tools`.
 
 #### Serena (assessed — recommended when codebase warrants it)
 

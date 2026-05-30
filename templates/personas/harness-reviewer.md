@@ -71,6 +71,13 @@ Verify that prompt templates and delivery mechanisms are correct:
 - Prompt file format includes these fields
 - The orchestrator template refuses to generate developer prompts without a governing spec
 
+**Direct delivery default + path invariant:**
+- `CLAUDE.md` § "Selective exception: Direct Prompt Delivery" frames `direct` as the harness default (not as an optional opt-in)
+- `templates/playbooks/onboarding.md` sets `profile.md` `policy: direct` without asking the operator; the rare `manual` opt-out path is named with its trade-off
+- The orchestrator template's Prompt-Write-Then-Handoff section contains a "Path Invariant" subsection stating the handoff one-liner ALWAYS names a target-side path (`docs/AE/prompts/NNN-title.md`) and explicitly names `Read and execute targets/<slug>/prompts/...` as a broken-on-arrival anti-pattern
+- The orchestrator template includes a pre-handoff self-check (write source-of-truth, mirror target-side, cite target-side path, `ls`-verify mirror landed)
+- Under `manual` policy, the orchestrator must ship a `cp` command alongside the handoff or inline the prompt content — never just point at the harness path
+
 ### 3. Documentation Currency
 
 Check that documentation reflects reality:
@@ -223,6 +230,13 @@ Verify the full quality chain from development through review is unbroken:
 - Referenced only in `§.PROJECT` extension points or in `templates/tools/` as optional integrations
 - The distinction is documented somewhere visible (README, CLAUDE.md, or the tools README)
 
+**Onboarding defaults the two AEH-standard tools into scope (not as opt-in offers):**
+- `templates/playbooks/onboarding.md` Phase 6g presents OpenSpec and Context7 with a `[Y (default) / defer / opt-out]` block — the default action is install
+- The greenfield short-circuit's Phase 6g runs the same default-install blocks (does not silently skip tool setup)
+- `templates/playbooks/tools.md` framing rule states OpenSpec and Context7 are AEH-standard (default in-scope), Serena is genuinely optional
+- `templates/tools/README.md` Available Tools table carries a Status column distinguishing AEH-standard from optional
+- The `profile.md` greenfield template seeds `policy: openspec` and `context7: in-scope (default)` rather than `TBD`
+
 ## Review Process
 
 ### 1. Gather Evidence
@@ -303,6 +317,9 @@ Create `comments.md` in the project root with this structure:
 | Step 0 self-activation documented | pass/FAIL | |
 | Governing spec required on prompts | pass/FAIL | |
 | Freestyle exception scoped | pass/FAIL | |
+| Direct delivery is the default in CLAUDE.md + onboarding | pass/FAIL | |
+| Orchestrator carries the Path Invariant + pre-handoff self-check | pass/FAIL | |
+| `manual` opt-out path documents the `cp`-or-inline requirement | pass/FAIL | |
 
 ## 3. Documentation Currency
 | Document | Status | Notes |
@@ -362,6 +379,9 @@ Create `comments.md` in the project root with this structure:
 | OpenSpec | Named in all engineering personas | pass/FAIL |
 | context7 | Named in dev §1a / arch §3a / reviewer | pass/FAIL |
 | Project-tech tools | NOT in base templates | pass/FAIL |
+| Onboarding defaults OpenSpec + Context7 in-scope (opt-out, not opt-in) | pass/FAIL | |
+| Greenfield short-circuit runs default-install blocks | pass/FAIL | |
+| Tools playbook framing rule distinguishes AEH-standard from optional | pass/FAIL | |
 
 ## Blocking Issues
 [...]

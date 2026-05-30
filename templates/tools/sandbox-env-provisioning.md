@@ -66,6 +66,23 @@ The setup prompt includes a verification step that checks the variable is set in
 
 ---
 
+## Dev Server Binding in Containers
+
+When a target project runs inside a Docker container, dev servers must bind to `0.0.0.0` (not `localhost`/`127.0.0.1`) for the host browser to reach them. This is a common gotcha: ports are mapped correctly in Docker but the server only listens on the loopback interface inside the container.
+
+**Common frameworks and their fixes:**
+
+| Framework | Default bind | Fix |
+|-----------|-------------|-----|
+| Vite | `localhost` | Add `server: { host: true }` to `vite.config.ts` |
+| Next.js | `localhost` | `next dev -H 0.0.0.0` |
+| Express | `localhost` (implicit) | `app.listen(port, '0.0.0.0', callback)` |
+| Django | `localhost` | `python manage.py runserver 0.0.0.0:8000` |
+
+**When to check:** During onboarding, if the target project runs in a container (detected via `/.dockerenv` or `$SANDBOX_PORTS`), verify dev server binding and fix if needed. This should be part of the developer persona's environment verification step (prompt 078 pattern).
+
+**Port mapping:** The `$SANDBOX_PORTS` env var (if set) shows the container→host port mapping. When telling the operator the test URL, use the host port from this mapping, not the container port.
+
 ## Non-Sandbox Environments
 
 When the target project runs outside a sandbox (native Claude Code, no Docker), the `.env` provisioning still works as a reliable convention:

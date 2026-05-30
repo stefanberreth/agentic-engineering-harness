@@ -142,8 +142,8 @@ You need those to be in place or at hand before getting started:
 
 - **A coding-agent runtime.** Claude Code (or an equivalent LLM coding-agent CLI) installed and authenticated.
 - **Source-control access.** Git installed locally; access credentials for your remote -- GitHub, GitLab, Bitbucket, or self-hosted -- via SSH key or personal access token, depending on your setup.
-- **A context7 API key.** Register at [context7.com](https://context7.com/) and have the key available for AEH to wire into the agent's MCP configuration during onboarding. Free tier is sufficient for most projects.
-- **OpenSpec.** No key required. AEH scaffolds the directory structure during onboarding; OpenSpec is filesystem-only.
+- **A context7 API key.** Register at [context7.com](https://context7.com/) and have the key available for AEH to wire into the agent's MCP configuration during onboarding. Free tier is sufficient for most projects. context7 is an AEH-standard tool installed by default during onboarding; you can opt out per project if you have a deliberate reason, but the default path installs it.
+- **OpenSpec.** No key required. AEH scaffolds the directory structure during onboarding; OpenSpec is filesystem-only. Like context7, OpenSpec is an AEH-standard tool installed by default; opt-out is per project and rare. Both are load-bearing: the reviewer's BLOCKING spec-traceability check needs OpenSpec to gate against; the developer + architect need context7 to check current API shape on fast-moving libraries.
 - **Optional, project-specific.** Database access, deploy targets, secret stores, ticketing systems -- these live in your project's normal environment, not in AEH onboarding.
 
 A deeper environment-setup and first-onboarding guide is on the roadmap; for now this list is the orientation.
@@ -165,7 +165,7 @@ Then say `onboard /path/to/your/project`. The harness reads your project, runs t
 - `CLAUDE.md` -- Claude-Code-specific instructions for your project's session
 - `AGENTS.md` -- cross-tool agent config (read by other coding-agent runtimes too)
 - `docs/AE/personas/<role>.md` -- your project-specific overlays for each role; encode conventions, hard boundaries, domain knowledge
-- `docs/AE/prompts/` -- the handover point: AEH writes prompts here, your project's session reads and executes them
+- `docs/AE/prompts/` -- the handover point: AEH writes prompts directly into your project tree (this is the default; the harness orchestrator never asks you to copy prompts in by hand) and your project's session reads and executes them via a single-line paste: `Read and execute docs/AE/prompts/NNN-title.md`
 - `docs/AE/reports/` -- target-side reports (verdicts, halt reports, retrospectives)
 - `docs/AE/reviews/` -- reviewer outputs
 - `openspec/project.md` -- project conventions (slug naming, status vocabulary)

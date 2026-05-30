@@ -139,6 +139,25 @@ Report findings as structural hygiene items in the delta report (Phase 4). These
 
 ### 3i. Tool Health Check
 
+**Standard-tool presence check (run first, independent of configured-tool status):**
+
+OpenSpec and Context7 are AEH-standard SDLC tools (default in-scope per onboarding Phase 6g). Read `targets/<slug>/profile.md`:
+
+1. **OpenSpec:** check `## Specification Management`. Expected: `policy: openspec`. Flag if:
+   - `policy: TBD` → onboarding incomplete; recommend running `tools` to set it up
+   - `policy: deferred` → operator postponed; check `decisions.md` for context, recommend re-offer via `tools` if no explicit decline
+   - `policy: manual (spec.md)` with no `decisions.md` entry → looks like default-was-bypassed; recommend operator confirm the opt-out is deliberate
+   - Section absent → onboarding gap; recommend `onboard` re-run or manual `tools` invocation
+2. **Context7:** check `## Development Tools`. Expected: `context7: configured` (or `in-scope (default)` if onboarding is still pending the setup prompt). Flag if:
+   - `context7: TBD` → onboarding incomplete
+   - `context7: deferred` → recommend re-offer
+   - `context7: declined` with no `decisions.md` entry → recommend operator confirm
+   - Status absent → onboarding gap
+
+Standard-tool absence is a HIGH-severity finding when no `decisions.md` entry records a deliberate opt-out, because the project is missing load-bearing engineering infrastructure (spec traceability + current library docs). When `decisions.md` records the opt-out, downgrade to informational.
+
+**Configured-tool health check (existing logic):**
+
 If `targets/<slug>/profile.md` records any configured development tools (under `## Development Tools`), verify each one:
 
 **Static checks:**
@@ -217,6 +236,27 @@ Verify that the layered-persona loading mechanism is intact -- a target-side rol
 
 Report findings as role-activation items in the delta report (Phase 4).
 
+### 3m. Prompt Delivery Health
+
+Verify that the orchestrator's prompt-handoff path actually works for this target — the target Claude session must be able to read every prompt the orchestrator hands off.
+
+1. **Policy is `direct` (default):** Read `targets/<slug>/profile.md`. Expected: `Prompt delivery policy: direct`. Flag if:
+   - Policy is `manual` AND `decisions.md` has no entry justifying the opt-out → looks like a residual from when manual was an unguided option; recommend operator confirm the choice is deliberate (and accept the `cp`-before-handoff overhead) or switch to `direct`.
+   - Policy is absent → onboarding gap; default-direct should be set.
+2. **Mirror integrity:** For each prompt file in `targets/<slug>/prompts/`, check whether a corresponding file exists at `<target-path>/docs/AE/prompts/` with matching content. Flag any prompt that exists harness-side but is missing or stale target-side. This is the silent-mirror-failure check that catches the failure mode the operator hit during a 2026-05-30 brownfield onboarding: the orchestrator wrote source-of-truth but did not mirror, then handed off a path the target could not read.
+   - Use a basic checksum / size comparison to flag stale mirrors (file exists target-side but content differs from the harness-side source of truth).
+3. **No broken-on-arrival handoffs in recent journal entries:** grep `targets/<slug>/journal.md` and `targets/<slug>/orchestrator-state.md` for the anti-pattern `Read and execute targets/<slug>/prompts/` (or any absolute path beginning with `/workspace/aeh/` or `targets/`). Such entries are evidence of broken handoffs the operator likely had to correct manually. Flag with the journal-line cites so the operator can decide whether to back-fill mirrors or just note the friction.
+
+**Report format:**
+
+| Check | Status | Finding |
+|-------|--------|---------|
+| `Prompt delivery policy` is `direct` (or `manual` with `decisions.md` justification) | pass/FAIL | |
+| Every harness-side prompt has a matching target-side mirror | pass/FAIL | [N] missing / [N] stale |
+| No `Read and execute targets/...` or `/workspace/aeh/...` lines in recent journal/state | pass/FAIL | [N] anti-pattern occurrences |
+
+Report findings as delivery-health items in the delta report (Phase 4). Missing-mirror findings are HIGH severity (broken handoffs the next time the orchestrator dispatches against this slug); broken-on-arrival anti-pattern occurrences are HIGH (orchestrator drift, will recur without intervention); manual-policy-without-justification is MEDIUM (working as configured but likely accidental).
+
 ---
 
 ## Phase 4: Delta Report
@@ -239,6 +279,7 @@ Compare the fresh assessment against the baseline. Categorise every finding:
 | **Instruction leak** | New role-like content appeared outside AE structure |
 | **Spec drift** | OpenSpec specs are stale, orphaned, incomplete, or missing frontmatter |
 | **Role activation drift** | Base templates missing from `docs/AE/personas/_base/`, or overlay headers pointing at a harness path |
+| **Delivery health** | `policy: manual` without justification, missing target-side prompt mirrors, or broken-on-arrival handoffs (harness-side paths) in recent journal/state |
 | **Structural hygiene** | Filesystem clutter, agent detritus, directory disorganisation (independent of baseline) |
 
 ### Report Format
@@ -265,6 +306,7 @@ Write to `targets/<slug>/health-check-<YYYY-MM-DD>.md`:
 | Instruction leaks | <N> |
 | Spec drift | <N> |
 | Role activation drift | <N> |
+| Delivery health | <N> |
 | Structural hygiene | <N> |
 
 ## New Issues
@@ -344,13 +386,32 @@ _(These findings are independent of the baseline. They reflect current filesyste
 
 ## Tool Health
 
+**Standard-tool presence** (OpenSpec + Context7 are AEH-standard, default in-scope; absence without a `decisions.md` justification is a HIGH-severity finding):
+
+| Tool | profile.md status | decisions.md opt-out recorded? | Finding |
+|------|-------------------|--------------------------------|---------|
+| OpenSpec | `policy: openspec` / `deferred` / `TBD` / `manual (spec.md)` | yes/no/N/A | [details + severity] |
+| Context7 | `configured` / `deferred` / `TBD` / `declined` | yes/no/N/A | [details + severity] |
+
+**Configured-tool health** (only tools that were set up):
+
 | Tool | Config | Documented | Package | Env Vars | Credentials | Status |
 |------|--------|------------|---------|----------|-------------|--------|
 | OpenSpec | present | yes | FAIL (404) | N/A | clean | broken |
 | Context7 | present | yes | N/A | WARN (missing CONTEXT7_API_KEY) | clean | degraded |
 | Serena | present | yes | N/A | ok | clean | healthy |
 
-_Status: healthy / degraded / broken / orphaned. See Phase 3h for check details._
+_Status: healthy / degraded / broken / orphaned. See Phase 3i for check details._
+
+## Prompt Delivery Health
+
+| Check | Status | Finding |
+|-------|--------|---------|
+| `Prompt delivery policy` is `direct` (or `manual` with `decisions.md` justification) | pass/FAIL | |
+| Every harness-side prompt has a matching target-side mirror | pass/FAIL | [N] missing / [N] stale |
+| No `Read and execute targets/...` or `/workspace/aeh/...` lines in recent journal/state | pass/FAIL | [N] anti-pattern occurrences |
+
+_Missing-mirror findings are HIGH (broken handoffs the next time the orchestrator dispatches against this slug); anti-pattern occurrences in journal/state are HIGH (orchestrator drift, will recur without intervention); manual-policy-without-justification is MEDIUM (working as configured but likely accidental)._
 
 **Operator action required:** If any server shows `broken` or `degraded`, run the functional smoke test from `templates/tools/tool-detection-patterns.md` in the target project's Claude Code session. A passing smoke test overrides `degraded` to `healthy`; a failing smoke test confirms `broken`.
 
@@ -377,6 +438,7 @@ Baseline: <date> (<N> days ago)
   Instruction leaks: <N>
   Spec drift:        <N>
   Role activation drift: <N>
+  Delivery health: <N>
   Structural hygiene: <N>
 
 Full report: targets/<slug>/health-check-<date>.md

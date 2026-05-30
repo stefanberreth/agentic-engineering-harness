@@ -1,22 +1,22 @@
 # Tool Integration Templates
 
-Optional MCP server and development tool configurations for target projects under harness management.
+MCP server and development tool configurations for target projects under harness management. Two of these tools (**OpenSpec**, **Context7**) are AEH-standard SDLC tools — default in-scope during onboarding because they are load-bearing for successful agentic engineering. The third (**Serena**) is genuinely optional and codebase-dependent.
 
 ## Design Principles
 
-- **Optional.** Tool absence is informational, never a deficiency. No assessment or health check penalises a project for not using these tools.
-- **Detect, don't prescribe.** If a project already has functional equivalents (ADR directories, custom spec management, other MCP servers), report them -- don't suggest replacement.
+- **Two standard, one optional.** OpenSpec and Context7 are AEH-standard SDLC tools — default in-scope during onboarding, opt-out (not opt-in). Their absence on a project is a deliberate operator choice, recorded in `decisions.md` with rationale. Serena remains genuinely optional; its absence is informational.
+- **Detect, don't prescribe duplicates.** If a project already has functional equivalents (ADR directories, custom spec management, other MCP servers), report them. For OpenSpec, frame as complementary rather than replacement. For optional tools, treat the equivalent as sufficient unless the operator says otherwise.
 - **Per-project.** All tool configuration is recorded in the target's `profile.md`. No cross-project assumptions.
 - **Reversible.** Every setup template has a matching teardown template. Nothing is permanent.
 - **Brief.** Each template describes what the tool does, lists 2-3 key commands, and links to official docs. No tutorials.
 
 ## Available Tools
 
-| Tool | What it does | Setup | Teardown |
-|------|-------------|-------|----------|
-| **OpenSpec** | Specification-driven development. Manages specs and change proposals as markdown files alongside code. **No MCP server needed for CLI agents** -- they read spec files directly. MCP server only for sandboxed environments without filesystem access. | `openspec-setup.md` | `openspec-teardown.md` |
-| **Context7** | Documentation lookup via MCP. Provides up-to-date library docs in Claude's context without manual searching. | `context7-setup.md` | `context7-teardown.md` |
-| **Serena** | Language-aware code navigation via MCP. Provides semantic code understanding (go-to-definition, find-references, symbol search). | `serena-setup.md` | `serena-teardown.md` |
+| Tool | Status | What it does | Setup | Teardown |
+|------|--------|-------------|-------|----------|
+| **OpenSpec** | AEH-standard (default in-scope) | Specification-driven development. Manages specs and change proposals as markdown files alongside code. **No MCP server needed for CLI agents** -- they read spec files directly. MCP server only for sandboxed environments without filesystem access. | `openspec-setup.md` | `openspec-teardown.md` |
+| **Context7** | AEH-standard (default in-scope) | Documentation lookup via MCP. Provides up-to-date library docs in Claude's context without manual searching. | `context7-setup.md` | `context7-teardown.md` |
+| **Serena** | Optional (codebase-dependent) | Language-aware code navigation via MCP. Provides semantic code understanding (go-to-definition, find-references, symbol search). | `serena-setup.md` | `serena-teardown.md` |
 
 ## How Tools Are Managed
 

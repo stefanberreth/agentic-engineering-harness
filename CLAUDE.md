@@ -40,9 +40,13 @@ This is not a suggestion. It is a hard boundary. The reasons are:
 
 When producing deliverables, always write them to `targets/<project>/deliverables/` and generate an accompanying prompt in `targets/<project>/prompts/` that tells the target-side Claude Code instance how to apply them.
 
-### Selective exception: Direct Prompt Delivery
+### Selective exception: Direct Prompt Delivery (default)
 
-The harness may optionally write prompt files directly into a target project's `docs/AE/prompts/` directory (prompt files only — never deliverables or other files). This is a **per-target policy** recorded in `profile.md` as `direct` or `manual`. Ask during onboarding. When `direct`: the harness writes to both `targets/<project>/prompts/` (source of truth) and `<target-path>/docs/AE/prompts/` (delivery). The target-side Claude then runs: "Read and execute `docs/AE/prompts/NNN-title.md`". The directory path can be overridden per-project in `profile.md`.
+The harness writes prompt files directly into a target project's `docs/AE/prompts/` directory (prompt files only — never deliverables or other files). This is the **default behavior** for every target and is recorded in `profile.md` as `policy: direct`. Under `direct`: the harness writes to both `targets/<project>/prompts/` (source of truth) and `<target-path>/docs/AE/prompts/` (delivery). The target-side Claude then runs: "Read and execute `docs/AE/prompts/NNN-title.md`". The target-side directory path can be overridden per-project in `profile.md` if a project uses a different convention.
+
+**Why direct is the default.** The orchestrator's handoff one-liner always names a target-side path (`Read and execute docs/AE/prompts/NNN-title.md`) because the target-side Claude session is filesystem-scoped to the target project tree and cannot read harness-side paths. If a prompt file lives only at `targets/<slug>/prompts/` (harness side), the handoff fails: the target agent cannot read that path. Direct delivery is therefore not a convenience option — it is what makes the handoff actually work. Default direct, opt-out only.
+
+**Opt-out: `manual` policy** (rare; recorded in `profile.md` as `policy: manual` with a reason in `decisions.md`). Under `manual`, the harness writes only to `targets/<project>/prompts/`. The orchestrator MUST then either (a) emit a one-line `cp` command alongside the handoff so the operator copies the prompt into the target tree before pasting `Read and execute ...`, or (b) inline the full prompt content in the handoff block as a fallback. The orchestrator NEVER hands off a `Read and execute targets/<slug>/prompts/...` line — that path is unreadable from the target session.
 
 ---
 
@@ -214,7 +218,7 @@ Playbooks are guided workflows stored in `templates/playbooks/`. When triggered,
 |---------|----------|-------------|
 | `onboard` | `templates/playbooks/onboarding.md` | Assess and transform a new target project. Runs 7 phases: target selection, reconnaissance, assessment, report, planning, harness setup, implementation handoff. |
 | `health` | `templates/playbooks/health-check.md` | Run a recurring compliance check on an existing target. Produces a delta report comparing current state vs last assessment, detects persona drift and instruction leaks. |
-| `tools` | `templates/playbooks/tools.md` | Configure optional development tools (OpenSpec, Context7, Serena) for a target project. Detects existing tools, offers setup/removal, generates prompts. |
+| `tools` | `templates/playbooks/tools.md` | Configure development tools for a target project. OpenSpec + Context7 are AEH-standard SDLC tools (default in-scope during onboarding, opt-out); Serena is genuinely optional (codebase-dependent). Detects existing tools, offers setup/removal, generates prompts. |
 
 When a playbook is triggered, Claude must read the playbook file and follow its instructions exactly. The playbook governs tone, pacing, output format, and user interaction for the duration of the workflow.
 

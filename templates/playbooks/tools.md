@@ -1,6 +1,6 @@
 # Playbook: Tool Configuration
 
-Configure optional development tools (OpenSpec, Context7, Serena) for a target project. Can be run at any time -- during onboarding or independently.
+Configure development tools for a target project. OpenSpec and Context7 are **AEH-standard SDLC tools**, default in-scope during onboarding; the `tools` playbook is primarily used to set them up after a deferral, repair them, or remove them. Serena remains conditional on codebase characteristics. Can be run at any time -- during onboarding or independently.
 
 **Trigger:** `tools` or `tools <slug>`
 **Produces:** Setup/teardown prompts in `targets/<slug>/prompts/` and updated `profile.md`.
@@ -11,7 +11,7 @@ Configure optional development tools (OpenSpec, Context7, Serena) for a target p
 
 Same as onboarding playbook: concise, no emoji, progress indicators, detail on demand.
 
-**Framing rule:** OpenSpec is recommended by default for structured spec management. Context7 and Serena remain purely optional -- their absence is never a deficiency. If the user declines any tool, record it and move on -- no persuasion.
+**Framing rule:** OpenSpec and Context7 are AEH-standard SDLC tools — default in-scope, opt-out (not opt-in). If found absent during a `tools` run on an existing project, present them as "to be set up" rather than "offered". Serena remains genuinely optional (codebase-dependent). If the user declines any tool, record it and move on -- no persuasion.
 
 ---
 
@@ -98,37 +98,55 @@ For each tool, present a brief description and the current status. Offer actions
 
 ### Tool not found (never offered)
 
-**For OpenSpec** (recommended):
+**For OpenSpec** (AEH-standard, default in-scope):
 
 ```
-OpenSpec -- specification-driven development (recommended)
+OpenSpec -- specification-driven development (AEH-standard SDLC tool)
   Manages specs and change proposals as markdown files alongside code.
   Integrates with AEH roles: analyst writes specs, architect writes designs,
   developer reads tasks, reviewer checks spec currency.
   No MCP server needed for CLI agents (Claude Code) -- specs are read directly.
   Docs: https://openspec.dev/
-  [set up / not now / never for this project]
+
+  Default action: set up. Confirm to proceed.
+  [Y -- set up (default) / defer / opt-out]
 ```
 
-"not now" records a deferral -- OpenSpec is offered again on the next `tools` run. "never for this project" records a permanent decline. Both are reversible if the user explicitly asks to reconsider.
+"defer" records a deferral -- OpenSpec is offered again on the next `tools` run. "opt-out" records a deliberate decline (operator knows better for this specific project); capture the reason in `decisions.md`. Both are reversible if the user explicitly asks to reconsider.
 
 If functional equivalents were detected:
 
 ```
-OpenSpec -- specification-driven development (recommended)
+OpenSpec -- specification-driven development (AEH-standard SDLC tool)
   Manages specs and change proposals as markdown files alongside code.
   Note: ADR directory detected at docs/adr/ -- OpenSpec complements rather
   than replaces this (ADRs track decisions, OpenSpec tracks specs and changes).
   Docs: https://openspec.dev/
-  [set up / not now / never for this project]
+
+  Default action: set up. Confirm to proceed.
+  [Y -- set up (default) / defer / opt-out]
 ```
 
-**For other tools** (optional):
+**For Context7** (AEH-standard, default in-scope):
 
 ```
-Context7 -- documentation lookup via MCP
-  Provides up-to-date library docs in context.
+Context7 -- documentation lookup via MCP (AEH-standard SDLC tool)
+  Provides up-to-date library docs in Claude's context. Agents call it
+  before writing code that uses fast-moving library APIs -- prevents
+  training-data recall for libraries that changed after the agent's cutoff.
   Docs: https://context7.com/
+
+  Default action: set up. Confirm to proceed.
+  [Y -- set up (default) / defer / opt-out]
+```
+
+**For Serena** (optional, codebase-dependent):
+
+```
+Serena -- language-aware code navigation via MCP (optional)
+  Semantic code understanding (go-to-definition, find-references, symbol search).
+  Value depends on codebase size + complexity (see Phase 6g assessment criteria).
+  Docs: https://github.com/oraios/serena
   [set up / skip / decline]
 ```
 

@@ -639,19 +639,48 @@ Read and execute docs/AE/prompts/NNN-title.md
 
 This is non-negotiable. The operator switches rapidly between agent contexts and needs zero-friction handoff with complete instructions. Every handoff must include the role-name-in-the-header and the copy-paste string. No exceptions, no drift.
 
+**Named drift trap -- do not deflect a banner-stall onto the operator's keyboard.** When a target session's CLAUDE.md fires its session-init banner on the first message of a fresh session, the banner can stall a properly-authored Step 0 (the banner has already run by the time the prompt is read). The tempting wrong move is to "fix" this by prefacing the handoff with `switch <role>` or `ignore role` so the operator types it before the `Read and execute` line. **That is deflection and violates this section.** The orchestrator owns the role-switch via Step 0; the operator pastes exactly one line. If a banner-stall happens, treat it as a target-CLAUDE.md defect (the banner must be made *dispatch-prompt-aware*: when the first message is `Read and execute docs/AE/prompts/...`, the banner does not run; the prompt's Step 0 IS the init) and queue the fix in `templates/project/CLAUDE.md.template` and the affected target's CLAUDE.md. The operator's manual `switch`/`ignore role` is a one-off recovery, never a handoff format.
+
 #### Prompt-Write-Then-Handoff -- Hard Rule
 
 Every substantive instruction the target session is meant to act on MUST be
-written to a prompt file in `targets/<slug>/prompts/` (and mirrored to the
-target's `docs/AE/prompts/` under direct delivery) BEFORE it is handed off. The
+written to a prompt file in `targets/<slug>/prompts/` AND mirrored to the
+target's `docs/AE/prompts/` (direct delivery, the harness default per
+CLAUDE.md § "Selective exception") BEFORE it is handed off. The
 only thing that ever appears in a chat fenced block for the operator to paste
 is one of exactly two things:
 
 1. **`Read and execute docs/AE/prompts/NNN-title.md`** -- a pointer to a
-   committed prompt file. This is the default and overwhelmingly the common case.
+   committed prompt file at the target-side path. This is the default and
+   overwhelmingly the common case.
 2. **Verbatim operator-local commands / UI steps** -- only for genuine
    operator-in-the-loop work the orchestrator cannot route to a target prompt
    (cloud console, credential bootstrap, identity-authorised network changes).
+
+**Path Invariant (load-bearing).** The handoff one-liner ALWAYS names a
+target-side path -- `docs/AE/prompts/NNN-title.md` -- because the target-side
+Claude session is filesystem-scoped to the target project tree and cannot
+read harness-side paths. **NEVER hand off a `Read and execute
+targets/<slug>/prompts/...` line, a `Read and execute
+/workspace/aeh/targets/...` line, or any other path outside the target
+project tree.** Such a handoff is broken-on-arrival: the target session
+cannot read the file. The most common slip is forgetting to mirror to the
+target side after writing the harness-side source-of-truth file, then
+pointing the operator at the harness path that "the file is at". Mirror
+first; hand off second.
+
+**Pre-handoff self-check (run before every handoff):**
+
+1. Did I write the prompt to `targets/<slug>/prompts/NNN-title.md`? (source of truth)
+2. Did I mirror to `<target-path>/docs/AE/prompts/NNN-title.md`? (delivery)
+3. Does the handoff one-liner cite the target-side path (`docs/AE/prompts/NNN-title.md`), NOT the harness-side path?
+4. Confirm step 2 actually happened by running `ls <target-path>/docs/AE/prompts/NNN-title.md` (cheap; catches silent write failures).
+
+If `profile.md` shows `policy: manual` (rare opt-out), step 2 does not happen
+during prompt writing. The handoff MUST then include a one-line `cp` command
+the operator runs before pasting `Read and execute ...`, or inline the full
+prompt content in the chat block. **Never just point at the harness path and
+hope.**
 
 **The anti-pattern, named explicitly:** improvising a multi-step instruction
 into the chat for the operator to paste -- "execute these five in order,
@@ -723,10 +752,10 @@ The lean prompt still includes: persona loading instruction, pre-flight check, T
 
 Every generated target-side prompt MUST instruct the agent to bracket its Report Back with **three** load-bearing conventions: an opening marker, the wall-clock field, and a closing sentinel. The opening marker and closing sentinel together bracket the report top and bottom with the prompt identifier.
 
-**1. `PROMPT REPORT — <identifier>` opening marker** as the FIRST line of the report:
+**1. `PROMPT REPORT -- <identifier>` opening marker** as the FIRST line of the report:
 
 ```
-PROMPT REPORT — <prompt-number-or-slug>
+PROMPT REPORT -- <prompt-number-or-slug>
 ```
 
 The agent emits this as the very first line of its report-back output, before any prose, table, or summary. It states which prompt the report belongs to without the reader having to infer it.
@@ -741,13 +770,13 @@ Wall-clock: <start ISO timestamp> → <end ISO timestamp> = <duration>
 
 The target-side agent captures the start timestamp when reading the prompt and the end timestamp when the final commit-and-report-back completes. This field is non-optional; prompts that omit it lose the calibration signal the orchestrator needs to improve future estimates.
 
-**3. `PROMPT COMPLETE — <identifier>` closing sentinel** as the final line:
+**3. `PROMPT COMPLETE -- <identifier>` closing sentinel** as the final line:
 
 ```
-PROMPT COMPLETE — <prompt-number-or-slug>
+PROMPT COMPLETE -- <prompt-number-or-slug>
 ```
 
-One line, at the very end of the target-side session's output. Examples: `PROMPT COMPLETE — 221`, `PROMPT COMPLETE — sibling-uplift-02`, `PROMPT COMPLETE — a target project-trackA-corrections`.
+One line, at the very end of the target-side session's output. Examples: `PROMPT COMPLETE -- 221`, `PROMPT COMPLETE -- sibling-uplift-02`, `PROMPT COMPLETE -- a target project-trackA-corrections`.
 
 **Why:** the sentinel is a load-bearing parse target for autonomous chain wrappers (`scripts/aeh-overnight*.sh` patterns). The wrapper scans the session JSONL stream for this exact string to confirm clean completion before advancing to the next prompt in the chain. Without the sentinel, the wrapper can't distinguish "prompt completed successfully" from "prompt emitted final-sounding text but didn't actually finish" — ambiguity that silently breaks chains.
 
@@ -756,9 +785,28 @@ One line, at the very end of the target-side session's output. Examples: `PROMPT
 - Opening marker is the FIRST line of the report, before any other content.
 - Sentinel is the LAST line, after the wall-clock field, after any closing remarks.
 - The identifier in the opening marker and the closing sentinel MUST be identical, and MUST match the prompt's canonical name (NNN for numbered prompts, slug-dash-suffix for special-purpose prompts). A mismatch between the two markers is itself a defect the orchestrator flags.
-- Prompts that DO NOT self-report (e.g., orchestrator-session prompts in the harness; freestyle shell kickoffs) don't need the markers — the discipline applies to **target-side prompts the orchestrator dispatches** and any prompt that may feed an autonomous chain wrapper.
+- Prompts that DO NOT self-report (e.g., orchestrator-session prompts in the harness; freestyle shell kickoffs) don't need the markers -- the discipline applies to **target-side prompts the orchestrator dispatches** and any prompt that may feed an autonomous chain wrapper.
 
-**Scope:** applies to all role-bound target-side prompts (analyst, architect, developer, reviewer, archaeologist). Also applies to interactive review prompts (e.g., Q&A sessions) — the sentinel fires once when the session commits its final state, even if the interaction was long.
+**Mandatory copy-paste snippet (paste verbatim into every generated prompt's "Report back" step):**
+
+When authoring a prompt's "Report back" step, include this exact block at the top of that step so the marker requirement is impossible to omit:
+
+```
+Lead your report with this line as the VERY FIRST line, before any prose, table, or summary:
+
+    PROMPT REPORT -- <NNN-or-slug>
+
+End your report with these two lines as the VERY LAST lines:
+
+    Wall-clock: <start ISO timestamp> -> <end ISO timestamp> = <duration>
+    PROMPT COMPLETE -- <NNN-or-slug>
+
+The identifier in the opening marker and the closing sentinel MUST be identical and MUST match this prompt's canonical name.
+```
+
+Substitute the actual prompt identifier when authoring (`PROMPT REPORT -- 314`, `PROMPT COMPLETE -- 314`, etc.). The orchestrator does NOT rely on the agent inferring the markers from the surrounding discipline prose -- the snippet above is paste-mandatory.
+
+**Scope:** applies to all role-bound target-side prompts (analyst, architect, developer, reviewer, archaeologist). Also applies to interactive review prompts (e.g., Q&A sessions) -- the sentinel fires once when the session commits its final state, even if the interaction was long.
 
 **Active-interactive time vs elapsed wall-clock (distinguish these in estimates):**
 
