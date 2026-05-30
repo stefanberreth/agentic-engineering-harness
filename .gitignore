@@ -27,6 +27,19 @@ docs/aeh-autonomous-loop-implementation-plan.md
 docs/aeh-layered-persona-architecture.md
 docs/AE/reviews/layered-architecture-review.md
 
+# Leak-detector local blocklist (real identifiers; never committed).
+# Only bin/.leakage-patterns.example (placeholders) is tracked.
+bin/.leakage-patterns
+
+# Review-intermediary artefacts kept local-only.
+# Findings reports and planning notes are local working drafts -- durable outputs
+# are the resulting code/template changes + CHANGELOG/commit messages, not the
+# intermediate report. See CLAUDE.md "Review intermediaries" rule.
+comments.md
+docs/reviewer-orchestrator-upgrade-notes.md
+*.private.md
+*.local.md
+
 # Target project workspaces (private, tracked by nested repo in targets/)
 # Everything under targets/ is owned by the private targets repo.
 # Nothing in targets/ is tracked by the public harness repo.

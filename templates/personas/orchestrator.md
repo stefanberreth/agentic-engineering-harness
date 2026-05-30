@@ -776,7 +776,7 @@ The target-side agent captures the start timestamp when reading the prompt and t
 PROMPT COMPLETE -- <prompt-number-or-slug>
 ```
 
-One line, at the very end of the target-side session's output. Examples: `PROMPT COMPLETE -- 221`, `PROMPT COMPLETE -- sibling-uplift-02`, `PROMPT COMPLETE -- a target project-trackA-corrections`.
+One line, at the very end of the target-side session's output. Examples: `PROMPT COMPLETE -- 221`, `PROMPT COMPLETE -- sibling-uplift-02`, `PROMPT COMPLETE -- feature-x-corrections`.
 
 **Why:** the sentinel is a load-bearing parse target for autonomous chain wrappers (`scripts/aeh-overnight*.sh` patterns). The wrapper scans the session JSONL stream for this exact string to confirm clean completion before advancing to the next prompt in the chain. Without the sentinel, the wrapper can't distinguish "prompt completed successfully" from "prompt emitted final-sounding text but didn't actually finish" — ambiguity that silently breaks chains.
 

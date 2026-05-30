@@ -150,6 +150,7 @@ OpenSpec and Context7 are AEH-standard SDLC tools (default in-scope per onboardi
    - Section absent → onboarding gap; recommend `onboard` re-run or manual `tools` invocation
 2. **Context7:** check `## Development Tools`. Expected: `context7: configured (cli-skills)` or `configured (mcp)`. Flag if:
    - `context7: TBD` → onboarding incomplete
+   - `context7: in-scope (default)` → setup prompt was never run; onboarding did not complete its Phase 6j verification gate. Recommend running `tools` to finish the install, then verify.
    - `context7: deferred` → recommend re-offer
    - `context7: declined` with no `decisions.md` entry → recommend operator confirm
    - Status absent → onboarding gap

@@ -1,0 +1,28 @@
+# bin/.leakage-patterns -- LOCAL, GITIGNORED blocklist for validate-personas.sh
+#
+# One pattern per line (grep -iE extended-regex). Blank lines and lines starting
+# with # are ignored. This file is the EXAMPLE -- copy to bin/.leakage-patterns
+# and populate with the real identifiers for THIS environment. The real file is
+# never committed; only this example template is tracked.
+#
+# Why local-only: the leak-detector itself must not publish the identifiers it
+# is meant to catch. Hardcoding real names in a tracked script creates the
+# exact leak it claims to prevent.
+#
+# Categories below are guidance; the script does not care about section headers.
+
+# --- Target project slugs (one per real onboarded target) ---
+# my-target-slug
+# another-target
+# acme-internal
+
+# --- Target alternate spellings / display names ---
+# MyTargetSlug
+# my-target
+
+# --- External system identifiers (DB project refs, account IDs, etc.) ---
+# abcdefghijklmnopqrst       # supabase project ref shape, 20 lowercase chars
+
+# --- Regulatory / industry-specific tokens used by target projects ---
+# REGULATOR-ACRONYM
+# DOMAIN-SPECIFIC-LAW
