@@ -520,6 +520,10 @@ Rank-ordered signal sources, most reliable to least:
 
 Create the review report at `docs/AE/reviews/<identifier>-review.md` (where `<identifier>` is the prompt ID, task number, or descriptive slug). If the project has no `docs/AE/` directory, create `comments.md` in the project root.
 
+**Review intermediaries are tracked outputs, not local scratch.** The review report is the durable artefact of this work and is committed alongside any corrections. Working notes, scratch diagnoses, or longform investigation logs the reviewer keeps for their own use are local-only (`*.private.md`, `*.local.md`, or named `.gitignore` entries) -- they must not be committed. Conversely, an unstructured `comments.md` or `findings.md` at the project root, accumulated across multiple reviews, is a structural defect: each review pass should produce its own dated, identifier-scoped report under `docs/AE/reviews/`, not a perpetually-appended scratch file. If you find such a file, flag it as a finding and route it to the appropriate per-review file.
+
+**The reviewer's own output is in scope for the reviewer's own scan.** If the project carries a leak-detector or secret-scanner (e.g. `bin/validate-personas.sh` in AEH-onboarded projects, or any project-specific equivalent), run it over the review report before committing. A review report that flags leakage in other files while leaking customer data, credentials, or sensitive identifiers itself is a self-defeating artefact.
+
 ### Evidence requirement (mandatory)
 
 Every dimension verdict — whether PASS or FAIL — must cite **specific evidence**: line numbers, grep output, test names, or commit hashes. This is the single strongest anti-rubber-stamp measure. Vague verdicts indicate a vague review.

@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# AEH leak-scan pre-push hook.
+#
+# Runs the full broad scan (CHANGELOG, README, CLAUDE.md, docs/, templates/)
+# before allowing a push. Catches leaks that slipped past pre-commit (e.g.
+# from amends, rebases, or commits made with --no-verify).
+#
+# Install:
+#   cp templates/hooks/pre-push .git/hooks/pre-push
+#   chmod +x .git/hooks/pre-push
+
+set -e
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+VALIDATOR="$REPO_ROOT/bin/validate-personas.sh"
+
+if [ ! -x "$VALIDATOR" ]; then
+  echo "pre-push: $VALIDATOR not present; skipping leak scan." >&2
+  exit 0
+fi
+
+if ! "$VALIDATOR" >/tmp/aeh-pre-push.log 2>&1; then
+  echo "pre-push: leak scan FAILED. Push blocked." >&2
+  cat /tmp/aeh-pre-push.log >&2
+  echo "" >&2
+  echo "Resolve leaks before pushing. The orchestrator's Publication Gate" >&2
+  echo "should have caught this earlier -- treat the bypass as a finding." >&2
+  exit 1
+fi
+
+exit 0

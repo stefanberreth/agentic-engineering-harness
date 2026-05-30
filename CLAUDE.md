@@ -173,6 +173,10 @@ When a conversation produces a new insight about how the harness should work, or
 - Target-specific commits go to targets repo only. No CHANGELOG update for target work.
 - After harness changes: verify CLAUDE.md, README.md, CHANGELOG.md, and project structure tree are current before committing.
 - CHANGELOG follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Update for template/persona/playbook/governance/CLAUDE.md changes. Skip for target work and typo fixes.
+- **Publication gate before commit/push.** Run `bin/validate-personas.sh --staged` over staged content and `bin/validate-personas.sh --message "<text>"` over the commit message before any harness commit or push. Block on FAIL. Owner: orchestrator. Commit-message leakage is in scope (clean diff + leaky message still fails).
+- **Validator blocklist is private.** The leak-detector pattern list lives at `bin/.leakage-patterns` (gitignored, populated per environment). The tracked script must contain NO real identifiers -- a leak-detector that publishes the identifiers it is meant to catch is itself the leak. Only `bin/.leakage-patterns.example` (placeholders) is committed.
+- **Review intermediaries are local-only.** Findings reports, planning notes, scratch analyses, longform retrospectives that carry real identifiers are working drafts and never committed to the harness repo. Name them `*.private.md` / `*.local.md` (auto-ignored) or add a named line to `.gitignore`. Durable outputs of a review or planning session are the resulting changes + CHANGELOG entry + commit message body, NOT the intermediate report. A tracked review/planning intermediary in the harness repo is itself a Dimension-1 finding regardless of its content.
+- **gitignore != untrack.** Adding a file to `.gitignore` does not remove it from tracking if it was previously committed. Use `git rm --cached <file>` followed by the `.gitignore` entry. The harness-reviewer's Dimension 1 explicitly checks for already-tracked files that match local-only patterns.
 
 ---
 
@@ -336,7 +340,8 @@ If working on the harness itself:
 ├── CONTRIBUTING.md                        # How to contribute (prompt-first, BDFL model)
 ├── bin/
 │   ├── resolve-persona-marker.sh         # Resolves .claude/persona marker path (Docker-aware; legacy fallback)
-│   └── validate-personas.sh              # Structural validation for base templates + overlays
+│   ├── validate-personas.sh              # Structural validation + leak scan (staged/message/full modes)
+│   └── .leakage-patterns.example         # Placeholder blocklist template (real list at .leakage-patterns is gitignored)
 ├── templates/
 │   ├── personas/
 │   │   ├── analyst.md                     # Requirements gathering (base template)
@@ -362,6 +367,10 @@ If working on the harness itself:
 │   │   ├── onboarding.md                  # Guided assessment + transformation workflow
 │   │   ├── health-check.md               # Recurring compliance check workflow
 │   │   └── tools.md                       # Optional development tool configuration
+│   ├── hooks/
+│   │   ├── README.md                      # Pre-commit / pre-push leak-scan install notes
+│   │   ├── pre-commit                     # Staged-content + commit-message leak scan
+│   │   └── pre-push                       # Pre-push broad leak scan
 │   ├── tools/
 │   │   ├── README.md                      # Tool integration overview
 │   │   ├── tool-detection-patterns.md     # Detection patterns for tools + equivalents

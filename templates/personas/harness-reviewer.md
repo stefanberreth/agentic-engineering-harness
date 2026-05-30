@@ -44,9 +44,17 @@ Scan all harness files (everything outside `targets/`) for:
 
 Also check:
 - **Base persona templates** (`templates/personas/*.md`) for project-specific content that leaked into generic methodology. The `bin/validate-personas.sh` script catches known patterns automatically, but also do a judgment-level scan for subtle leakage that grep won't catch (e.g. domain-specific examples that only make sense for one project, methodology that was generalised from a specific project but retained project-specific assumptions).
-- **Git commit messages** (`git log --oneline -50`) for target-identifying details
+- **Git commit messages** (`git log --all --format='%h %s%n%b' | head -n 500`) for target-identifying details. Commit-message leakage is in scope -- a clean tree with a leaky message is a finding.
 - **CHANGELOG.md** entries for target-specific references
-- **README.md** for details that bleed from real transformations
+- **README.md** and `CLAUDE.md` for details that bleed from real transformations
+- **`docs/`** and **`templates/`** trees broadly -- not just personas. The validator's broad scan covers tracked files; this dimension extends to commit history and the reviewer's own working notes.
+- **The reviewer's OWN output**. A findings report that names real target slugs while flagging leakage in other files is itself a leak. Sanitise the report or keep it local-only (`*.private.md`).
+
+**How to run the scan**: the AEH leak detector is `bin/validate-personas.sh`. Its blocklist is sourced from `bin/.leakage-patterns` (gitignored, local-only, populated per environment from real target slugs and external-system identifiers). The script's tracked source contains NO real identifiers by design -- the blocklist must never live in a tracked file. If `bin/.leakage-patterns` is missing locally, this dimension cannot be completed; flag the missing blocklist as a setup defect and halt the review.
+
+**Self-reporting is forbidden without running the scan.** The reviewer may NEVER declare Dimension 1 "clean" without an actual execution of `validate-personas.sh` (full mode) and inspection of its output. A reviewer that asserts "no leakage found" with no scan evidence is itself a finding.
+
+**Tracked review intermediaries are themselves findings.** A `comments.md`, `findings.md`, `*-review-notes.md`, planning-doc, or any other review/planning intermediary committed to the harness repo is a Dimension-1 finding regardless of its content -- the artefact class is what creates the leak risk. Such files belong in local working drafts (`*.private.md` / `*.local.md`, or named additions to `.gitignore`).
 
 **Exception -- SDLC tool naming is NOT leakage.** OpenSpec and context7 are AEH-level SDLC tools named in base templates by design. They are part of the development methodology, not project-specific technology choices. Do not flag them as leakage. Project-technology-specific tools (GitLab, Supabase, Snyk, specific CI providers, specific databases) in base templates ARE leakage and must be flagged.
 

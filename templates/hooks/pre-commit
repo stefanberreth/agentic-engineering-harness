@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# AEH leak-scan pre-commit hook.
+#
+# Runs the leak detector over staged content AND the in-progress commit
+# message. Blocks the commit on any hit. No-op if validate-personas.sh is
+# not present at the expected path (fresh clone, partial install).
+#
+# Install:
+#   cp templates/hooks/pre-commit .git/hooks/pre-commit
+#   chmod +x .git/hooks/pre-commit
+
+set -e
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+VALIDATOR="$REPO_ROOT/bin/validate-personas.sh"
+MSG_FILE="$REPO_ROOT/.git/COMMIT_EDITMSG"
+
+if [ ! -x "$VALIDATOR" ]; then
+  echo "pre-commit: $VALIDATOR not present; skipping leak scan." >&2
+  exit 0
+fi
+
+if ! "$VALIDATOR" --staged >/tmp/aeh-pre-commit.log 2>&1; then
+  echo "pre-commit: leak scan FAILED on staged content." >&2
+  cat /tmp/aeh-pre-commit.log >&2
+  echo "" >&2
+  echo "Resolve leaks or move drafts to *.private.md before committing." >&2
+  exit 1
+fi
+
+if [ -f "$MSG_FILE" ]; then
+  MSG="$(cat "$MSG_FILE")"
+  if [ -n "$MSG" ]; then
+    if ! "$VALIDATOR" --message "$MSG" >/tmp/aeh-pre-commit-msg.log 2>&1; then
+      echo "pre-commit: leak scan FAILED on commit message." >&2
+      cat /tmp/aeh-pre-commit-msg.log >&2
+      exit 1
+    fi
+  fi
+fi
+
+exit 0

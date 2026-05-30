@@ -193,6 +193,42 @@ The orchestrator never declares delivered work delivered until pipeline state is
 
 ---
 
+## Publication Gate -- Pre-Commit/Pre-Push Leak Scan
+
+Before ANY harness-side commit and BEFORE any push, the orchestrator runs the leak scan over BOTH staged file content AND the staged commit message. Block on any hit. The orchestrator owns what gets committed and what gets pushed; the publication gate is non-negotiable.
+
+Mechanics:
+
+- Staged files: `bin/validate-personas.sh --staged`
+- Commit message: `bin/validate-personas.sh --message "<message text>"`
+- Both must exit 0. Any FAIL aborts the commit/push; the orchestrator fixes the leak (or marks the file local-only) and re-runs the gate before retrying.
+
+Scope:
+
+- Applies to every harness commit, including documentation, CHANGELOG entries, and incidental fixes.
+- Commit-message leakage is in scope. A clean diff with a leaky message still fails.
+- The pattern source is `bin/.leakage-patterns` (gitignored, local-only). Operators populate this file once per environment; it lists real target slugs and external-system identifiers and is never committed. A tracked `bin/.leakage-patterns.example` documents the schema.
+
+Why this lives with the orchestrator: the orchestrator is the single coordination point that authorises commits and pushes. Reviewer/harness-reviewer audit AFTER the fact; the publication gate intervenes BEFORE state leaves the local tree.
+
+A commit or push that bypasses this gate is itself a finding -- the bypass, not just the leak, is the defect.
+
+---
+
+## Review Intermediaries Are Local-Only
+
+Working drafts produced during review or planning -- findings reports, planning notes, scratch analyses, longform retrospectives carrying real identifiers -- are local-only artefacts. They live on disk as `*.private.md` / `*.local.md` (or named files added to `.gitignore`) and are never committed. The durable outputs of a review or planning session are:
+
+1. The resulting changes (template edits, persona updates, governance rules).
+2. The CHANGELOG entry summarising those changes in generic terms.
+3. The commit message body capturing the why.
+
+`gitignore != untrack`: a file already tracked is not protected by adding it to `.gitignore`. Use `git rm --cached <file>` to untrack, then ignore.
+
+If a review intermediary is found tracked in the harness repo, that is itself a finding for the next harness-reviewer pass, regardless of its content.
+
+---
+
 ## Before You Start
 
 1. Read `CLAUDE.md` for harness rules and conventions.
