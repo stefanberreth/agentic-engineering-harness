@@ -144,7 +144,7 @@ Use this rubric to evaluate the quality of the agentic engineering files in a ta
 
 ## 5. Tool Integration Quality (Optional)
 
-> Only score this rubric if the project has actively configured development tools (OpenSpec, Context7, Serena, or other MCP servers). If no tools are configured, skip this section entirely.
+> Only score this rubric if the project has actively configured development tools (OpenSpec, Context7, Serena, other MCP servers, or CLI-based doc tools). If no tools are configured, skip this section entirely. Note: Context7 in its preferred CLI + Skills mode is user-global and has no `.mcp.json` entry -- score it via the functional smoke test (`ctx7 library` then `ctx7 docs` returning content), not by config inspection.
 
 | Criterion | Score | Notes |
 |---|---|---|
@@ -169,7 +169,8 @@ See `templates/tools/tool-detection-patterns.md` § "MCP Health Verification Pat
 ### Common problems
 - Tool in `.mcp.json` but not documented in CLAUDE.md (invisible to new sessions)
 - Serena's `project.yml` references a language server for a language the project no longer uses
-- Context7 configured but `CONTEXT7_API_KEY` never set (silent failure)
+- Context7 declared `configured` but the functional smoke test (`ctx7 library` then `ctx7 docs`) was never run or fails -- a claim without proof
+- Context7 MCP fallback configured but `CONTEXT7_API_KEY` never set (silent failure); note the preferred CLI + Skills mode needs no key for doc queries
 - Tool configured during onboarding but never actually used -- dead config weight
 - Multiple overlapping tools for the same function (e.g. Serena + Sourcegraph)
 - **Non-existent npm package** in npx-based MCP entry (server fails on every invocation, error only visible in `/mcp` diagnostics)

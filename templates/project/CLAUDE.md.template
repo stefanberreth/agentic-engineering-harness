@@ -218,10 +218,11 @@ Docs: https://openspec.dev/
 
 ### Context7
 
-Documentation lookup via MCP. Provides up-to-date library docs in context.
+Up-to-date library documentation via the `ctx7` CLI + Skills (user-global install -- no project config).
 
-Usage: Add "use context7" to prompts when current library documentation is needed.
+The agent fetches docs autonomously: `ctx7 library <name> <query>` to resolve a library ID, then `ctx7 docs <libraryId> <query>` for current docs. (MCP-server fallback exists for environments that can't run the CLI; then add "use context7" to prompts.)
 
+Setup (per machine, once): `npx ctx7@latest setup --cli --claude`
 Docs: https://context7.com/
 
 ### Serena

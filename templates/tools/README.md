@@ -1,6 +1,6 @@
 # Tool Integration Templates
 
-MCP server and development tool configurations for target projects under harness management. Two of these tools (**OpenSpec**, **Context7**) are AEH-standard SDLC tools — default in-scope during onboarding because they are load-bearing for successful agentic engineering. The third (**Serena**) is genuinely optional and codebase-dependent.
+Development tool configurations (CLI, skills, and MCP-server based) for target projects under harness management. Two of these tools (**OpenSpec**, **Context7**) are AEH-standard SDLC tools — default in-scope during onboarding because they are load-bearing for successful agentic engineering. The third (**Serena**) is genuinely optional and codebase-dependent.
 
 ## Design Principles
 
@@ -15,7 +15,7 @@ MCP server and development tool configurations for target projects under harness
 | Tool | Status | What it does | Setup | Teardown |
 |------|--------|-------------|-------|----------|
 | **OpenSpec** | AEH-standard (default in-scope) | Specification-driven development. Manages specs and change proposals as markdown files alongside code. **No MCP server needed for CLI agents** -- they read spec files directly. MCP server only for sandboxed environments without filesystem access. | `openspec-setup.md` | `openspec-teardown.md` |
-| **Context7** | AEH-standard (default in-scope) | Documentation lookup via MCP. Provides up-to-date library docs in Claude's context without manual searching. | `context7-setup.md` | `context7-teardown.md` |
+| **Context7** | AEH-standard (default in-scope) | Up-to-date library documentation in the agent's context. **Preferred install is CLI + Skills** (`ctx7 setup --cli --<agent>` -- user-global skill, no `.mcp.json`, no mandatory API key); MCP server is a fallback for environments that can't run the CLI. | `context7-setup.md` | `context7-teardown.md` |
 | **Serena** | Optional (codebase-dependent) | Language-aware code navigation via MCP. Provides semantic code understanding (go-to-definition, find-references, symbol search). | `serena-setup.md` | `serena-teardown.md` |
 
 ## How Tools Are Managed

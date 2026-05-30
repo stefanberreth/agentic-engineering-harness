@@ -1,7 +1,9 @@
 # Architecture Analysis: Integrating OpenSpec, Context7, and Serena into the AE Harness
 
 **Date:** 2026-02-19
-**Status:** Research complete, pending decision
+**Status:** Research complete, decision made and since evolved (see note)
+
+> **Update (2026-05-30):** This analysis describes Context7 as an MCP server configured per-project in `.mcp.json`. That is now the *fallback* mechanism. The preferred and default install is **CLI + Skills** (`ctx7 setup --cli --<agent>`): a user-global skill + always-on rule, no `.mcp.json`, no mandatory API key; the agent fetches docs by running `ctx7 library` then `ctx7 docs`. This document is retained as the original research record; for current behaviour see `templates/tools/context7-setup.md` and the CHANGELOG. The OpenSpec and Serena analysis below is unaffected.
 
 ---
 

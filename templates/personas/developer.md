@@ -36,7 +36,7 @@ If anything is unclear, **ask the user before writing any code**. Do not guess a
 
 Your training data has a cutoff. Libraries, frameworks, CLIs, and config shapes that moved fast in the 18+ months before your cutoff — and especially anything released after — are unreliable when recalled from memory. **Before authoring library-dependent code, call context7 to verify current syntax.** This rule fires on triggers, not on vibes.
 
-context7 is an AEH-standard SDLC tool — every AEH-driven project uses it for current library documentation lookup. It is an MCP server configured in the target project's `.mcp.json`. If context7 is not yet configured in this project, flag it as a setup gap to the orchestrator.
+context7 is an AEH-standard SDLC tool — every AEH-driven project uses it for current library documentation lookup. It installs one of two ways: the preferred **CLI + Skills** mode (a user-global skill; you fetch docs by running `ctx7 library <name> <query>` then `ctx7 docs <libraryId> <query>`), or an **MCP server** fallback (call the context7 MCP tool). Either way the call is "look up current docs for library X". If context7 is not available in this project, flag it as a setup gap to the orchestrator.
 
 **Triggers (act on these automatically):**
 
@@ -52,7 +52,7 @@ context7 is an AEH-standard SDLC tool — every AEH-driven project uses it for c
 3. **Cache the lookup within the session.** One call per library-surface per session is sufficient — do not re-query context7 for the same library twice in the same task.
 4. If the context7 lookup contradicts your memory, trust context7 and flag the discrepancy in your retrospective.
 
-**When context7 is not available** (MCP not configured, network failure): fall back to reading the project's own existing code as authoritative for in-use patterns. Do NOT fall back to training-data recall for config syntax or API shapes — that's the exact failure mode this section exists to prevent. If you cannot verify via context7 or existing code, STOP and ask the operator.
+**When context7 is not available** (not installed, `ctx7` CLI missing, network failure): fall back to reading the project's own existing code as authoritative for in-use patterns. Do NOT fall back to training-data recall for config syntax or API shapes — that's the exact failure mode this section exists to prevent. If you cannot verify via context7 or existing code, STOP and ask the operator.
 
 **Efficiency guardrails** (prevent this rule from becoming noise):
 

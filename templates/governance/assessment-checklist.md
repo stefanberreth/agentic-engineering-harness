@@ -123,7 +123,7 @@ For each item, mark one of:
 | 9.5 | OpenSpec: no orphaned or stale specs (active status but clearly outdated content or >90 days since `updated`) | | Only when `openspec/specs/` exists |
 | 9.6 | OpenSpec: change proposals are resolved or actively in progress (no abandoned `proposal.md` without `design.md`/`tasks.md`) | | Only when `openspec/changes/` exists |
 | 9.7 | OpenSpec: spec acceptance criteria are testable (not vague or subjective) | | Only when `openspec/specs/` exists |
-| 9.8 | Context7: MCP config present with valid transport | | |
+| 9.8 | Context7: configured and proven by functional smoke test. Preferred CLI + Skills mode is user-global (no `.mcp.json`) -- verify via `ctx7 library` then `ctx7 docs` returning content; MCP fallback verified by valid transport + `CONTEXT7_API_KEY` | | |
 | 9.9 | Serena: `.serena/project.yml` present and matches tech stack | | |
 | 9.10 | Functional equivalents: ADR/RFC/spec management exists | | |
 | 9.11 | Functional equivalents: alternative doc/code intelligence servers | | |

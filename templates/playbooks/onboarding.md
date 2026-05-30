@@ -208,12 +208,12 @@ Then jump straight to a condensed flow:
 
    b. **Phase 6g (Standard SDLC Tools Setup) -- MANDATORY, do not skip.** Run the offer block verbatim from Phase 6g below. OpenSpec and context7 are default in-scope; the operator may opt out, but the offer presents installation as the default path:
       - **OpenSpec:** default scope. Present the opt-out confirmation block from Phase 6g; if operator does NOT opt out (silence / yes / continue), read `templates/tools/openspec-setup.md` and generate the setup prompt; insert it into the sequence before the regression check. Record the decision in `profile.md` under `## Specification Management`.
-      - **context7:** default scope. Present the opt-out confirmation block from Phase 6g; if operator does NOT opt out, read `templates/tools/context7-setup.md` and generate the setup prompt. Record the decision in `profile.md` under `## Development Tools`.
+      - **context7:** default scope. Present the opt-out confirmation block from Phase 6g; if operator does NOT opt out, read `templates/tools/context7-setup.md` and generate the **CLI + Skills** setup prompt (MCP fallback only if the CLI can't run). Record the decision in `profile.md` under `## Development Tools`.
       - **Serena:** auto-skip on greenfield (0 lines of source -- assessment criteria in 6g resolve to "do not recommend"). Record in `profile.md` under `## Development Tools`: `serena: not recommended (greenfield -- re-assess via tools after first feature)`. Do NOT present the offer block; the assessment has already resolved.
 
-   c. **Phase 6h (Sandbox env provisioning).** If context7 was accepted, run 6h. Otherwise skip 6h. Do not skip merely because the path is greenfield.
+   c. **Phase 6h (Sandbox env provisioning).** Only if context7 was accepted **in the MCP fallback mode** (which needs `CONTEXT7_API_KEY`). The preferred CLI + Skills mode needs no env var -- skip 6h for it. Skip 6h entirely if context7 was opt-out/deferred. Do not skip merely because the path is greenfield.
 
-10. **Phase 7 (handoff): present options as usual.** Note in the handoff that the analyst persona, once invoked on the first feature, will populate the overlays with real domain/stack/architecture content. Onboarding itself is done -- but onboarding cannot be declared complete until the Role-Activation Completion Gate (Phase 4, see section 6i) has passed.
+10. **Phase 7 (handoff): present options as usual.** Note in the handoff that the analyst persona, once invoked on the first feature, will populate the overlays with real domain/stack/architecture content. Onboarding itself is done -- but onboarding cannot be declared complete until the Role-Activation Completion Gate (section 6i) and the Standard-Tool Verification Completion Gate (section 6j) have passed.
 
 After completing the greenfield short-circuit, do NOT return to the brownfield phases. The playbook is complete for this target. Onboarding cannot be declared complete until the Role-Activation Completion Gate (section 6i) has passed.
 
@@ -791,18 +791,23 @@ Default: set up OpenSpec as part of onboarding scope.
 #### context7 (standard — default in-scope)
 
 ```
-context7 provides current library documentation lookup via MCP. Agents
-call it before writing code that uses fast-moving library APIs — prevents
-training-data recall for libraries that changed after the agent's cutoff.
+context7 provides current library documentation lookup. Agents check
+current API shape before writing code that uses fast-moving library APIs —
+prevents training-data recall for libraries that changed after the agent's
+cutoff.
 
-Default: set up context7 as part of onboarding scope.
+Preferred install: CLI + Skills (ctx7 setup --cli --<agent>) — a user-global
+skill, no .mcp.json, no mandatory API key. MCP server is a fallback only for
+environments that can't run the ctx7 CLI.
+
+Default: set up context7 (CLI + Skills) as part of onboarding scope.
 
   [Y -- proceed with setup (default)]
   [opt-out -- skip context7 for this project (rare; you know better)]
   [defer -- offer again via `tools` later]
 ```
 
-**Default behavior (Y / silence / "continue" / "yes"):** Read `templates/tools/context7-setup.md`, generate the setup prompt adapted to this target, and add it to the prompt sequence. Record in `profile.md` under `## Development Tools`: `context7: configured`. The developer and architect overlays will need a §1a.PROJECT / §3a.PROJECT trigger list populated with the project's fast-moving libraries — generate that as part of the setup prompt.
+**Default behavior (Y / silence / "continue" / "yes"):** Read `templates/tools/context7-setup.md`, generate the **CLI + Skills** setup prompt adapted to this target (use the flag matching the target's coding agent), and add it to the prompt sequence. Generate the MCP-fallback variant only if the target environment cannot run the `ctx7` CLI (no Node 18+ / no npx) or the operator asks for it. Record in `profile.md` under `## Development Tools`: `context7: configured (cli-skills)` (or `configured (mcp)` for the fallback). The developer and architect overlays will need a §1a.PROJECT / §3a.PROJECT trigger list populated with the project's fast-moving libraries — generate that as part of the setup prompt.
 
 **If operator explicitly opts out:** Record in `profile.md` under `## Development Tools`: `context7: declined (operator opt-out)`. Note the reason in `decisions.md`. Reversible via `tools`.
 
@@ -847,7 +852,9 @@ Serena (semantic code navigation via LSP):
 
 > **Reference:** `templates/tools/sandbox-env-provisioning.md` for full mechanism details.
 
-If any accepted tool requires environment variables (currently: Context7 requires `CONTEXT7_API_KEY`), provision them now. This step ensures the variables reach the agent inside Docker sandbox containers.
+If any accepted tool requires environment variables, provision them now. This step ensures the variables reach the agent inside Docker sandbox containers.
+
+**Applies to Context7 only in the MCP fallback mode.** The preferred CLI + Skills install needs no env var (doc queries work without a key; a key only raises rate limits and is set interactively if wanted). If Context7 was installed via CLI + Skills, skip this section. The steps below apply when the MCP fallback was chosen.
 
 **Step 1: Check harness-level `.env`**
 
@@ -908,6 +915,21 @@ Onboarding MUST NOT be declared complete until role activation is proven end to 
 Before Phase 7 handoff, dispatch ONE trivial role-bound prompt (any one engineering role -- archaeologist is the natural choice). The prompt self-activates the role via Step 0 and must confirm that BOTH files loaded from within the target tree: the base template at `docs/AE/personas/_base/<role>.md` and the overlay at `docs/AE/personas/<role>.md`. The role then emits a one-line confirmation and stops -- no investigation work is required; this is a loading smoke test.
 
 If either file fails to load, onboarding is NOT complete. Fix the placement and re-run the gate. This is gate-first applied to onboarding itself: no 'onboarding complete' without a gate that proves the outcome 'roles can activate.'
+
+### 6j. Standard-Tool Verification Completion Gate
+
+Onboarding MUST NOT be declared complete until each standard SDLC tool is either **proven working** or **explicitly opted out in `decisions.md`**. A `profile.md` line that says `configured` is a claim, not proof -- the gate requires functional evidence (or a recorded deliberate opt-out). This closes the failure mode where a tool is "set up" in the plan but never actually functions, and nobody notices until a developer prompt needs it.
+
+For **context7** (one of three outcomes must hold):
+
+1. **Verified working:** the operator has run the functional smoke test in the target session and reported a pass:
+   - CLI + Skills mode: `npx ctx7@latest library react "state hooks"` then `npx ctx7@latest docs /facebook/react "useState cleanup"` returns documentation content.
+   - MCP mode: the Context7 MCP smoke test from `templates/tools/tool-detection-patterns.md` returns docs.
+   Record `context7: configured (cli-skills)` / `configured (mcp)` plus `verified <date>` in `profile.md`.
+2. **Explicit opt-out:** `profile.md` records `context7: declined (operator opt-out)` AND `decisions.md` has a dated entry with the operator's reason. No verification required.
+3. **Deferred:** `profile.md` records `context7: deferred`. Allowed, but onboarding is reported as **complete-with-deferral**, not clean-complete, and the deferral is surfaced in the Phase 7 handoff so it is not silently lost.
+
+If context7 was accepted but the smoke test has not been run or did not pass, onboarding is NOT complete: hand the operator the smoke-test commands, wait for the pass, then proceed. (Apply the same proven-or-opted-out logic to OpenSpec via its own verification.)
 
 Proceed to Phase 7.
 

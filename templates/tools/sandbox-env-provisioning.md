@@ -23,9 +23,11 @@ The sandbox container (sandbox-dev or similar) has a passthrough mechanism:
 
 | Variable | Used by | Purpose | Firewall rule needed |
 |----------|---------|---------|----------------------|
-| `CONTEXT7_API_KEY` | Context7 MCP server | Authenticates with context7.com for doc lookup | `mcp.context7.com:443` (already whitelisted) |
+| `CONTEXT7_API_KEY` | Context7 **MCP fallback only** | Authenticates with context7.com for doc lookup | `mcp.context7.com:443` (already whitelisted) |
 
 This table is the source of truth for what the onboarding playbook provisions. When a new passthrough var is added to `run-sandbox.sh`, add it here too.
+
+Note: Context7's **preferred CLI + Skills mode needs no env var** -- doc queries work without a key, and an optional key (higher rate limits only) is set interactively rather than provisioned through the sandbox. `CONTEXT7_API_KEY` is provisioned only when the MCP-server fallback was installed.
 
 ---
 

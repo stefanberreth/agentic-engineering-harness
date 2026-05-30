@@ -222,8 +222,8 @@ Verify the full quality chain from development through review is unbroken:
 **context7:**
 - Named in developer (§1a), architect (§3a), and reviewer (Library API Currency) base templates as the library documentation lookup tool
 - NOT relegated to a project overlay or described as "optional"
-- Described correctly: MCP server configured per-project in `.mcp.json`, provides current library/framework/CLI documentation
-- Setup template exists at `templates/tools/context7-setup.md`
+- Described correctly: preferred install is **CLI + Skills** (`ctx7 setup --cli --<agent>` -- user-global skill, no `.mcp.json`, no mandatory API key), with the MCP server as a documented fallback. Provides current library/framework/CLI documentation. Flag any base template or setup doc that still asserts context7 is "an MCP server in `.mcp.json`" as the only/default mechanism.
+- Setup template exists at `templates/tools/context7-setup.md` and documents both modes (CLI + Skills preferred, MCP fallback)
 
 **Project-technology-specific tools** (GitLab, Supabase, Snyk, specific CI providers, databases, deployment platforms):
 - NOT named in any base template

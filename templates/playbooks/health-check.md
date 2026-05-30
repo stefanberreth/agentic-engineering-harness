@@ -148,13 +148,19 @@ OpenSpec and Context7 are AEH-standard SDLC tools (default in-scope per onboardi
    - `policy: deferred` → operator postponed; check `decisions.md` for context, recommend re-offer via `tools` if no explicit decline
    - `policy: manual (spec.md)` with no `decisions.md` entry → looks like default-was-bypassed; recommend operator confirm the opt-out is deliberate
    - Section absent → onboarding gap; recommend `onboard` re-run or manual `tools` invocation
-2. **Context7:** check `## Development Tools`. Expected: `context7: configured` (or `in-scope (default)` if onboarding is still pending the setup prompt). Flag if:
+2. **Context7:** check `## Development Tools`. Expected: `context7: configured (cli-skills)` or `configured (mcp)`. Flag if:
    - `context7: TBD` → onboarding incomplete
    - `context7: deferred` → recommend re-offer
    - `context7: declined` with no `decisions.md` entry → recommend operator confirm
    - Status absent → onboarding gap
+   - `configured` but no `verified <date>` recorded → unverified claim; require the functional smoke test (below) before treating it as healthy
 
 Standard-tool absence is a HIGH-severity finding when no `decisions.md` entry records a deliberate opt-out, because the project is missing load-bearing engineering infrastructure (spec traceability + current library docs). When `decisions.md` records the opt-out, downgrade to informational.
+
+**Context7 functional verification (mandatory part of the e2e gate -- not skippable when context7 is `configured`):** static presence is insufficient because the preferred CLI + Skills install is user-global and leaves nothing in the project tree. Confirm Context7 actually returns docs:
+   - CLI + Skills mode: hand the operator `npx ctx7@latest library react "state hooks"` then `npx ctx7@latest docs /facebook/react "useState cleanup"` to run in the target session. Pass = the second command returns documentation content.
+   - MCP mode: run the static checks below AND the MCP smoke test from `templates/tools/tool-detection-patterns.md`.
+   A `configured` status with a failing or never-run smoke test is a HIGH finding: the tool is declared but not load-bearing. Record the verification result and date in the health report.
 
 **Configured-tool health check (existing logic):**
 
@@ -164,7 +170,7 @@ If `targets/<slug>/profile.md` records any configured development tools (under `
 
 1. **Config present:** Is the tool's entry still in `.mcp.json`?
 2. **Documented:** Is the tool still documented in the target's CLAUDE.md under a Development Tools section?
-3. **Config matches reality:** For Serena, does `.serena/project.yml` reference languages the project still uses? For Context7, is the transport config valid?
+3. **Config matches reality:** For Serena, does `.serena/project.yml` reference languages the project still uses? For Context7 in MCP mode, is the transport config valid? For Context7 in CLI + Skills mode there is no `.mcp.json` entry -- it is verified by the functional smoke test above, not by config inspection (do not flag a missing `.mcp.json` entry as broken for a CLI + Skills install).
 4. **No orphaned config:** Are there tools in `.mcp.json` that are NOT documented in CLAUDE.md? (These are invisible to new sessions.)
 5. **No removed tools:** Are there tools documented in CLAUDE.md that are NOT in `.mcp.json`? (These are documented but non-functional.)
 

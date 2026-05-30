@@ -46,7 +46,20 @@ These indicate spec management exists but may not use OpenSpec:
 
 ## Context7 Detection
 
-### Direct detection
+Context7 installs one of two ways. CLI + Skills (preferred) is user-global and leaves nothing in the project tree; MCP (fallback) is project-local.
+
+### Direct detection -- CLI + Skills mode (preferred)
+
+| What | Pattern | Tool |
+|------|---------|------|
+| Docs skill (user-global) | Glob: `~/.claude/skills/*context7*`, `~/.claude/skills/*find-docs*`, `~/.claude/skills/*ctx7*` (and the matching `~/.gemini/skills/` etc. for other agents) | Glob |
+| Always-on rule | Grep `~/.claude/CLAUDE.md` (and the agent's user-level rule file) for `ctx7` or `context7` | Grep |
+| CLI available | Run `npx ctx7@latest --version 2>&1` or check for a global `ctx7` binary | Bash |
+| Project-level pointer | Grep target CLAUDE.md for `ctx7` / `context7` under Development Tools | Grep |
+
+Because the skill is user-global, its absence from the project tree is expected and is NOT evidence Context7 is unconfigured. Confirm via `ctx7 skills list --claude` or the functional smoke test, not by looking for project files.
+
+### Direct detection -- MCP mode (fallback)
 
 | What | Pattern | Tool |
 |------|---------|------|
@@ -165,9 +178,10 @@ Static checks verify configuration. Smoke tests verify the server actually works
 
 Each test is designed to produce an unambiguous result: either meaningful output (pass) or an error (fail).
 
-| Tool | Test prompt (run in target session) | Pass | Fail |
+| Tool | Test (run in target session) | Pass | Fail |
 |------|-------------------------------------|------|------|
-| Context7 | `Use the Context7 MCP server to look up documentation for React useState. Show the top result.` | Returns documentation content | Auth error, timeout, or empty response |
+| Context7 (CLI + Skills) | Run `npx ctx7@latest library react "state hooks"` then `npx ctx7@latest docs /facebook/react "useState cleanup"` | Second command returns documentation content | Auth error, timeout, empty response, or `ctx7` not found |
+| Context7 (MCP) | `Use the Context7 MCP server to look up documentation for React useState. Show the top result.` | Returns documentation content | Auth error, timeout, or empty response |
 | Serena | `Use the Serena MCP server to list the symbols in the project's main entry file.` | Returns symbol list | Connection error or "no symbols found" on a file that clearly has them |
 | Supabase | `Use the Supabase MCP server to list the tables in the database.` | Returns table list | Auth error or connection refused |
 

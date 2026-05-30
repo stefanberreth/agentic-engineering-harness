@@ -72,7 +72,7 @@ Run all detection patterns from `templates`tools`/tool-detection-patterns.md` ag
 Tool         Status          Notes
 ───────────  ──────────────  ─────────────────────────────
 OpenSpec     not found       ADR directory detected (docs/adr/)
-Context7     configured      in .mcp.json, documented in CLAUDE.md
+Context7     configured      CLI + Skills (user-global), documented in CLAUDE.md
 Serena       declined        declined on 2026-02-15
 ───────────  ──────────────  ─────────────────────────────
 MCP config:  .mcp.json present (2 servers configured)
@@ -130,13 +130,16 @@ OpenSpec -- specification-driven development (AEH-standard SDLC tool)
 **For Context7** (AEH-standard, default in-scope):
 
 ```
-Context7 -- documentation lookup via MCP (AEH-standard SDLC tool)
-  Provides up-to-date library docs in Claude's context. Agents call it
-  before writing code that uses fast-moving library APIs -- prevents
-  training-data recall for libraries that changed after the agent's cutoff.
+Context7 -- up-to-date library documentation (AEH-standard SDLC tool)
+  Agents check current API shape before writing code that uses fast-moving
+  libraries -- prevents training-data recall for libraries that changed after
+  the agent's cutoff.
+  Preferred install: CLI + Skills (ctx7 setup --cli --<agent>) -- user-global
+  skill, no .mcp.json, no mandatory API key. MCP server is a fallback for
+  environments that can't run the ctx7 CLI.
   Docs: https://context7.com/
 
-  Default action: set up. Confirm to proceed.
+  Default action: set up (CLI + Skills). Confirm to proceed.
   [Y -- set up (default) / defer / opt-out]
 ```
 
@@ -160,7 +163,7 @@ Serena -- language-aware code navigation via MCP (previously declined)
 ### Tool currently configured
 
 ```
-Context7 -- documentation lookup via MCP (configured)
+Context7 -- up-to-date library documentation (configured)
   [keep / remove]
 ```
 
@@ -192,7 +195,7 @@ For each accepted action, generate a prompt:
    - Use the correct tech stack for Serena's `project.yml`
    - Reference the correct CLAUDE.md section locations
    - Include project-specific paths
-3. **If the tool requires environment variables** (see `templates/tools/sandbox-env-provisioning.md`): run the sandbox env provisioning flow -- check harness `.env` for the key, ask operator if missing, ensure the generated prompt includes `.env` provisioning steps.
+3. **If the tool requires environment variables** (see `templates/tools/sandbox-env-provisioning.md`): run the sandbox env provisioning flow -- check harness `.env` for the key, ask operator if missing, ensure the generated prompt includes `.env` provisioning steps. **Context7 in the preferred CLI + Skills mode needs no env var** (doc queries work without a key); only the MCP fallback requires `CONTEXT7_API_KEY`. Skip env provisioning for CLI + Skills setups.
 4. Write the prompt to `targets/<slug>/prompts/NNN-setup-<tool>.md` following the standard prompt format (see CLAUDE.md > Prompt File Format)
 5. If the target's prompt delivery policy is `direct`, also write to `<target-path>/docs/AE/prompts/`
 
@@ -279,5 +282,6 @@ Append to `targets/<slug>/journal.md` with a summary of what was done.
 | Target has no profile.md | Suggest `onboard` or `health` |
 | `.mcp.json` has unexpected format | Warn user, ask how to proceed |
 | Serena requested but `uv` not available | Note prerequisite in the prompt, don't block |
-| Context7 requested but no API key | Note in prompt that user needs to set `CONTEXT7_API_KEY` |
+| Context7 requested but no API key | Fine for CLI + Skills mode (key optional, only raises rate limits). Required only for the MCP fallback -- then note the user must set `CONTEXT7_API_KEY` |
+| Context7 requested but `ctx7` CLI can't run (no Node 18+ / no npx) | Fall back to MCP mode; note the prerequisite in the prompt |
 | User changes mind mid-playbook | Allow it -- re-offer the tool with updated options |

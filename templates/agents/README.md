@@ -9,7 +9,7 @@ AEH distinguishes three concerns:
 | Concern | Location | Examples |
 |---------|----------|----------|
 | **Agent knowledge** | `templates/agents/<agent>/` | Permission schemas, config file locations, detection patterns, recommended baselines |
-| **Tool knowledge** | `templates/tools/` | MCP server setup/teardown, detection patterns for OpenSpec/Context7/Serena |
+| **Tool knowledge** | `templates/tools/` | Tool setup/teardown (CLI, skills, and MCP-server based), detection patterns for OpenSpec/Context7/Serena |
 | **Governance criteria** | `templates/governance/` | Agent-agnostic evaluation rubrics (assessment checklist, review criteria) |
 
 **Agents are runtimes** -- they control what actions an LLM can take, where it can read/write, and what permissions it has. Claude Code, Cursor, Windsurf, Cline, Aider, and Codex are all agents with different permission models, config locations, and governance surfaces.
