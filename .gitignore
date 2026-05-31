@@ -37,6 +37,7 @@ bin/.leakage-patterns
 # intermediate report. See CLAUDE.md "Review intermediaries" rule.
 comments.md
 docs/reviewer-orchestrator-upgrade-notes.md
+BACKLOG.md
 *.private.md
 *.local.md
 
