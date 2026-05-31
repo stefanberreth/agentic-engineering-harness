@@ -48,6 +48,7 @@ Also check:
 - **CHANGELOG.md** entries for target-specific references
 - **README.md** and `CLAUDE.md` for details that bleed from real transformations
 - **`docs/`** and **`templates/`** trees broadly -- not just personas. The validator's broad scan covers tracked files; this dimension extends to commit history and the reviewer's own working notes.
+- **`openspec/**`** (proposal.md, design.md, tasks.md, specs/) -- explicitly in scope. OpenSpec proposals frequently summarise work motivated by target incidents; the authoring temptation is to paraphrase a real incident closely enough to identify the target. The validator catches pattern-matched leakage; this dimension catches paraphrase-class leakage by judgment. See `openspec/project.md` § "Authoring discipline".
 - **The reviewer's OWN output**. A findings report that names real target slugs while flagging leakage in other files is itself a leak. Sanitise the report or keep it local-only (`*.private.md`).
 
 **How to run the scan**: the AEH leak detector is `bin/validate-personas.sh`. Its blocklist is sourced from `bin/.leakage-patterns` (gitignored, local-only, populated per environment from real target slugs and external-system identifiers). The script's tracked source contains NO real identifiers by design -- the blocklist must never live in a tracked file. If `bin/.leakage-patterns` is missing locally, this dimension cannot be completed; flag the missing blocklist as a setup defect and halt the review.

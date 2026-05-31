@@ -177,6 +177,8 @@ When a conversation produces a new insight about how the harness should work, or
 - **Validator blocklist is private.** The leak-detector pattern list lives at `bin/.leakage-patterns` (gitignored, populated per environment). The tracked script must contain NO real identifiers -- a leak-detector that publishes the identifiers it is meant to catch is itself the leak. Only `bin/.leakage-patterns.example` (placeholders) is committed.
 - **Review intermediaries are local-only.** Findings reports, planning notes, scratch analyses, longform retrospectives that carry real identifiers are working drafts and never committed to the harness repo. Name them `*.private.md` / `*.local.md` (auto-ignored) or add a named line to `.gitignore`. Durable outputs of a review or planning session are the resulting changes + CHANGELOG entry + commit message body, NOT the intermediate report. A tracked review/planning intermediary in the harness repo is itself a Dimension-1 finding regardless of its content.
 - **gitignore != untrack.** Adding a file to `.gitignore` does not remove it from tracking if it was previously committed. Use `git rm --cached <file>` followed by the `.gitignore` entry. The harness-reviewer's Dimension 1 explicitly checks for already-tracked files that match local-only patterns.
+- **OpenSpec for substantive harness changes.** The harness dogfoods OpenSpec for its own substantive changes -- proposals live under `openspec/changes/<slug>/` (proposal.md + optional design.md + tasks.md); archived proposals seed and update canonical specs under `openspec/specs/`. Trivial changes (typos, ASCII fixes, broken-link fixes, single-file cosmetic updates with no rule/behaviour change) bypass OpenSpec and commit directly with a `[trivial]` or `[hygiene]` prefix in the commit message. See `openspec/project.md` for full discipline. The spec corpus is intentionally empty at adoption time and grows organically; no retrofit of pre-adoption capability is planned.
+- **OpenSpec authoring is target-detail-free.** Everything in `openspec/**` ships in the public harness repo. Proposals and specs must never carry target-project identifiers (slugs, project names, real commit SHAs from target work, real incident detail, real RPC / file / column names from target codebases). Local-only triage scratchpads (`BACKLOG.md`, `*.private.md`, `*.local.md`) are inspiration not source-of-text. The publication gate catches pattern-matched leakage automatically; authoring discipline catches paraphrase-class leakage the validator cannot pattern-match. The harness-reviewer's Dimension 1 covers `openspec/**` explicitly.
 
 ---
 
@@ -387,6 +389,12 @@ If working on the harness itself:
 │           ├── permissions.md             # Permission schema reference + anti-patterns
 │           ├── permission-detection-patterns.md  # Glob/grep patterns for auditing
 │           └── permission-baselines.md    # Recommended configs by project archetype
+├── openspec/                              # Harness self-OpenSpec (dogfooding; public)
+│   ├── project.md                         # Identity, conventions, status vocabulary
+│   ├── specs/                             # Canonical capability specs (grows from archives)
+│   │   └── README.md
+│   └── changes/                           # Active change proposals (one dir per proposal)
+│       └── README.md
 ├── targets/                               # Private nested repo (not tracked by public harness)
 │   ├── index.md                           # Registry of all target projects
 │   └── <project-slug>/                    # Per-project transformation workspace
