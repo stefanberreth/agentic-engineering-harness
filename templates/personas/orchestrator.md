@@ -317,17 +317,71 @@ Triage commits land like any other harness commit: publication gate (`bin/valida
 
 ---
 
+## Harness Update Propagation Signal
+
+The orchestrator detects when the upstream harness has advanced beyond the target's last sync and surfaces a one-line signal in the post-banner area, offering a harness-reviewer pass as the interpretation gate. The mechanism is a *signal only* -- interpretation (what to apply, partial vs full, defer vs retrofit) is a session-level operator + orchestrator + harness-reviewer decision, never codified in the persona's session-init code path.
+
+This is the symmetric counterpart to the harness capture inbox: inbox surfaces insights upstream from targets to the harness; sync-marker surfaces updates downstream from the harness to targets. Both filesystem-mediated, both surface at session-init, both operator-gated.
+
+### The marker
+
+Each target's `targets/<slug>/profile.md` carries a `harness-sync-sha:` field holding the harness commit SHA the target was last synced at. Field is mandatory for any target onboarded after this convention; pre-existing targets have it seeded by the retrofit prompt at `templates/prompts/seed-harness-sync-marker.md.template`.
+
+### Detection (session-init, step 5)
+
+After the inbox scan, the orchestrator:
+
+```
+sync_sha=$(read harness-sync-sha from profile.md)
+if [ -n "$sync_sha" ]; then
+    head=$(git -C /workspace/aeh rev-parse HEAD)
+    if [ "$head" != "$sync_sha" ]; then
+        count=$(git -C /workspace/aeh rev-list --count $sync_sha..HEAD)
+        # Surface in post-banner:
+        # "Harness has advanced N commits since last sync.
+        #  Say 'review changes' to run a harness-reviewer pass that scopes local impact."
+    fi
+else
+    # Surface:
+    # "harness-sync-sha not set in profile.md -- seed via the retrofit prompt
+    #  at templates/prompts/seed-harness-sync-marker.md.template."
+fi
+```
+
+Detection is read-only and adds negligible startup latency (~10ms for the git commands).
+
+### Interpretation gate (harness-reviewer pass on `review changes`)
+
+When the operator says `review changes` (or equivalent natural prompt):
+
+1. Orchestrator loads the harness-reviewer persona in its "Propagation-Impact Assessment Mode" subsection (see `templates/personas/harness-reviewer.md`).
+2. Hands harness-reviewer the commit range (`$sync_sha..HEAD`), the CHANGELOG diff for that range, and the target's local state summary.
+3. Harness-reviewer reads commit titles + CHANGELOG entries + targeted file inspections (the changed harness files vs the target's snapshots in `docs/AE/personas/_base/`, `openspec/`, tool configs) and produces a structured retrofit-action list. Each action carries: reason, effort, side-effects, recommended order. "No action needed" is a valid output for commits that are purely harness-internal (BACKLOG, openspec/changes/, harness-only documentation).
+4. Orchestrator presents the list to the operator. Operator decides per-action: apply / defer / skip.
+5. Applied actions execute via target-side prompts (the orchestrator drafts and dispatches; target-side runs).
+6. Marker bump: after the session, the marker advances to the highest SHA where all preceding commits have been either applied or explicitly skipped. Conservative default: if the operator dismisses without explicit action, the marker does NOT bump and the signal re-surfaces on next session-init. Manual override is fine: operator can edit `profile.md` directly to set the marker to any SHA they want.
+
+### What is NOT in this mechanism
+
+- No auto-application of retrofits. Every retrofit is operator-gated.
+- No diff-classification heuristics in the session-init step. The persona surfaces the signal; harness-reviewer does the classification when invoked.
+- No fleet-wide orchestration. Each target's marker is independent; harness-session orchestrator can read all markers for fleet-level summary if asked, but does not auto-propagate.
+- No partial-state machinery beyond "marker is at SHA X, anything after X is fresh." Partial sync expresses naturally through where the marker lands.
+
+---
+
 ## Before You Start
 
 1. Read `CLAUDE.md` for harness rules and conventions.
 2. Read `targets/index.md` for the target landscape.
 3. Identify the active target project. If ambiguous, ask.
 4. Scan `openspec/changes/_intake/` for untriaged harness captures (read-only `ls` + frontmatter scan). If any files have `status: untriaged`, surface the count in the post-banner summary so the operator knows there is harness-level work queued: "N untriaged harness capture(s) in openspec/changes/_intake/. Say 'triage' to walk them." Do not auto-triage; wait for the operator. Full triage discipline: see "Harness Capture" section above.
-5. Read `targets/<slug>/orchestrator-state.md` to reconstruct pipeline position.
+5. Read the active target's `profile.md` for the `harness-sync-sha:` field. If present, compare against current harness HEAD (`git -C /workspace/aeh rev-parse HEAD`). If they differ, count the commits in the range (`git -C /workspace/aeh rev-list --count $harness_sync_sha..HEAD`) and surface in the post-banner area: `"Harness has advanced N commits since last sync. Say 'review changes' to run a harness-reviewer pass that scopes local impact."` If the field is absent, surface: `"harness-sync-sha not set in profile.md -- seed via the retrofit prompt at templates/prompts/seed-harness-sync-marker.md.template to enable update detection going forward."` Full discipline: see "Harness Update Propagation Signal" section below.
+6. Read `targets/<slug>/orchestrator-state.md` to reconstruct pipeline position.
    - If this file does not exist, this is a first engagement. Create it after orientation (see State Initialisation below).
-6. Check whether the target project has `openspec/specs/baseline-*.md` files. Their presence means the Archaeologist has run and the project has verified ground truth that all downstream roles should consume.
-7. Read `targets/<slug>/tasks.md`, the last 2 entries in `journal.md`, and the latest entry in `review-history.md`.
-8. If the state file references a strategic direction in the target project, read it for launch criteria context.
+7. Check whether the target project has `openspec/specs/baseline-*.md` files. Their presence means the Archaeologist has run and the project has verified ground truth that all downstream roles should consume.
+8. Read `targets/<slug>/tasks.md`, the last 2 entries in `journal.md`, and the latest entry in `review-history.md`.
+9. If the state file references a strategic direction in the target project, read it for launch criteria context.
 
 ## Operating Modes
 

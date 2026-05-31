@@ -1,0 +1,75 @@
+# Seed Harness Sync Marker
+
+**Target:** <slug>
+**Directory:** <target-absolute-path>
+**Role:** orchestrator (target-side)
+**Phase:** retrofit (one-shot)
+
+## Context for operator
+
+The harness shipped a new propagation-signal mechanism that detects when the upstream harness has advanced beyond your target's last sync. Detection requires a `harness-sync-sha:` field in this target's `docs/AE/profile.md` (or `targets/<slug>/profile.md` harness-side, depending on where this target's profile lives). This one-shot prompt seeds the marker so the mechanism becomes active on the next orchestrator session-init.
+
+Run this once per target that already has an AEH workspace but predates the propagation-signal convention. New targets onboarded after the convention shipped already write the marker at onboarding time.
+
+## The prompt
+
+### Step 0 -- Activate orchestrator role (self-contained)
+
+Write `orchestrator` to `.claude/persona` (or per-hostname marker via `bin/resolve-persona-marker.sh`). Suppress the session-init banner; this prompt is the session initialiser.
+
+### Step 1 -- Read current harness HEAD
+
+```
+git -C /workspace/aeh rev-parse HEAD
+```
+
+Record the SHA. This is what you'll seed the marker to.
+
+### Step 2 -- Locate this target's profile.md
+
+Two possibilities:
+- Harness-side workspace: `/workspace/aeh/targets/<slug>/profile.md`
+- Target-side workspace: `<target-tree>/docs/AE/profile.md` (some targets carry a profile there too; check both)
+
+The canonical location for the marker is wherever the orchestrator session-init reads `profile.md` from. For most targets this is the harness-side `targets/<slug>/profile.md`.
+
+### Step 3 -- Seed the marker
+
+Read the existing `profile.md`. Look for `harness-sync-sha:`. If absent, add a new line under the existing top-level metadata block (near the existing `Prompt delivery policy:` line):
+
+```
+harness-sync-sha: <SHA from Step 1>
+```
+
+If present but empty or stale, replace the value with the SHA from Step 1.
+
+### Step 4 -- Optional: seed at an older SHA for verification testing
+
+If the operator wants to *verify* the propagation-signal mechanism actually fires (rather than declaring "as of now we're in sync"), they may seed the marker at an older SHA so the next orchestrator session-init detects "Harness has advanced N commits since last sync." Useful for the inaugural verification of the mechanism.
+
+The operator should specify the SHA. Otherwise default to current harness HEAD (Step 1 value).
+
+### Step 5 -- Confirm
+
+Print the resulting `profile.md` contents (or the relevant snippet) for operator verification. Report:
+
+```
+PROMPT REPORT
+- harness-sync-sha seeded: <SHA>
+- Location: <full path to profile.md>
+- Next orchestrator session-init will compare against current harness HEAD and surface the signal if the marker is behind.
+
+PROMPT COMPLETE -- seed-harness-sync-marker
+```
+
+## Expected outcome
+
+`profile.md` carries a valid `harness-sync-sha:` line. Next orchestrator session-init detects the marker, runs the harness-update comparison, and either:
+- Surfaces nothing (marker == harness HEAD), or
+- Surfaces "Harness has advanced N commits since last sync. Say 'review changes' to run a harness-reviewer pass that scopes local impact."
+
+## Fallback
+
+If `profile.md` does not exist, this target has not completed AEH onboarding. Halt and surface "profile.md missing -- this target needs onboarding before the propagation-signal mechanism is applicable."
+
+If the harness path is not `/workspace/aeh/` (non-standard container setup), substitute the actual harness root path in Step 1 and document the substitution in `decisions.md`.

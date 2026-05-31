@@ -158,6 +158,8 @@ Then jump straight to a condensed flow:
 
    Prompt delivery policy: direct (default -- operator may opt out to manual)
 
+   harness-sync-sha: <run `git -C /workspace/aeh rev-parse HEAD` at onboarding time and paste the SHA here>
+
    ## Specification Management
    policy: openspec (default in-scope -- operator may opt out in Phase 6g)
 
@@ -165,6 +167,8 @@ Then jump straight to a condensed flow:
    context7: in-scope (default -- operator may opt out in Phase 6g)
    serena: TBD (codebase-dependent assessment in Phase 6g)
    ```
+
+   The `harness-sync-sha:` field records the harness commit SHA at the moment this target was onboarded; the orchestrator's session-init step compares it against current harness HEAD to detect upstream updates. See `templates/personas/orchestrator.md` § "Harness Update Propagation Signal".
 
    Do NOT ask domain/stack/team questions -- those are explicitly out of scope for onboarding.
 
@@ -423,6 +427,7 @@ targets/<slug>/
 - Project name and path
 - Tech stack summary
 - Prompt delivery policy (default `direct`; do NOT ask -- see CLAUDE.md § "Selective exception: Direct Prompt Delivery (default)" for the rationale and the rare opt-out conditions)
+- `harness-sync-sha:` -- the harness commit SHA at onboarding time (`git -C /workspace/aeh rev-parse HEAD`). Enables the orchestrator's session-init harness-update detection. See `templates/personas/orchestrator.md` § "Harness Update Propagation Signal".
 - Key structural features noted during reconnaissance
 - Existing setup summary (if applicable)
 

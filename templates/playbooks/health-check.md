@@ -264,6 +264,26 @@ Verify that the orchestrator's prompt-handoff path actually works for this targe
 
 Report findings as delivery-health items in the delta report (Phase 4). Missing-mirror findings are HIGH severity (broken handoffs the next time the orchestrator dispatches against this slug); broken-on-arrival anti-pattern occurrences are HIGH (orchestrator drift, will recur without intervention); manual-policy-without-justification is MEDIUM (working as configured but likely accidental).
 
+### 3n. Harness Sync Marker
+
+Verify the target's `profile.md` carries a `harness-sync-sha:` field so the orchestrator's session-init harness-update detection step has something to compare against.
+
+1. **Field presence:** `grep -c "^harness-sync-sha:" targets/<slug>/profile.md`. Must be >= 1. Missing field = LOW finding ("seed via the retrofit prompt at templates/prompts/seed-harness-sync-marker.md.template").
+2. **Field non-empty:** the SHA value must be a valid 40-char hex string. Empty or malformed = LOW finding.
+3. **Field references a real harness commit:** `git -C /workspace/aeh cat-file -t $sync_sha 2>/dev/null` must return `commit`. Stale SHA (after harness history rewrite) = MEDIUM finding ("re-seed marker").
+4. **Range size:** if the marker is more than 100 commits behind harness HEAD, surface as informational ("target has been out of sync for a long time; consider a propagation-impact review pass").
+
+**Report format:**
+
+| Check | Status | Finding |
+|-------|--------|---------|
+| `harness-sync-sha:` field present in profile.md | pass/FAIL | |
+| Field value is a valid 40-char SHA | pass/FAIL | |
+| SHA references a real harness commit | pass/FAIL | |
+| Range is reasonable (< 100 commits) | pass/INFO | [N] commits behind |
+
+Findings feed Phase 4 delta report. Missing marker is LOW (mechanism degrades gracefully without it; operator can seed retroactively). Stale-SHA-after-rewrite is MEDIUM (detection will misbehave until re-seeded).
+
 ---
 
 ## Phase 4: Delta Report
