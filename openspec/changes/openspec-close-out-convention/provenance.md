@@ -3,9 +3,7 @@ captured-at: 2026-05-31T12:30:00Z
 captured-from: 0c37120ebcd6
 captured-during: harness session synthesising an operator-relayed finding from a peer target-orchestrator session
 area: template
-status: promoted
-promoted-to: openspec-close-out-convention
-promoted-at: 2026-05-31T13:30:00Z
+status: untriaged
 ---
 
 # OpenSpec close-out / archive convention missing from harness setup

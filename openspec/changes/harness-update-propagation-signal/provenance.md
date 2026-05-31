@@ -3,9 +3,7 @@ captured-at: 2026-05-31T13:00:00Z
 captured-from: 0c37120ebcd6
 captured-during: harness session conversation following the openspec close-out capture; operator asked how harness updates actually reach existing target trees
 area: orchestrator-persona
-status: promoted
-promoted-to: harness-update-propagation-signal
-promoted-at: 2026-05-31T13:30:00Z
+status: untriaged
 ---
 
 # Harness update propagation signal (target-side stale-detection)
