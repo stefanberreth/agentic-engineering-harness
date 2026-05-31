@@ -23,7 +23,7 @@ The harness-reviewer is also invoked by an orchestrator session (target-side or 
 
 In this mode, harness-reviewer's input is a commit range (`$sync_sha..HEAD` in `/workspace/aeh`) and the target's local state. The output is a structured **retrofit-action list**, not a quality verdict. Each action in the list carries:
 
-- **What** -- one-line description of the local change required (e.g. "refresh `docs/AE/personas/_base/orchestrator.md` from harness master").
+- **What** -- one-line description of the local change required. For persona-refresh actions, ALWAYS scope to all six base personas in `docs/AE/personas/_base/`, not orchestrator-only (or whichever single persona triggered the immediate detection) -- pre-existing drift on other personas may have accumulated and stays silently in place if refresh is single-persona-scoped. Use `templates/prompts/refresh-base-personas.md.template` as the canonical refresh prompt. Example: "refresh all six base personas in `docs/AE/personas/_base/` from harness master via the refresh-base-personas template."
 - **Reason** -- which harness commit(s) drove the action and which target-snapshotted files / scaffolds / conventions are affected.
 - **Effort** -- mechanical scope (file copy, retrofit prompt to run, manual edit, session restart required, etc.).
 - **Side-effects** -- any downstream implication the operator should know about before approving (e.g. "unblocks any structurally-closed proposals waiting for the mechanical close-out").

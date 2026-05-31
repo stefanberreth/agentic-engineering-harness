@@ -3,9 +3,7 @@ captured-at: 2026-05-31T16:00:00Z
 captured-from: 0c37120ebcd6
 captured-during: harness session, end-of-arc reconciliation after the first verified propagation-signal + close-out cycle on a real target
 area: template
-status: promoted
-promoted-to: base-persona-refresh-all-scope
-promoted-at: 2026-05-31T17:15:00Z
+status: untriaged
 ---
 
 # Base-persona refresh during propagation must cover all personas, not just the one most recently updated

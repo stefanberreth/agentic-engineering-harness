@@ -1,0 +1,90 @@
+# Refresh Base Personas
+
+**Target:** <slug>
+**Directory:** <target-absolute-path>
+**Role:** orchestrator (target-side)
+**Phase:** retrofit (one-shot)
+
+## Context for operator
+
+When the propagation flow surfaces that the harness has advanced and a refresh-snapshots retrofit action is approved, this prompt refreshes ALL six base personas (analyst, archaeologist, architect, developer, reviewer, orchestrator) in the target's `docs/AE/personas/_base/` directory from harness master. The refresh is `_base/`-directory-scoped, not persona-scoped, because:
+
+- More than one persona may have updated in the unsynced range.
+- Pre-existing drift on personas not touched by the most recent update is silently corrected.
+- The cost of refreshing all six vs one is negligible (six file copies).
+
+The discipline is consistent with the broader propagation-signal philosophy: mechanism is a signal + action; operator approves; harness-reviewer scopes; refresh actions are not minimally-scoped because the cost saving isn't worth the staleness risk.
+
+## The prompt
+
+### Step 0 -- Activate orchestrator role (self-contained)
+
+Write `orchestrator` to the per-hostname persona marker via `bin/resolve-persona-marker.sh`. Suppress the session-init banner; this prompt is the session initialiser.
+
+### Step 1 -- Confirm target's _base/ directory exists
+
+```
+test -d docs/AE/personas/_base || echo "_base directory missing"
+```
+
+If missing, halt: "_base/ directory not present -- this target may have been onboarded before the layered-persona convention. Run onboarding's Phase 2 base-template-placement step first, then re-run this retrofit."
+
+### Step 2 -- Refresh all six personas
+
+For each of `analyst`, `archaeologist`, `architect`, `developer`, `reviewer`, `orchestrator`:
+
+1. Record current local file size + checksum (or "absent" if no local snapshot yet for that persona).
+2. Copy `/workspace/aeh/templates/personas/<persona>.md` to `docs/AE/personas/_base/<persona>.md`.
+3. Verify byte-identical: `cmp /workspace/aeh/templates/personas/<persona>.md docs/AE/personas/_base/<persona>.md`. Exit code 0 = match.
+4. Record new file size + checksum.
+
+### Step 3 -- Single commit
+
+```
+git add docs/AE/personas/_base/
+git commit -m "$(cat <<'EOF'
+docs/AE/personas/_base: refresh all six base persona snapshots from harness master
+
+Sync target base personas with harness templates/personas/*.md.
+All six personas (analyst, archaeologist, architect, developer, reviewer,
+orchestrator) refreshed to byte-identical with harness master.
+
+Triggered by: <propagation-pass / one-shot retrofit / etc>
+Harness master state: <SHA of harness HEAD at refresh time>
+EOF
+)"
+```
+
+Do not push from this prompt; operator handles push separately if needed.
+
+### Step 4 -- Report
+
+```
+PROMPT REPORT
+
+Base personas refreshed (all 6):
+  analyst:       <before-size> -> <after-size>  (checksum match: <yes/no>)
+  archaeologist: <before-size> -> <after-size>  (checksum match: <yes/no>)
+  architect:     <before-size> -> <after-size>  (checksum match: <yes/no>)
+  developer:     <before-size> -> <after-size>  (checksum match: <yes/no>)
+  reviewer:      <before-size> -> <after-size>  (checksum match: <yes/no>)
+  orchestrator:  <before-size> -> <after-size>  (checksum match: <yes/no>)
+
+Harness master state: <harness HEAD SHA>
+Commit: <commit SHA in target repo>
+
+Personas that had drifted (size change observed): <list, or 'none'>
+Personas that were already in sync: <list>
+
+PROMPT COMPLETE -- refresh-base-personas
+```
+
+## Expected outcome
+
+All six base personas in `docs/AE/personas/_base/` are byte-identical with `/workspace/aeh/templates/personas/`. Subsequent role-bound prompts in this target session load the latest persona behaviour.
+
+## Fallback
+
+- If `_base/` missing: halt and surface (step 1).
+- If any persona file copy fails: halt at the failed persona, surface details, leave subsequent personas untouched. Operator addresses the failure, then re-runs the retrofit which is idempotent.
+- If `cmp` reports mismatch immediately after copy: halt with file-content diff; this indicates a copy error (rare) or an active write conflict.
