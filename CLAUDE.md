@@ -393,11 +393,14 @@ If working on the harness itself:
 │           └── permission-baselines.md    # Recommended configs by project archetype
 ├── openspec/                              # Harness self-OpenSpec (dogfooding; public)
 │   ├── project.md                         # Identity, conventions, status vocabulary
+│   ├── AGENTS.md                          # Close-out playbook (mechanical archive sequence)
 │   ├── specs/                             # Canonical capability specs (grows from archives)
 │   │   └── README.md
 │   └── changes/                           # Active change proposals (one dir per proposal)
 │       ├── README.md
-│       └── _intake/                       # Cross-session capture inbox (untriaged harness insights)
+│       ├── _intake/                       # Cross-session capture inbox (untriaged harness insights)
+│       │   └── README.md
+│       └── archive/                       # Archived (completed) change proposals; permanent history
 │           └── README.md
 ├── targets/                               # Private nested repo (not tracked by public harness)
 │   ├── index.md                           # Registry of all target projects

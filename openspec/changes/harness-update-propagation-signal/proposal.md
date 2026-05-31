@@ -44,7 +44,7 @@ Out of scope:
 4. **Onboarding writes initial marker**: greenfield + brownfield onboarding flows seed `harness-sync-sha:` at onboarding time.
 5. **Health-check verifies marker presence**: a missing or empty `harness-sync-sha:` field on an existing target is a finding (operator can seed retroactively).
 6. **Documentation**: CLAUDE.md Harness Maintenance Discipline key-rules block names the mechanism; orchestrator persona has the full discipline.
-7. **First verified propagation**: an existing target (e.g. the one whose `tier-ingestion-strategy` proposal is paused at logical-close) successfully detects the harness has advanced, runs the harness-reviewer pass, and adopts (or declines) retrofits with the marker bumping correctly.
+7. **First verified propagation**: an existing target with a structurally-closed proposal waiting on this mechanism's first verified end-to-end exercise successfully detects the harness has advanced, runs the harness-reviewer pass, and adopts (or declines) retrofits with the marker bumping correctly.
 
 ## References
 
