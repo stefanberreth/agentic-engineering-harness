@@ -3,9 +3,7 @@ captured-at: 2026-05-31T15:30:00Z
 captured-from: 0c37120ebcd6
 captured-during: harness session relaying an insight surfaced by a peer AEH orchestrator session while authoring a target-side close-out prompt under the newly-shipped close-out convention
 area: template
-status: promoted
-promoted-to: openspec-closeout-verification-status-preservation
-promoted-at: 2026-05-31T17:00:00Z
+status: untriaged
 ---
 
 # OpenSpec close-out playbook must preserve verification-status semantics

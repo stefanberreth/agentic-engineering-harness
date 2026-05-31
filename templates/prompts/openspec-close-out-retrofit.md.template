@@ -47,6 +47,7 @@ For each candidate:
 - Surface to the operator: "Proposal <slug> appears structurally complete (status: ready-for-archive / commit <SHA> noted as logical-close). Apply the mechanical close-out under the new convention?"
 - If operator confirms, walk the four-step sequence from `openspec/AGENTS.md` § "Mechanical close-out sequence":
   1. Apply spec deltas to parent specs (if the proposal has deltas in `openspec/changes/<slug>/specs/`).
+     - **Verification-status preservation:** if any spec section carries a verification-status field or marker (e.g. `archaeologist_verified:`, `[verified]` / `[unverified]` tags, or a project-specific equivalent per archaeologist persona convention), do NOT touch those fields when applying the delta. Only `updated:` and `last-updated-by:` bump on the spec frontmatter. Each applied section gets a project-local provenance marker like "reflects design intent, not yet re-verified against the live system." The close-out does not re-verify; subsequent archaeologist passes do.
   2. Bump parent spec `last-updated-by:` + `updated:` for touched specs.
   3. Set proposal `status: archived` + add `archived-at:`.
   4. `mv openspec/changes/<slug>/ openspec/changes/archive/<slug>/`.

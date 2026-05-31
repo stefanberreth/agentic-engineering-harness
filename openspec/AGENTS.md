@@ -16,6 +16,18 @@ This playbook governs harness-self change proposals. Target projects that adopt 
 
 4. **Move proposal directory to archive.** `mv openspec/changes/<slug>/ openspec/changes/archive/<slug>/`. The archive preserves the full proposal history (proposal.md, design.md, tasks.md, specs/, provenance.md) as a permanent record of why the parent specs look the way they do -- or, for process/mechanism proposals, why the harness behaves the way it does.
 
+## Verification-Status Preservation
+
+Conditional discipline -- applies only to spec systems that carry verification-status frontmatter or markers asserting whether a section has been verified against the live system (a convention encouraged by the archaeologist persona's `[verified]` / `[unverified]` tagging, adopted by some projects as a structured frontmatter field like `archaeologist_verified: <ISO date>`). For spec systems without such fields, this subsection is a no-op.
+
+When applying spec deltas under step 1 of the mechanical sequence, the close-out:
+
+1. **Preserves verification-status fields untouched.** Only `updated:` and `last-updated-by:` bump. The close-out does NOT re-verify the live system, so it must not claim it did. A previously-verified section that has new design-intent content remains marked verified-as-of-the-original-date until a future archaeologist or verification pass explicitly re-verifies.
+
+2. **Adds a provenance marker on the new content.** Each applied section gets a short marker (project-local phrasing; example: "reflects design intent, not yet [archaeologist-]re-verified against the live system"). The marker signals to the next reader (and to the next verification pass) that the content's verification status has not been re-established.
+
+Cross-reference: `templates/personas/archaeologist.md` is the canonical source for the verification convention; the close-out playbook preserves what the archaeologist established but does not re-establish it.
+
 ## Commit convention
 
 Single commit per close-out, message format:
