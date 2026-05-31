@@ -284,6 +284,27 @@ Verify the target's `profile.md` carries a `harness-sync-sha:` field so the orch
 
 Findings feed Phase 4 delta report. Missing marker is LOW (mechanism degrades gracefully without it; operator can seed retroactively). Stale-SHA-after-rewrite is MEDIUM (detection will misbehave until re-seeded).
 
+### 3o. Cross-Container Ownership Marker
+
+Verify the target's `.owner-container` marker is present and matches the current container (or surface for operator review if it doesn't).
+
+1. **Marker presence:** `test -f targets/<slug>/.owner-container`. Missing = INFO ("marker not yet seeded; will seed on next orchestrator session-init via the new step-6 check").
+2. **Owner hostname matches current container:** `bin/resolve-target-owner.sh --check <slug>` (exit 0 = match, exit 1 = peer container, exit 2 = absent).
+   - Match: pass.
+   - Peer container: MEDIUM ("last write was from peer container; verify intended ownership before continuing work in this container").
+   - Absent: see check 1.
+3. **Recency:** if `last-touched=` field is older than 30 days, surface as informational ("ownership marker is stale; consider running orchestrator session-init to refresh").
+
+**Report format:**
+
+| Check | Status | Finding |
+|-------|--------|---------|
+| `.owner-container` marker present | pass/INFO | |
+| Owner hostname matches current container | pass/FAIL | [hostname mismatch details if fail] |
+| Marker recency reasonable (< 30 days) | pass/INFO | [age if stale] |
+
+Findings feed Phase 4 delta report. Missing-marker is INFO (mechanism handles seeding automatically). Peer-container mismatch is MEDIUM (silent cross-container write is the exact risk the mechanism addresses; operator should confirm intended ownership). See `templates/personas/orchestrator.md` § "Cross-Container Caveats" for full mechanism.
+
 ---
 
 ## Phase 4: Delta Report

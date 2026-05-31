@@ -370,6 +370,46 @@ When the operator says `review changes` (or equivalent natural prompt):
 
 ---
 
+## Cross-Container Caveats
+
+Multiple AEH orchestrator sessions can run in parallel from separate Docker containers, all bind-mounting the same host harness directory and each driving its own target. The shared mount is by design (it makes `targets/`, harness templates, and the capture inbox visible across containers) -- but it introduces several shared-state surfaces that need explicit isolation discipline. The mechanisms below address the contamination risks per `openspec/changes/harness-cross-container-isolation/`.
+
+### Per-target ownership
+
+Each `targets/<slug>/` carries an ownership marker at `targets/<slug>/.owner-container` (gitignored). The marker records `hostname=` + `session-id=` + `last-touched=`. Used to prevent silent cross-container writes -- a peer container with a different target focus must not be able to write to this target's workspace without surfacing the ownership mismatch.
+
+Helper: `bin/resolve-target-owner.sh --read|--write|--check|--hostname <slug>`.
+
+Session-init step 6 invokes `--check`. Subsequent writes to the workspace bump the marker via `--write`. On exit-1 (peer owns), surface to operator and WAIT for `yes / no / inspect` before any write. On exit-2 (no marker), claim with `--write`.
+
+### Per-host scheduler lockfile
+
+Claude Code's scheduler writes to `.claude/scheduled_tasks.lock` by default; parallel containers collide on this file. Helper `bin/resolve-scheduler-lock.sh` echoes a per-hostname lockfile path when running in a container. Effectiveness depends on the scheduler honouring an environment-variable or wrapper redirection (informational-only until upstream supports it; see the proposal for the upstream-issue plan).
+
+### Per-host persona marker
+
+Already in place. `bin/resolve-persona-marker.sh` echoes `.claude/persona.${HOSTNAME}` in containers, `.claude/persona` otherwise. Legacy single-file marker is now harmless if present but should be cleaned up via `rm -f .claude/persona` on next harness maintenance pass.
+
+### Journal entry attribution
+
+Journal entries in `targets/<slug>/journal.md` carry a hostname tag in their header line so retrospective inspection can tell which container made which entry. Convention:
+
+```
+## YYYY-MM-DD HH:MM container=<HOSTNAME> session=<uuid-prefix>
+```
+
+Backwards-compatible: older entries without the tag stay readable; new entries carry the tag.
+
+### `~/.claude/projects/` future-risk note
+
+In the reference container setup, `~/.claude/` is on the container's own VM disk (NOT bind-mounted). Claude Code's session transcripts, `file-history/`, `sessions/`, project memory all live there and are container-private. If any operator ever bind-mounts `~/.claude/projects/` host-to-container for cross-container session resume, both containers' sessions land in the same encoded-cwd directory (`-workspace-aeh/`) and transcript JSONLs would interleave. Current setup is safe; the sharp edge is worth a doc warning if you ever consider that mount configuration.
+
+### `.claude/settings.local.json` accumulation (known limitation)
+
+Claude Code owns this path and it is currently shared across containers that bind-mount the same harness directory. Permission grants accumulate from every container, including grants that reference host-paths only valid in one container. No harness-side fix is currently possible (Claude Code does not support per-host overlays); remediation tracked as a follow-up after upstream-issue engagement. Document in `decisions.md` if you encounter cross-container permission drift; otherwise treat as known limitation.
+
+---
+
 ## Before You Start
 
 1. Read `CLAUDE.md` for harness rules and conventions.
@@ -377,11 +417,12 @@ When the operator says `review changes` (or equivalent natural prompt):
 3. Identify the active target project. If ambiguous, ask.
 4. Scan `openspec/changes/_intake/` for untriaged harness captures (read-only `ls` + frontmatter scan). If any files have `status: untriaged`, surface the count in the post-banner summary so the operator knows there is harness-level work queued: "N untriaged harness capture(s) in openspec/changes/_intake/. Say 'triage' to walk them." Do not auto-triage; wait for the operator. Full triage discipline: see "Harness Capture" section above.
 5. Read the active target's `profile.md` for the `harness-sync-sha:` field. If present, compare against current harness HEAD (`git -C /workspace/aeh rev-parse HEAD`). If they differ, count the commits in the range (`git -C /workspace/aeh rev-list --count $harness_sync_sha..HEAD`) and surface in the post-banner area: `"Harness has advanced N commits since last sync. Say 'review changes' to run a harness-reviewer pass that scopes local impact."` If the field is absent, surface: `"harness-sync-sha not set in profile.md -- seed via the retrofit prompt at templates/prompts/seed-harness-sync-marker.md.template to enable update detection going forward."` Full discipline: see "Harness Update Propagation Signal" section below.
-6. Read `targets/<slug>/orchestrator-state.md` to reconstruct pipeline position.
+6. Cross-container ownership check. Run `bin/resolve-target-owner.sh --check <slug>` (exit 0 = owner matches current container; exit 1 = peer container owns; exit 2 = no marker). If exit 1: surface `"This target's last write was from container <peer-hostname> at <timestamp>. Continue as owner from this container? (yes / no / inspect)"` and WAIT for operator before any workspace write. If exit 2: surface `"No ownership marker on this target -- claiming for current container (<HOSTNAME>)."` and run `bin/resolve-target-owner.sh --write <slug>` to seed. If exit 0: silent proceed. Subsequent writes to the workspace bump the marker via the same `--write` invocation. Full discipline: see "Cross-Container Caveats" section below.
+7. Read `targets/<slug>/orchestrator-state.md` to reconstruct pipeline position.
    - If this file does not exist, this is a first engagement. Create it after orientation (see State Initialisation below).
-7. Check whether the target project has `openspec/specs/baseline-*.md` files. Their presence means the Archaeologist has run and the project has verified ground truth that all downstream roles should consume.
-8. Read `targets/<slug>/tasks.md`, the last 2 entries in `journal.md`, and the latest entry in `review-history.md`.
-9. If the state file references a strategic direction in the target project, read it for launch criteria context.
+8. Check whether the target project has `openspec/specs/baseline-*.md` files. Their presence means the Archaeologist has run and the project has verified ground truth that all downstream roles should consume.
+9. Read `targets/<slug>/tasks.md`, the last 2 entries in `journal.md`, and the latest entry in `review-history.md`.
+10. If the state file references a strategic direction in the target project, read it for launch criteria context.
 
 ## Operating Modes
 
