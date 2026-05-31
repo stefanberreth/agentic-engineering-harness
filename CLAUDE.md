@@ -179,6 +179,7 @@ When a conversation produces a new insight about how the harness should work, or
 - **gitignore != untrack.** Adding a file to `.gitignore` does not remove it from tracking if it was previously committed. Use `git rm --cached <file>` followed by the `.gitignore` entry. The harness-reviewer's Dimension 1 explicitly checks for already-tracked files that match local-only patterns.
 - **OpenSpec for substantive harness changes.** The harness dogfoods OpenSpec for its own substantive changes -- proposals live under `openspec/changes/<slug>/` (proposal.md + optional design.md + tasks.md); archived proposals seed and update canonical specs under `openspec/specs/`. Trivial changes (typos, ASCII fixes, broken-link fixes, single-file cosmetic updates with no rule/behaviour change) bypass OpenSpec and commit directly with a `[trivial]` or `[hygiene]` prefix in the commit message. See `openspec/project.md` for full discipline. The spec corpus is intentionally empty at adoption time and grows organically; no retrofit of pre-adoption capability is planned.
 - **OpenSpec authoring is target-detail-free.** Everything in `openspec/**` ships in the public harness repo. Proposals and specs must never carry target-project identifiers (slugs, project names, real commit SHAs from target work, real incident detail, real RPC / file / column names from target codebases). Local-only triage scratchpads (`BACKLOG.md`, `*.private.md`, `*.local.md`) are inspiration not source-of-text. The publication gate catches pattern-matched leakage automatically; authoring discipline catches paraphrase-class leakage the validator cannot pattern-match. The harness-reviewer's Dimension 1 covers `openspec/**` explicitly.
+- **Harness capture inbox.** Cross-session harness-level insights flow through `openspec/changes/_intake/` -- a filesystem-mediated inbox visible to any orchestrator session via the shared bind-mount. Capture-side orchestrators proactively identify candidates and ASK before writing (never silent capture); operator confirms; file is written atomically (write `.tmp.<name>`, rename) so cross-container readers never observe a half-written file. Triage-side (harness orchestrator) scans for `status: untriaged` on session-init, surfaces the count, and walks captures into proper `openspec/changes/<slug>/` proposals on operator request. Two landings exist deliberately: `openspec/changes/_intake/` (tracked, public, target-detail-free) and `BACKLOG.md` (untracked, private, target context permitted) -- decision is at capture time. External contributors enter through GitLab/GitHub PRs and Issues, not through the inbox. Full mechanism: `openspec/changes/_intake/README.md` and the "Harness Capture" section in `templates/personas/orchestrator.md`.
 
 ---
 
@@ -394,7 +395,9 @@ If working on the harness itself:
 │   ├── specs/                             # Canonical capability specs (grows from archives)
 │   │   └── README.md
 │   └── changes/                           # Active change proposals (one dir per proposal)
-│       └── README.md
+│       ├── README.md
+│       └── _intake/                       # Cross-session capture inbox (untriaged harness insights)
+│           └── README.md
 ├── targets/                               # Private nested repo (not tracked by public harness)
 │   ├── index.md                           # Registry of all target projects
 │   └── <project-slug>/                    # Per-project transformation workspace

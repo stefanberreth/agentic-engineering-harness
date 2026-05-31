@@ -41,6 +41,11 @@ BACKLOG.md
 *.private.md
 *.local.md
 
+# Atomic-write temp files for the harness capture inbox.
+# Capture-side orchestrator writes .tmp.<name> then renames; a crashed write
+# must never accidentally commit.
+openspec/changes/_intake/.tmp.*
+
 # Target project workspaces (private, tracked by nested repo in targets/)
 # Everything under targets/ is owned by the private targets repo.
 # Nothing in targets/ is tracked by the public harness repo.
