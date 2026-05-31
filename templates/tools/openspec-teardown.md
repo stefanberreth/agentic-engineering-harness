@@ -14,8 +14,10 @@
 
 - `openspec/specs/` -- specification documents (user data, not config)
 - `openspec/changes/` -- change proposals (user data, not config)
+- `openspec/changes/archive/` -- archived (completed) change proposals; permanent historical record of why current specs look the way they do
+- `openspec/AGENTS.md` -- close-out playbook; harmless if left in place even after teardown
 
-The user may choose to delete these manually, but the teardown prompt should not remove them by default.
+The user may choose to delete these manually, but the teardown prompt should not remove them by default. Archived proposals in particular should be retained -- they document the provenance of every spec in `openspec/specs/`.
 
 ---
 

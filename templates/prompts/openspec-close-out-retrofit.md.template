@@ -1,0 +1,81 @@
+# OpenSpec Close-Out Convention Retrofit
+
+**Target:** <slug>
+**Directory:** <target-absolute-path>
+**Role:** orchestrator (target-side)
+**Phase:** retrofit (one-shot)
+
+## Context for operator
+
+The harness shipped the OpenSpec close-out convention as a standard scaffold component. New targets onboarded after the convention shipped have `openspec/AGENTS.md` and `openspec/changes/archive/` installed at setup time. Pre-existing targets that already have an `openspec/` tree need this retrofit to adopt the convention.
+
+This one-shot prompt creates the missing components and optionally walks any logically-closed proposals through the mechanical close-out under the new convention.
+
+## The prompt
+
+### Step 0 -- Activate orchestrator role (self-contained)
+
+Write `orchestrator` to `.claude/persona` (or per-hostname marker via the harness resolver). Suppress the session-init banner; this prompt is the session initialiser.
+
+### Step 1 -- Verify openspec/ exists
+
+```
+test -d openspec || echo "openspec/ missing -- this target has not installed OpenSpec; run openspec-setup instead."
+```
+
+If openspec/ is missing, halt and surface the message. The retrofit applies only to targets with installed openspec/.
+
+### Step 2 -- Create openspec/AGENTS.md if missing
+
+If `openspec/AGENTS.md` does not already exist, write the canonical close-out playbook content. Reference: the harness ships the canonical content at `/workspace/aeh/openspec/AGENTS.md`. Copy that file's content verbatim into `openspec/AGENTS.md` in this target tree, adjusting only the leading H1 ("OpenSpec Close-Out Playbook (<this-target-name>)") and the line that says "This playbook governs harness-self change proposals" -- replace with "This playbook governs <this-target-name>'s change proposals."
+
+If `AGENTS.md` already exists with content the operator authored manually, halt and surface for operator review rather than overwriting.
+
+### Step 3 -- Create openspec/changes/archive/ if missing
+
+```
+mkdir -p openspec/changes/archive
+```
+
+Write a small `openspec/changes/archive/README.md` if not present (the harness ships a canonical version at `/workspace/aeh/openspec/changes/archive/README.md`; adapt the heading for this target).
+
+### Step 4 -- Walk any logically-closed proposals (optional, operator-confirmed)
+
+Scan `openspec/changes/<slug>/proposal.md` for any with `status: ready-for-archive` (or equivalent terms the operator has been using in absence of the convention -- "logically closed", "structurally complete", or similar in the proposal body).
+
+For each candidate:
+- Surface to the operator: "Proposal <slug> appears structurally complete (status: ready-for-archive / commit <SHA> noted as logical-close). Apply the mechanical close-out under the new convention?"
+- If operator confirms, walk the four-step sequence from `openspec/AGENTS.md` § "Mechanical close-out sequence":
+  1. Apply spec deltas to parent specs (if the proposal has deltas in `openspec/changes/<slug>/specs/`).
+  2. Bump parent spec `last-updated-by:` + `updated:` for touched specs.
+  3. Set proposal `status: archived` + add `archived-at:`.
+  4. `mv openspec/changes/<slug>/ openspec/changes/archive/<slug>/`.
+- Single commit per close-out, message per the convention.
+
+If operator declines for any proposal, leave it in place at `status: ready-for-archive`; close-out can run later when convenient.
+
+### Step 5 -- Report
+
+```
+PROMPT REPORT
+- openspec/AGENTS.md: created / pre-existing / skipped
+- openspec/changes/archive/: created / pre-existing
+- openspec/changes/archive/README.md: created / pre-existing
+- Proposals walked through close-out: <list of slugs, or 'none'>
+- Proposals deferred at operator request: <list of slugs, or 'none'>
+
+PROMPT COMPLETE -- openspec-close-out-retrofit
+```
+
+## Expected outcome
+
+- `openspec/AGENTS.md` exists with the canonical close-out playbook content.
+- `openspec/changes/archive/` exists with README.
+- Any structurally-closed proposals have either been mechanically archived (under operator confirmation) or remain at `ready-for-archive` for later.
+- This target now has the same OpenSpec close-out infrastructure as targets onboarded after the convention shipped.
+
+## Fallback
+
+- If openspec/ does not exist, halt (Step 1).
+- If openspec/AGENTS.md exists with operator-authored content, halt (Step 2) -- do not overwrite.
+- If any close-out step fails mid-walk (spec delta merge conflict, mv error), halt at the failed proposal, surface details, leave subsequent proposals untouched. Operator addresses the failure, then re-runs the retrofit which will skip already-archived proposals.

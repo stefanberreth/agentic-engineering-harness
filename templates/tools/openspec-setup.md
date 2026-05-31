@@ -31,11 +31,60 @@ The generated prompt should instruct the target-side Claude to:
 
 ```
 openspec/
-├── specs/       # Specification documents
-└── changes/     # Change proposals
+├── AGENTS.md             # Close-out playbook (canonical mechanical close-out flow)
+├── specs/                # Specification documents
+└── changes/              # Change proposals
+    └── archive/          # Archived (completed) change proposals; preserved as history
 ```
 
-Add a `.gitkeep` to each so the directories are tracked before the first spec is written.
+Add a `.gitkeep` to `specs/`, `changes/`, and `changes/archive/` so the directories are tracked before the first spec or proposal is written.
+
+The `AGENTS.md` file carries the close-out playbook -- the canonical mechanical sequence for archiving a completed change proposal. Without this convention installed, the project would hit the "no close-out playbook" wall the first time a change proposal completes. Install at setup time so the proposal-closing side is wired in alongside the proposal-authoring side.
+
+**AGENTS.md content (write this file verbatim):**
+
+```markdown
+# OpenSpec Close-Out Playbook (this project)
+
+When a change proposal under `openspec/changes/<slug>/` completes its implementation and passes review, archive it via this mechanical sequence. The proposal stops being active when the sequence completes; the durable record is the spec deltas applied to parent specs + the archived proposal directory.
+
+## Mechanical close-out sequence
+
+1. **Apply spec deltas to parent specs.** For each spec file the proposal updated or created (typically files under `openspec/changes/<slug>/specs/`), apply the delta to the corresponding `openspec/specs/<capability>/spec.md`. Bump the parent spec's frontmatter `last-updated-by: <change-slug>` and `updated: <ISO date>` (or equivalent). If the proposal introduces a new spec, create `openspec/specs/<new-capability>/spec.md` directly with `since: <change-slug>`.
+
+2. **Bump parent spec metadata.** For every spec touched by the deltas, ensure frontmatter carries `last-updated-by:` pointing to this change-slug and `updated:` set to today.
+
+3. **Set proposal status: archived.** Edit the proposal's `proposal.md` frontmatter: change `status:` to `archived`, add `archived-at: <ISO timestamp>`.
+
+4. **Move proposal directory to archive.** `mv openspec/changes/<slug>/ openspec/changes/archive/<slug>/`. The archive preserves the full proposal history (proposal.md, design.md, tasks.md, specs/, provenance.md if any) as a permanent record of why the parent specs look the way they do.
+
+## Commit convention
+
+Single commit per close-out, message format:
+
+```
+openspec(close): <change-slug> -- archived
+
+- Apply spec deltas to <capabilities-touched>
+- Bump parent spec updated dates
+- Move proposal to openspec/changes/archive/<slug>/
+```
+
+## Spec-frontmatter discipline
+
+Each spec under `openspec/specs/<capability>/spec.md` carries:
+- `since:` -- the change-slug that introduced this spec.
+- `last-updated-by:` -- the most recent change-slug that modified this spec.
+- `updated:` -- ISO date of the last modification.
+
+These let any future reader trace a spec back to the proposal(s) that shaped it.
+
+## Edge cases
+
+- **Proposal blocked at logical-close** (work complete but waiting on something external -- upstream library, operator action, sibling proposal): keep at `status: ready-for-archive`; do NOT archive. Close-out runs only when nothing blocks.
+- **Proposal abandoned** (work started but won't complete): set `status: abandoned`, move to `openspec/changes/archive/<slug>/` with `archived-at:` and `abandonment-reason:` in the frontmatter. Spec deltas are NOT applied (proposal didn't complete).
+- **Proposal supersedes an earlier one**: the earlier proposal's archive entry remains; the new proposal's `proposal.md` notes `supersedes: <earlier-slug>`. The earlier proposal's specs retain their `since:` but the `last-updated-by:` advances to the superseding proposal.
+```
 
 ### 2. Add OpenSpec subsection to CLAUDE.md
 
