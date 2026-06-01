@@ -3,7 +3,9 @@ captured-at: 2026-05-31T18:35:00Z
 captured-from: 0c37120ebcd6
 captured-during: harness session, operator directive about boundary-completion push automation conditional on per-target git policy
 area: orchestrator-persona
-status: untriaged
+status: promoted
+promoted-to: boundary-push-policy
+promoted-at: 2026-06-01T11:30:00Z
 ---
 
 # Boundary-completion push: operator-confirmed policy at onboarding + per-target enforcement

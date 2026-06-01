@@ -3,7 +3,9 @@ captured-at: 2026-05-31T18:00:00Z
 captured-from: 0c37120ebcd6
 captured-during: harness session, operator-direction surfaced while re-engaging an existing target with the new propagation flow
 area: governance
-status: untriaged
+status: promoted
+promoted-to: harness-portability-assessment
+promoted-at: 2026-06-01T11:30:00Z
 ---
 
 # AEH coding-agent-harness portability: systematic assessment + nudge toward agent-agnostic conventions

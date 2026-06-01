@@ -3,7 +3,9 @@ captured-at: 2026-05-31T18:20:00Z
 captured-from: 0c37120ebcd6
 captured-during: harness session, operator correction after the orchestrator applied /clear discipline inconsistently across consecutive paste handoffs
 area: orchestrator-persona
-status: untriaged
+status: promoted
+promoted-to: paste-handoff-clear-discipline
+promoted-at: 2026-06-01T11:30:00Z
 ---
 
 # Paste handoffs must carry explicit /clear-or-not declaration with reason
