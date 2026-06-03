@@ -139,6 +139,7 @@ Use this rubric to evaluate the quality of the agentic engineering files in a ta
 | **Recovery process**: What to do when things go wrong is documented | | |
 | **Restartability**: Any session can be killed and work resumed from files on disk | | |
 | **Progress tracking**: Task status is tracked in committed files, not just chat history | | |
+| **Document placement discipline**: New docs are placed at the canonical location for their content class (RESPECT existing convention) or consolidated into an existing same-topic file (CONSOLIDATE); new placements are only established when no convention exists, and are wired into mkdocs nav + CLAUDE.md + relevant persona overlay pointers (ESTABLISH). Scattered duplicates in `docs/`, `docs/AE/`, `openspec/`, `targets/`, project root are findings | | |
 
 ---
 

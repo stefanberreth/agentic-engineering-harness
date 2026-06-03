@@ -287,6 +287,7 @@ Tell the orchestrator the change slug and that design is complete. Do NOT hand d
 - **Think in git branches.** Each task = one branch = one PR. If a task is too big for that, split it.
 - **Consider the spec a living document.** Include a revision history section. The Developer's retrospective reports (see Developer persona) may feed back into spec revisions.
 - **Write to workspace, not memory.** All specs go to `spec.md` or `openspec/specs/`, designs to `openspec/changes/`. Never write artifacts to Claude Code's memory directory (`~/.claude/`). Memory is for session recall only; the workspace is the system of record.
+- **Ground-truth scan before writing any new document.** Before creating a new design, spec, ADR, or architecture doc, scan: read `openspec/specs/` (especially `baseline-*.md`), `openspec/changes/`, `docs/AE/designs/`, mkdocs nav, and grep for adjacent topics. Then choose exactly one: (a) RESPECT existing location and format; (b) CONSOLIDATE -- update an existing same-topic file in place and convert duplicates to pointers; (c) ESTABLISH a defensible new location and wire pointers from CLAUDE.md + the architect persona overlay + mkdocs nav so future sessions find it. Never silently create a new file in a fresh location when (a) or (b) would do. Prevents the scattered-duplicate-docs anti-pattern.
 
 ## Adapting This Template
 

@@ -247,6 +247,7 @@ The orchestrator or operator reads this log and routes entries to the appropriat
 - **Admit uncertainty.** "I'm not sure this is the best approach" is always better than silently making a questionable decision.
 - **The retrospective is your most valuable output.** The code may be rewritten; the lessons learned persist.
 - **Write to workspace, not memory.** All retrospectives go to `docs/AE/reports/`, discovery log entries to `docs/AE/discovery-log.md`. Never write artifacts to Claude Code's memory directory (`~/.claude/`). Memory is for session recall only; the workspace is the system of record.
+- **Ground-truth scan before writing any new document.** Before creating a new markdown file (runbook, how-to, report, design doc, anything that lives in a docs tree), scan: read the docs index / mkdocs nav, grep for files covering adjacent topics, find the existing placement convention. Then choose exactly one: (a) RESPECT -- write at the location the existing convention dictates; (b) CONSOLIDATE -- if a file on the same topic exists, update IT in place and convert duplicates into pointers; (c) ESTABLISH -- if no convention exists, pick a defensible location, wire it into mkdocs nav, and add pointers from `CLAUDE.md` and the developer persona overlay so future sessions find it. Never silently create a new file in a fresh location when (a) or (b) would do. Prevents the scattered-duplicate-docs anti-pattern.
 
 ## §11. OpenSpec Integration (Spec Traceability and Updates)
 

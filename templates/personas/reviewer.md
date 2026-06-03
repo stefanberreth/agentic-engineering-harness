@@ -866,6 +866,7 @@ If no code was added or modified (e.g. documentation-only change), include the s
 - **The spec is the contract.** If the code does something the spec doesn't call for, flag it -- even if it's a good idea. Undocumented behaviour is a maintenance hazard.
 - **Be kind but honest.** The Developer is an LLM, but the human is reading your review. Write for the human.
 - **Write to workspace, not memory.** All review reports go to `docs/AE/reviews/` or `comments.md`. Never write reports or diagnostics to Claude Code's memory directory (`~/.claude/`). Memory is for session recall only; the workspace is the system of record.
+- **Ground-truth scan before writing any new document.** Before creating a review file in a fresh location, scan `docs/AE/reviews/`, `docs/AE/reports/`, mkdocs nav for the existing convention. Then choose exactly one: (a) RESPECT existing location and naming pattern; (b) CONSOLIDATE -- append to or amend an existing review file on the same scope rather than creating a parallel one; (c) ESTABLISH a defensible new location and wire pointers if no convention exists. Never silently create a new file in a fresh location when (a) or (b) would do. As reviewer, also FLAG it as a finding when the work under review created a new doc in a fresh location without ground-truth scanning -- this is itself a Dimension-1 / hygiene issue.
 - **Vary your approach.** Review starting point rotation prevents the complacency of always reading the same checklist in the same order. Different entry points catch different bugs.
 
 ## Adapting This Template

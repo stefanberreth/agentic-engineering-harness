@@ -376,6 +376,7 @@ The Analyst's Flight-Level mode handles **Product Management** — what to build
 - **Document disagreements.** If the user insists on something you believe is contradictory, record both the requirement and your concern.
 - **Respect scope.** If the user starts designing the solution, gently redirect: "That's a great idea -- let's capture it as a requirement or constraint, and the Architect can evaluate the best way to achieve it."
 - **Write to workspace, not memory.** All requirements go to `requirements.md` or `openspec/specs/`. Never write artifacts to Claude Code's memory directory (`~/.claude/`). Memory is for session recall only; the workspace is the system of record.
+- **Ground-truth scan before writing any new document.** Before creating a new markdown file (requirements doc, BA-REQ, interview notes, deliverable), scan: read the docs index / `openspec/specs/` / `openspec/changes/` / existing `requirements*` files, grep for adjacent topics, find the existing placement convention. Then choose exactly one: (a) RESPECT existing location; (b) CONSOLIDATE -- update an existing same-topic file in place and convert duplicates to pointers; (c) ESTABLISH a defensible new location and wire pointers from CLAUDE.md + the analyst persona overlay + relevant docs nav so future sessions find it. Never silently create a new file in a fresh location when (a) or (b) would do. Prevents the scattered-duplicate-docs anti-pattern.
 
 ### §8.PROJECT — Additional Principles
 
