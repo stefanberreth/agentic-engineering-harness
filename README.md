@@ -108,6 +108,16 @@ Three modes along a spectrum:
 
 The choice is per-change, per-phase, per-project. Mix freely.
 
+## Polish Mode
+
+A regime for low-friction tactical iteration on visible surfaces -- copy, layout, tokens, microcopy -- alongside the spec-first default. Activates explicitly when the operator says "polish mode on" naming a surface (e.g. waitlist UI, admin users page). The developer adopts a live-dialogue posture: the operator types observations, pastes screenshot paths, pastes console output, and the developer applies tactical changes immediately, announcing each as IMMEDIATE-FIX or DEFERRED-TRIAGE.
+
+Why it exists: the spec-first ceremony (analyst -> architect -> developer -> reviewer) is essential for substantive changes but overkill for "the headline reads weird" or "this padding is off". Without an explicit polish regime, operators either burn four prompts per text tweak or bypass ceremony informally and create undocumented drift. Polish Mode codifies the bypass as a recognised discipline.
+
+Why it stays safe: the developer holds a strict scope boundary (API / schema / data-model / new tests' assertions / new deps are OUT; substantive requests halt the mode automatically). Every operator observation is categorised as IMMEDIATE-FIX (apply now) or DEFERRED-TRIAGE (capture for later spec-first cycle). The exit ceremony produces a session log + an openspec record (amendment to the active CP or a new polish change-slug) so future readers see what changed and why. A lightweight reviewer self-check (`templates/governance/review-criteria.md` § Polish-pass review) gates the commit before push.
+
+Full mechanism: `templates/personas/orchestrator.md` § Polish Mode + `templates/personas/developer.md` § Polish Mode posture + `templates/prompts/polish-mode.md.template`.
+
 ## Onboarding modes
 
 Two starting points, same destination.

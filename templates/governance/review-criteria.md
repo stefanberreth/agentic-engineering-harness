@@ -143,6 +143,22 @@ Use this rubric to evaluate the quality of the agentic engineering files in a ta
 
 ---
 
+## 4a. Polish-pass review (lightweight, for Polish Mode commits)
+
+> Apply ONLY to commits produced by Polish Mode sessions (see orchestrator persona § Polish Mode). Polish Mode commits do NOT go through the full reviewer 10-dimension walk. The operator was the live eyeball reviewer during the session; this lightweight check confirms scope was honoured and the audit trail is complete. For all other commits use the standard rubrics above.
+
+| Criterion | Score | Notes |
+|---|---|---|
+| **Scope no-creep**: Diff stays within copy, layout, tokens, microcopy, test wording (matching changed copy). No source-logic changes, no new files outside touched surface, no new dependencies | | |
+| **No regression**: `npm test` green, `tsc --noEmit` clean, `eslint .` 0 errors | | |
+| **Tokens-only**: grep for hex literals introduced by the diff returns 0; no new tokens added | | |
+| **Audit-trail coverage**: Every diff hunk accounted for in the polish-session log or openspec record. No silent changes | | |
+| **Commit hygiene**: Conventional commits, ASCII, no AI attribution, message references `[change:<slug>]` | | |
+
+A failed criterion blocks the commit. Polish Mode developer runs this self-check at exit; orchestrator routes any failure back as a focused fix.
+
+---
+
 ## 5. Tool Integration Quality (Optional)
 
 > Only score this rubric if the project has actively configured development tools (OpenSpec, Context7, Serena, other MCP servers, or CLI-based doc tools). If no tools are configured, skip this section entirely. Note: Context7 in its preferred CLI + Skills mode is user-global and has no `.mcp.json` entry -- score it via the functional smoke test (`ctx7 library` then `ctx7 docs` returning content), not by config inspection.

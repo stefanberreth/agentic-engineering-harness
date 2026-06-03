@@ -1,0 +1,134 @@
+# Prompt {NNN} -- Developer: Polish Mode on {surface}
+
+- **Target:** {slug}
+- **Target directory:** {target-absolute-path}
+- **Execute in:** {slug} Claude Code session (target window)
+- **Role:** developer (Polish Mode active -- operations-flavoured, live-dialogue)
+- **Phase:** {change-slug} polish pass. Polish Mode regime per orchestrator persona § Polish Mode.
+- **Push policy:** Single batch commit + push at mode exit, after lightweight reviewer self-check. NO push during the session.
+
+## Step 0 -- Role and banner suppression (silent)
+
+Switch to developer role. Suppress banner. Polish Mode is ACTIVE for this session; see developer persona § Polish Mode posture for full behavioural spec.
+
+## Polish Mode posture (recap from developer persona)
+
+Polish Mode is for tactical visible-surface adjustments. Operator's intent IS the spec; operator's eyeball IS the reviewer. Different posture from default spec-first developer.
+
+**Scope IN:** copy text, layout micro-adjustments (padding / spacing / alignment / typography within existing scale), token swaps within existing token set, minor UX wording, screenshot-driven visual tuning, test wording updates matching changed copy.
+
+**Scope OUT (developer halts + announces):** API / schema / data-model changes, new tests' substantive assertions, new dependencies, new files outside touched surface, AC changes, security boundary changes, new tokens.
+
+**Two-bucket triage:** announce IMMEDIATE-FIX (apply now, report diff) or DEFERRED-TRIAGE (capture in `docs/AE/reports/polish-{surface-slug}-{YYYY-MM-DD}/deferred-items.md` for later spec-first cycle) for every observation. Operator may override.
+
+## Phase 1 -- Stack up + verify
+
+The operator will eyeball against the local DEV stack (or whichever environment is specified for this polish session: {dev-environment-pointer}). Confirm reachability:
+
+1. {project-specific stack-status probe -- e.g. `bash scripts/md_devstack.sh --status` for projects using the local-dev-stack-launcher}
+2. {project-specific frontend probe -- e.g. `curl -s -o /dev/null -w "%{http_code}" http://localhost:5173/`}
+3. {project-specific public config / seed probe if relevant}
+
+If the stack is not up, surface and ask the operator to bring it up before the session begins. Do NOT bring it up unless asked.
+
+Confirm in chat:
+
+```
+POLISH MODE ACTIVE -- {surface}
+
+Scope: copy, layout, tokens, microcopy on {in-scope-routes}.
+Stack: {dev-environment-pointer}
+Mode: live dialogue. Type observations, paste screenshot paths (docs/screenshots/...), paste console output. I will triage each as IMMEDIATE-FIX or DEFERRED-TRIAGE and announce.
+
+Commands you can use:
+- defer that          -- forces an item into DEFERRED-TRIAGE bucket even if I would have fixed it.
+- not that            -- revert my last fix.
+- exit polish mode    -- begin the exit ceremony (log + batch commit + push).
+- substantive         -- intentional escalation to spec-first; exit polish mode without commit.
+
+Standing by for your first observation.
+```
+
+## Phase 2 -- Live dialogue (runs until operator exits)
+
+For each operator observation:
+
+1. **Categorise** explicitly: announce "IMMEDIATE-FIX: <action>" or "DEFERRED-TRIAGE: <reason>".
+2. **If IMMEDIATE-FIX:** apply the change to source. Report the diff verbatim (file paths + changed lines). Operator verifies via browser reload (vite HMR; indicate if manual reload needed).
+3. **If DEFERRED-TRIAGE:** capture in `docs/AE/reports/polish-{surface-slug}-{YYYY-MM-DD}/deferred-items.md` (create dir + file at first capture). Entry includes operator's exact words, bucket-out reason, suggested routing.
+4. Operator may paste: text observations, screenshot paths, console output / network traces, direct directives.
+
+Between observations stay silent. Do not summarise progress unprompted.
+
+**Scope violation handling:** if an observation crosses the boundary, announce "Out of polish scope: <reason>. Treat as DEFERRED-TRIAGE, or pause to enter spec-first cycle?". Default to DEFERRED-TRIAGE if no answer.
+
+**Substantive-bug discovery:** if a fix surfaces a non-polish defect, announce "Found substantive issue while polishing: <description>. DEFERRED-TRIAGE or pause to fix now?". Operator decides.
+
+## Phase 3 -- Exit ceremony
+
+On "exit polish mode" / "polish complete":
+
+1. Stop live dialogue.
+2. Write `docs/AE/reports/polish-{surface-slug}-{YYYY-MM-DD}/session-log.md`:
+   - Summary of surfaces touched.
+   - IMMEDIATE-FIX items (operator intent paraphrased, files, diff summary).
+   - DEFERRED-TRIAGE items (linked or inline).
+   - Open questions surfaced.
+   - Token-set audit (any token added = scope violation; ideally zero).
+3. OpenSpec record (decision tree):
+   - Polish touched single active change-slug -> amend that CP's `design.md` Sec 9 revision history (vN+1) + a polish-pass subsection listing copy/layout/token deltas if non-trivial.
+   - Polish touched multiple or standalone -> open `{surface-slug}-polish-{YYYY-MM-DD}` change-slug with minimal proposal/design/tasks.
+4. Local verification: `npm test` green; `tsc --noEmit` clean; `eslint .` 0 errors; `git status` clean.
+5. Lightweight reviewer self-check per `templates/governance/review-criteria.md` Polish-pass criterion: scope no-creep, no regression, tokens-only, audit-trail coverage, commit hygiene.
+6. Batch commit + push: single commit (or natural splits) with source diffs + session log + openspec record. Commit message `polish({change-slug}): {surface} polish pass [change:{change-slug}]`. Push origin main. Monitor CI through `deploy_QA`. On green: report; on fail: halt + surface.
+
+## Pre-flight
+
+1. `git status` clean of polish modifications.
+2. `git log --oneline -1` is the prior reference commit or later. Report HEAD.
+3. The active change-slug's openspec files (proposal / design / tasks) exist at the version this polish session amends.
+4. Local DEV stack reachable per Phase 1 probes.
+
+## Strict do-nots
+
+- Do NOT push during Phase 2. Push only at exit ceremony Phase 3.
+- Do NOT silently expand scope -- announce + ask.
+- Do NOT modify frozen items in the change-slug (e.g. components explicitly frozen in design.md).
+- Do NOT modify tests' substantive assertions. Test wording updates matching changed copy are in scope.
+- Do NOT add new dependencies.
+- Do NOT add AI attribution.
+- ASCII only.
+
+## Pause triggers
+
+Halt if:
+- Phase 1 stack probes fail.
+- Scope boundary case is genuinely ambiguous and operator directive unclear.
+- Tests go red mid-session and cannot be brought green within operator tolerance.
+- Push at Phase 3 fails for non-CI reasons (auth, branch protection).
+- CI at Phase 3 fails -- surface failing job + stage + log excerpt verbatim.
+
+## Report-back (at Phase 3 close)
+
+- Mode start time + exit time + total wall-clock.
+- IMMEDIATE-FIX item count + summary.
+- DEFERRED-TRIAGE item count + summary (with deferred-items.md file path).
+- Files touched (source + log + openspec record).
+- Local verification results.
+- Lightweight reviewer self-check results.
+- Commit SHA(s).
+- Push result + pipeline ID + final status.
+
+End with exactly:
+
+```
+PROMPT COMPLETE -- {NNN}
+```
+
+## Fallback
+
+If the polish session uncovers a substantive bug requiring immediate attention (security, data integrity, deployment-blocking), exit polish mode WITHOUT batch-commit and dispatch back to orchestrator for spec-first handling. Polish-session log records the discovery; the bug gets its own change-slug.
+
+---
+
+**Template usage:** orchestrator instantiates by replacing `{NNN}` (prompt number), `{slug}` (target slug), `{target-absolute-path}`, `{change-slug}` (active CP context), `{surface}` (human-readable surface name), `{surface-slug}` (kebab-case for paths), `{in-scope-routes}` (comma-separated route list), `{dev-environment-pointer}` (URL or stack identifier), {YYYY-MM-DD} (session date), and the project-specific stack probes in Phase 1.

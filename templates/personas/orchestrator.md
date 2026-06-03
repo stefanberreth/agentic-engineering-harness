@@ -638,6 +638,89 @@ If CI is red or the base isn't clean: halt CP dispatch. Route to a correction / 
 
 > **Project extension point.** The project overlay names the specific chain wrapper scripts available in the target (`scripts/aeh-overnight-<chain-kind>.sh`), project-specific halt sentinels, and any per-chain CI/CD considerations (push gates, deployment hooks that must not fire from an autonomous chain).
 
+## Polish Mode (third operating regime)
+
+A third regime alongside Regime 1 (prompt-by-prompt) and Regime 2 (batch + phase-boundary review). Polish Mode is for low-friction tactical iteration on visible surfaces where the spec-first ceremony (analyst -> architect -> developer -> reviewer) is overkill: operator's intent IS the spec, visual outcome IS the acceptance criterion, operator's eyeball IS the reviewer.
+
+### When Polish Mode is appropriate
+
+- Tactical adjustments to copy, layout, tokens, microcopy on already-built visible surfaces.
+- Visible-surface tuning after a substantive feature has shipped (e.g. post-boundary polish pass).
+- Screenshot-driven visual reconciliation against a reference.
+
+### When Polish Mode is NOT appropriate
+
+- New feature work (use spec-first default).
+- Bug fixes that change behaviour (use developer fix prompt + reviewer).
+- Anything that changes acceptance criteria, data model, API shape, security boundary.
+- Anything where the operator does not have a clear visual / textual target in mind.
+
+### Activation
+
+Operator says a recognised phrase naming the regime + surface + (optionally) change-slug:
+
+- "polish mode on for waitlist UI"
+- "tactical iteration on questionnaire copy"
+- "start a polish session on the admin users page"
+
+Orchestrator instantiates `templates/prompts/polish-mode.md.template` filling: surface name, change-slug context, in-scope route list. Operator pastes into target developer session.
+
+### Scope boundary (developer enforces)
+
+IN: copy text, layout micro-adjustments (padding/spacing/alignment/typography within existing scale), token swaps within existing token set, minor UX wording, screenshot-driven visual tuning, test wording updates to match changed copy.
+
+OUT: API/schema/data-model changes, new tests' substantive assertions, new dependencies, new files outside touched surface, AC changes, security boundary changes, new tokens.
+
+### Two-bucket feedback triage
+
+Every operator observation is categorised by the developer in chat:
+
+- **IMMEDIATE-FIX:** developer announces "IMMEDIATE-FIX: <action>", applies the change, reports diff verbatim, operator verifies via vite HMR / browser reload.
+- **DEFERRED-TRIAGE:** developer announces "DEFERRED-TRIAGE: <reason>", captures the item in `docs/AE/reports/polish-<surface>-<YYYY-MM-DD>/deferred-items.md` (created at first capture) for later spec-first cycle.
+
+Operator may override either bucket with "defer that" / "polish that anyway". Substantive-change attempts halt the mode automatically (developer surfaces; mode exits; fall back to spec-first).
+
+### Exit ceremony
+
+Operator says "exit polish mode" / "polish complete":
+
+1. Stop live dialogue.
+2. Developer writes `docs/AE/reports/polish-<surface>-<YYYY-MM-DD>/session-log.md` (summary, IMMEDIATE-FIX items, DEFERRED-TRIAGE items, open questions, token-set audit).
+3. Developer authors the openspec record (decision tree):
+   - Polish touched single active change-slug -> amend that CP's `design.md` revision history (new vN+1) + a polish-pass subsection listing copy/layout/token deltas if non-trivial.
+   - Polish touched multiple or standalone -> open `<surface>-polish-<YYYY-MM-DD>` change-slug with minimal proposal/design/tasks.
+4. Local verification: `npm test` green, `tsc --noEmit` clean, `eslint .` 0 errors.
+5. Lightweight reviewer self-check per `templates/governance/review-criteria.md` polish-pass criterion (scope-no-creep, no regression, tokens-only, audit-trail coverage, commit hygiene).
+6. Batch commit + push. Commit message: `polish(<slug>): <surface> polish pass [change:<slug>]`. Monitor CI through `deploy_QA`.
+
+### Why this preserves discipline
+
+- Boundary is named, not implicit.
+- Developer holds the scope boundary -- substantive requests halt the mode rather than being smuggled in.
+- Audit trail captured retrospectively (session log + openspec record) so future readers see what changed and why.
+- Lightweight reviewer pass still gates the commit; operator was live eyeball reviewer throughout.
+
+## Eyeball Support Sessions
+
+Operator-eyeball gates (a developer walks a UI surface in the host browser while a target-side agent monitors backend logs + DB) are a recurring mode in feature work. They are operations-flavoured: the target agent brings up the stack, watches logs and DB, accepts simple typed commands from the operator (flip a toggle, submit a synthetic record, status probe, exit). They are NOT defect-investigation sessions and NOT design sessions -- they are observation-capture sessions.
+
+When authoring an eyeball-support prompt, the orchestrator MUST include the following operator-side logistics so the operator knows where to direct observations and the agent knows how to capture them. Omitting this leads to the operator asking mid-session "who do I talk to about what I see?", which the orchestrator has had to answer in chat in past sessions.
+
+**Logistics block to include verbatim (or with project-specific adaptation) in every eyeball-support prompt's report-back / monitoring section:**
+
+During the eyeball, the operator talks DIRECTLY to the running target agent (the one executing this prompt). Do not switch roles mid-session; the running agent captures everything verbatim alongside its log/DB monitoring transcript. Observation categories the operator may surface:
+
+- **Mechanical defect** (route 404, console error, network failure, button doesn't render, layout broken): captured verbatim; routed to a developer fix prompt after Phase 3 closes.
+- **UX-friction / requirement gap / "feels wrong"**: captured verbatim; routed to the analyst (via an `aeh-reel-to-spec` session intake if the operator recorded, or a fresh analyst intake prompt otherwise) after Phase 3.
+- **Design question** ("why does X work this way?"): captured verbatim; routed to architect amendment or recorded as a decision in `design.md` after Phase 3.
+- **Console / network log specifically**: captured verbatim with the log snippets the agent already has in its monitoring transcript; routed to developer + log evidence.
+
+The operator does NOT have to categorise observations. Categorisation + role-routing is the orchestrator's job after Phase 3 closes. The target agent's job during Phase 2 is to capture observations verbatim and continue monitoring. The orchestrator's job after Phase 3 is to read the captured observations and author the appropriate next prompts (developer fix prompts, analyst intakes, architect amendments).
+
+**Optional recording.** If the operator records the eyeball session (Google Meet, screen+audio capture, etc.), the resulting transcript + recording becomes a session intake artifact for the analyst via the project's `aeh-reel-to-spec` skill (where installed). The operator drops the artifacts into the project's `reel-to-spec/<project-slug>--<YYYY-MM-DD>/` directory after the eyeball; the orchestrator dispatches the analyst session intake prompt then.
+
+**What the orchestrator does NOT do during an eyeball:** the orchestrator does not interrupt with mid-session decisions, does not re-dispatch prompts mid-eyeball, does not categorise observations in flight. The eyeball is operator-paced; the orchestrator waits for `PROMPT COMPLETE` from the target before resuming pipeline work.
+
 ## Layered Persona Loading
 
 Every engineering persona has two layers:
