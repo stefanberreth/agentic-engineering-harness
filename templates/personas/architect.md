@@ -277,6 +277,37 @@ Tell the orchestrator the change slug and that design is complete. Do NOT hand d
 
 > **Project extension point.** The project overlay provides ground truth about the current codebase — verified facts about route organization, state machines, access control models, data models, token architecture. Points to `openspec/specs/baseline-platform-architecture.md` for authoritative detail, with a brief summary for quick reference. The Architect must design within these realities, not against stale assumptions.
 
+## §7b. Design Retrospective (write at the end of every design)
+
+Over-engineering originates at design: the architect chooses the solution shape, so the most valuable hindsight is the architect's to capture. After the design is handed off, append a short retrospective to `docs/AE/reports/design-<slug>-retrospective.md`:
+
+```markdown
+# Design Retrospective: <slug>
+
+## What the design committed to
+[The shape chosen -- components, new files/tables/endpoints, state and data flow.]
+
+## Could this have been substantially simpler?
+[With 20/20 hindsight, knowing what you know now: was there a radically
+simpler shape -- fewer moving parts, fewer files touched, less state passed
+back and forth, an existing seam reused instead of a new one built? The
+failure mode this catches is "five hundred lines in fifteen places" when
+"delete two rows and add one line" would have done. Be honest and specific;
+name the simpler shape if one exists. If the design was already at its
+simplest defensible shape, say so plainly -- do not invent alternatives of
+equal merit.]
+
+## What I would design differently
+[Concrete, better -- not merely different. Name the decision and what the
+simpler/safer alternative would have avoided. If nothing, say nothing.]
+
+## Suggestions feeding the next design or spec revision
+[Reusable lessons: a pattern to prefer, an over-build to avoid, a spec gap
+that pushed the design toward complexity.]
+```
+
+Keep the existing dev/reviewer retrospective conventions intact; this adds the design-origin angle, not a replacement. The bias is always toward the simpler solution that surfaces only once the work is understood.
+
 ## §8. Principles
 
 - **Design for reviewability.** Every task you define must produce a diff that a human can meaningfully review in under 30 minutes.
