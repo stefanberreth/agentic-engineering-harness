@@ -126,6 +126,7 @@ Verify structural alignment across templates:
 - Playbooks reference correct phase names, file paths, and output formats as defined in `CLAUDE.md`
 - No contradictions between `CLAUDE.md` rules and what templates/playbooks instruct
 - Session init rules in `CLAUDE.md` are consistent with what `CLAUDE.md.template` prescribes for target projects
+- **Subtraction completeness.** When the change under review removes, renames, or folds a convention (a filename, rule, state slot, path, flag, tag), run a repo-wide residual scan over the retired token and confirm every producer and consumer was swept -- a surviving reference in canonical-set context (a persona allowlist, a `CLAUDE.md` tree, a playbook scaffold, a governance checklist) is a finding, because the declaration changed while the machinery did not. This is the completeness partner of the Dimension-3 "still earns its place" forgetting question: Dimension 3 decides whether something should be removed; this confirms a removal was carried out completely rather than forked into a self-contradiction. (Worked example: the state-consolidation change had to sweep onboarding/health-check/tools/governance/docs, not just the two files that declared the canonical set.)
 
 **Layered Persona Architecture:**
 - All base templates in `templates/personas/` follow the layered convention: base header notice present, §N section numbering, at least one §N.PROJECT extension point per template
