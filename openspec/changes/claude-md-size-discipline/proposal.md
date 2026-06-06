@@ -2,9 +2,23 @@
 slug: claude-md-size-discipline
 status: proposed
 since: 2026-06-01
+blocked-pending: harness-maintainer first consolidation round
+reconcile-with: orchestrator-state-consolidation, harness-maintainer-role-charter
 ---
 
 # CLAUDE.md size discipline (slim via pointer-to-reference-docs)
+
+## Reconciliation note (2026-06-06) -- do not lose, do not implement as-written yet
+
+This proposal is PARKED for the harness-maintainer's first consolidation round, not cut. Status stays `proposed`; do not implement as-written. Why:
+
+- **Size goal partially down-paid.** A 2026-06-06 in-place compression pass (compress-to-existing-pointers, no new docs tree) brought CLAUDE.md from 44k to 39.7k -- under the 40k runtime warning, but still above this proposal's <30k target / <35k firm cap. The urgent trigger (runtime warning) is resolved; the aspirational target is not.
+- **Mechanism fork to resolve.** This proposal's mechanism (extract rationale to a new `docs/harness-rules/` tree + enforce `- **Topic.** One-sentence rule. Detail: <pointer>.` bullet shape) now competes with the proven lighter approach (in-place compression to existing pointers, no new tree). The maintainer decides: adopt in-place-compression as the mechanism and drop the new-docs-tree, or still pursue extraction for the <30k target.
+- **Durable value that must survive either way:** the bullet-shape discipline (anti-re-bloat enforcement for FUTURE rules) and the harness-reviewer pointer-resolution check (Task 7). These are NOT obsolete; they are the same anti-additive-ratchet family as `orchestrator-state-consolidation`'s forgetting question and the harness-maintainer's anti-bloat charter, and should be folded together in the consolidation round.
+
+Disposition: the harness-maintainer reconciles this against `orchestrator-state-consolidation` and `harness-maintainer-role-charter` in its first pass, then either re-scopes-and-implements or abandons-with-the-durable-bits-rehomed. Everything below is the original proposal text, preserved.
+
+---
 
 ## What
 
