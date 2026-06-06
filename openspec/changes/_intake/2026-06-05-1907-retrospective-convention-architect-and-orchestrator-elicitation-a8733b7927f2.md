@@ -3,10 +3,10 @@ captured-at: 2026-06-05T19:07:00Z
 captured-from: a8733b7927f2
 captured-during: operator reviewed the existing hindsight-retrospective convention and directed extending it to the architect persona + giving the orchestrator explicit elicitation responsibility
 area: personas (architect, orchestrator, developer, reviewer) / retrospective convention
-status: partially-triaged
+status: triaged
 ---
 
-> **Triage note (2026-06-06):** Items 1 (architect writes its own design retrospective) and 2 (orchestrator owns eliciting retrospectives) were implemented under `openspec/changes/retrospective-elicitation-convention/`. Items 3 (assess sharpening dev/reviewer toward the simplicity angle), 4 (reviewer over-engineering / LLM-waste scrutiny dimension), and 5 (elite-adversarial reviewer persona) remain OPEN -- they are a separate reviewer-quality thread, deliberately not bundled with elicitation. This capture stays open for those three.
+> **Triage note (2026-06-06):** Fully dispositioned across two decoupled proposals. Items 1 (architect writes its own design retrospective) and 2 (orchestrator owns eliciting retrospectives) -> `openspec/changes/retrospective-elicitation-convention/`. Items 3 (dev/reviewer simplicity sharpening -- assessed, then applied as a light sharpening), 4 (reviewer over-engineering / LLM-waste scrutiny dimension), and 5 (elite-adversarial reviewer characterisation) -> `openspec/changes/reviewer-over-engineering-and-adversarial-stance/`. All five items implemented.
 
 # Extend the hindsight-retrospective convention: add it to the architect, make the orchestrator responsible for eliciting it, and consider sharpening all of them toward SIMPLICITY (anti-over-engineering)
 

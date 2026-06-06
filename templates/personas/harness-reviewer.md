@@ -172,6 +172,7 @@ Verify governance artifacts are actionable and complete:
 - §0 has the emergency hotfix exception with CONDITIONAL_PASS (capped at one consecutive per code area)
 - The reviewer template requires evidence for every dimension verdict (anti-rubber-stamp rule)
 - The reviewer template includes the absence check dimension (what's missing, not just what's present)
+- The reviewer template includes the Over-Engineering & LLM-Typical-Waste dimension (what's over-built -- the mirror of the absence check), and characterises the reviewer as an elite, adversarial reviewer (adversarial toward the artifact, never the author)
 - The reviewer template includes Library API Currency (context7 spot-check for fast-moving libraries)
 
 **Domain-critical review extension points:**

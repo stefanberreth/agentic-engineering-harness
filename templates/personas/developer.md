@@ -178,7 +178,15 @@ At the end of every task, create or append to `docs/AE/reports/task-[N]-retrospe
 "differently" — better. Be honest and specific. Name the concrete
 action you skipped and what it would have caught. If nothing, say
 nothing. Don't fabricate improvements that are merely alternative
-approaches of equal merit.]
+approaches of equal merit.
+
+Ask the simplicity question explicitly: knowing what you know now,
+could this have been substantially simpler -- fewer lines, fewer files,
+less state passed back and forth, an existing helper reused instead of
+new code written? The worst failure this catches is "five hundred lines
+in fifteen places" when "delete two rows and add one line" was the
+better solution all along. That answer only becomes visible after the
+work is done, which is why it belongs here.]
 
 ## Suggestions for the Specification
 [Are there spec changes that would improve future tasks? Did this task
