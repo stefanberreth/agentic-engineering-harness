@@ -112,7 +112,7 @@ OpenSpec -- specification-driven development (AEH-standard SDLC tool)
   [Y -- set up (default) / defer / opt-out]
 ```
 
-"defer" records a deferral -- OpenSpec is offered again on the next `tools` run. "opt-out" records a deliberate decline (operator knows better for this specific project); capture the reason in `decisions.md`. Both are reversible if the user explicitly asks to reconsider.
+"defer" records a deferral -- OpenSpec is offered again on the next `tools` run. "opt-out" records a deliberate decline (operator knows better for this specific project); capture the reason as a `[DECISION]` entry in `journal.md`. Both are reversible if the user explicitly asks to reconsider.
 
 If functional equivalents were detected:
 
@@ -244,12 +244,12 @@ Add or update the `## Development Tools` section in `targets/<slug>/profile.md`:
 | Serena | not offered | | |
 ```
 
-### 5b. Update decisions.md
+### 5b. Record the tool decisions
 
-Append tool decisions to `targets/<slug>/decisions.md`:
+Append a `[DECISION]`-tagged entry to `targets/<slug>/journal.md`:
 
 ```markdown
-### Tool Configuration (2026-02-19)
+## 2026-02-19 [DECISION] Tool configuration
 
 - **OpenSpec:** Set up. User wants spec management for the migration project.
 - **Context7:** Declined. User prefers manual doc lookup and doesn't want API key dependency.

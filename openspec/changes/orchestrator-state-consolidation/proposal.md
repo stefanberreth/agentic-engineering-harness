@@ -1,6 +1,6 @@
 ---
 slug: orchestrator-state-consolidation
-status: proposed
+status: ready-for-archive
 since: 2026-06-06
 ---
 
@@ -40,6 +40,8 @@ In scope:
 - Add a "Pre-clear reconciliation" subsection to `orchestrator.md` (procedure + one-line delta-log format + "fix the slot, not just the instance" rule).
 - Add the "still earns its place" forgetting question to an existing harness-reviewer dimension (Documentation Currency or Template Consistency -- decided in design).
 - Add a retrofit prompt template for existing targets to migrate their satellite files.
+- **Consumer sweep (added during implementation, operator-approved).** Sweep every harness consumer that records into or reads from the retired files onto the new model -- `onboarding.md` (scaffold + assessment flow + opt-out recording + close-out gates), `health-check.md` (baseline read + opt-out checks + phase-completion), `tools.md`, `tools/README.md`, `permission-baselines.md`, `seed-harness-sync-marker.md.template`, `docs/tool-integration-architecture-analysis.md`, `harness-reviewer.md` extended-scan -- passing each through the simplification / de-duplication gate, not just repointing paths. Without this the harness contradicts itself (persona says "eight entries", onboarding scaffolds eleven). See design.md section 8.
+- **Fold `inconsistencies.md` into `assessment.md`** (a fourth overlap surfaced by the consumer sweep): the assessment-phase ranked findings become a `## Inconsistency Report` section of `assessment.md`. See design.md section 3 note.
 - CHANGELOG [Unreleased] entry.
 
 Out of scope (recorded here for the historical record; deferred to separate proposals):
@@ -55,7 +57,7 @@ Out of scope (recorded here for the historical record; deferred to separate prop
 ## Acceptance criteria
 
 1. `CLAUDE.md` "Target Project Workspace Structure" and `orchestrator.md` "State Initialisation" + Principles describe the SAME canonical file set (verifiable by comparing both; no divergence).
-2. `decisions.md`, `open-questions.md`, and `review-history.md` no longer appear as separate canonical filenames in either file.
+2. `decisions.md`, `open-questions.md`, and `review-history.md` no longer appear as separate canonical filenames in either file, nor in any harness consumer (onboarding/health-check/tools/governance/docs); a harness-wide residual scan returns only labelled migration notes, historical CHANGELOG entries, and the target-owned `docs/AE/decisions.md` convention. `inconsistencies.md` no longer appears as a separate workspace file (folded into `assessment.md`).
 3. `design.md` contains a migration mapping table: every retired filename maps to a destination (file + section + tag). No content class unmapped -- this table is the baby-not-thrown-out proof.
 4. `orchestrator.md` contains a "Pre-clear reconciliation" subsection with the reconstruct-and-diff procedure and the delta-log line format.
 5. The harness-reviewer carries the "still earns its place" question inside an existing dimension (no new dimension unless explicitly decided).

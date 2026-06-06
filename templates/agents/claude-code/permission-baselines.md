@@ -227,4 +227,4 @@ When generating a permission governance prompt for a target project:
 4. **Add project-specific deny rules** (production DB hosts, deployment commands, etc.)
 5. **Add harness isolation deny rule** if project is managed by AEH
 6. **Record the chosen baseline** in the target's `profile.md` under `## Permission Baseline`
-7. **Document any deviations** from the baseline with rationale in the target's `decisions.md`
+7. **Document any deviations** from the baseline with rationale as a `[DECISION]` entry in the target's `journal.md`

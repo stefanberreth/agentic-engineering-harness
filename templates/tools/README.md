@@ -4,7 +4,7 @@ Development tool configurations (CLI, skills, and MCP-server based) for target p
 
 ## Design Principles
 
-- **Two standard, one optional.** OpenSpec and Context7 are AEH-standard SDLC tools — default in-scope during onboarding, opt-out (not opt-in). Their absence on a project is a deliberate operator choice, recorded in `decisions.md` with rationale. Serena remains genuinely optional; its absence is informational.
+- **Two standard, one optional.** OpenSpec and Context7 are AEH-standard SDLC tools — default in-scope during onboarding, opt-out (not opt-in). Their absence on a project is a deliberate operator choice, recorded as a `[DECISION]` journal entry with rationale. Serena remains genuinely optional; its absence is informational.
 - **Detect, don't prescribe duplicates.** If a project already has functional equivalents (ADR directories, custom spec management, other MCP servers), report them. For OpenSpec, frame as complementary rather than replacement. For optional tools, treat the equivalent as sufficient unless the operator says otherwise.
 - **Per-project.** All tool configuration is recorded in the target's `profile.md`. No cross-project assumptions.
 - **Reversible.** Every setup template has a matching teardown template. Nothing is permanent.
@@ -25,7 +25,7 @@ Tools are managed through the `tools` playbook (`templates/playbooks/tools.md`),
 1. Detects which tools (and functional equivalents) are already present
 2. Presents each tool with a brief description and offers setup/skip/decline/remove
 3. Generates prompts for the target-side Claude to execute
-4. Records decisions in the target's `profile.md` and `decisions.md`
+4. Records decisions in the target's `profile.md` and as `[DECISION]` entries in `journal.md`
 
 ## Detection Patterns
 

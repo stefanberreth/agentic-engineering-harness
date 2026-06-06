@@ -72,4 +72,4 @@ PROMPT COMPLETE -- seed-harness-sync-marker
 
 If `profile.md` does not exist, this target has not completed AEH onboarding. Halt and surface "profile.md missing -- this target needs onboarding before the propagation-signal mechanism is applicable."
 
-If the harness path is not `/workspace/aeh/` (non-standard container setup), substitute the actual harness root path in Step 1 and document the substitution in `decisions.md`.
+If the harness path is not `/workspace/aeh/` (non-standard container setup), substitute the actual harness root path in Step 1 and document the substitution as a `[DECISION]` entry in `journal.md`.

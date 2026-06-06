@@ -52,6 +52,16 @@ Ordered. Each task carries a mechanical completion signal.
 - Single commit (no AI attribution; ASCII-only message).
 - **Signal:** `git status` clean post-commit; commit message references the slug.
 
+## 10. Consumer sweep (added during implementation, operator-approved)
+
+- Sweep every harness consumer that records into / reads from the retired files onto the new model: `onboarding.md`, `health-check.md`, `tools.md`, `tools/README.md`, `permission-baselines.md`, `seed-harness-sync-marker.md.template`, `docs/tool-integration-architecture-analysis.md`, `harness-reviewer.md` extended-scan, remaining `CLAUDE.md` body lines. Pass each through the simplification / de-duplication gate (not just path repointing).
+- **Signal:** harness-wide residual scan (`grep -rn 'decisions\.md\|open-questions\.md\|review-history\.md\|inconsistencies\.md'` over active `*.md`/`*.template`/`*.sh`, excluding `targets/`, `openspec/changes/`, `CHANGELOG.md`) returns only labelled migration notes and the target-owned `docs/AE/decisions.md` line.
+
+## 11. Fold inconsistencies.md into assessment.md (fourth overlap)
+
+- Assessment-phase ranked findings become a `## Inconsistency Report` section of `assessment.md`; onboarding + health-check + the retrofit template updated; design.md section 3 note + section 8 added.
+- **Signal:** no harness file scaffolds or reads a standalone `inconsistencies.md`; onboarding scaffold tree omits it; retrofit template Step 4b handles legacy targets.
+
 ## Close-out (after implementation + bookend)
 
 - This is a process/mechanism proposal touching personas + CLAUDE.md + templates; it may introduce a small capability spec for "orchestrator state model" under `openspec/specs/` if the maintainer wants the canonical set spec'd. Decide at close-out. If no spec, steps 1-2 of the close-out playbook are no-ops; archive after status flip + move.

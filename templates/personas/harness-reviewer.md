@@ -116,6 +116,7 @@ Check that documentation reflects reality:
 - **CHANGELOG.md** [Unreleased] section captures all changes since last version tag
 - No stale version numbers, dates, or references to removed files
 - Playbook references (phase names, file paths, output formats) are consistent with actual playbook content
+- **Does every always-active rule and every canonical state slot still earn its place** -- superseded, mergeable, or demotable to a pointer? Flag dead wood, not just missing or stale content. The harness has many capture pipelines (`_intake`, BACKLOG, OpenSpec, archive) that all *acquire* rules and state slots; this is the symmetric pruning lens. A rule that another rule now subsumes, a state file whose function another file already holds, or a paragraph that could be a one-line pointer is a finding here -- the additive ratchet is itself a defect.
 
 ### 4. Template & Persona Consistency
 
@@ -304,11 +305,11 @@ Read each file systematically. Cross-reference claims against reality.
 
 When the review's purpose includes surfacing lift candidates (patterns in a target project that belong in generic templates), extend the scan to sources beyond harness templates + feedback memory:
 
-- **Target-project decisions files:**
-  - Harness-side: `targets/<slug>/decisions.md` — process decisions captured per-target that may generalise
+- **Target-project decisions:**
+  - Harness-side: `[DECISION]`-tagged entries in `targets/<slug>/journal.md` (`grep '\[DECISION\]' journal.md`) — process decisions captured per-target that may generalise
   - Target-side: `docs/AE/decisions.md` in the target repo if maintained there
-- **Target-project reports and review history:**
-  - `targets/<slug>/review-history.md` — append-only longitudinal findings
+- **Target-project review findings:**
+  - `[REVIEW]`-tagged entries in `targets/<slug>/journal.md` (`grep '\[REVIEW\]' journal.md`) — append-only longitudinal findings
   - Target-side `docs/AE/reports/` — session reports, analyst intakes, reviewer reports
 - **Target-project session-learning reports (if produced by a prior uplift pass):**
   - `targets/<slug>/session-learning-report-*.md` or equivalent

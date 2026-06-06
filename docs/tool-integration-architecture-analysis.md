@@ -362,7 +362,7 @@ The target's `profile.md` should record:
 
 All three tools are optional. The harness should:
 - Present them with clear cost/benefit explanations
-- Record the decision in `targets/<slug>/decisions.md`
+- Record the decision as a `[DECISION]` entry in `targets/<slug>/journal.md`
 - Never assume a tool is present in subsequent prompts unless confirmed
 - Generate removal prompts alongside setup prompts (always offer the exit)
 

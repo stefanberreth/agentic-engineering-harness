@@ -48,7 +48,7 @@ Experienced users can bypass Phase 1 entirely: `onboard /path/to/project`
 
 ### Existing target detected
 
-If a workspace already exists for this path, read the target's `tasks.md`, `decisions.md`, and `transformation-plan.md` to assess how much progress has been made. Then present the user with a clear summary and choice:
+If a workspace already exists for this path, read the target's `tasks.md`, `journal.md` (its `[DECISION]` entries), and `transformation-plan.md` to assess how much progress has been made. Then present the user with a clear summary and choice:
 
 ```
 This project is already being tracked: <slug> (<phase>)
@@ -79,13 +79,12 @@ Options:
 
 Wait for the user to choose. Do not proceed with re-onboarding unless the user explicitly picks option 3.
 
-If the user picks option 1: read the target's `tasks.md` and `open-questions.md`, summarise current state, and propose next steps. The playbook ends here.
+If the user picks option 1: read the target's `tasks.md` and the `## Open Questions` section of `orchestrator-state.md` (if the orchestrator has initialised it), summarise current state, and propose next steps. The playbook ends here.
 
 If the user picks option 2: switch to the health-check playbook (`templates/playbooks/health-check.md`). The onboarding playbook ends here.
 
-If the user picks option 3: proceed with Phase 2, but first back up the existing workspace:
-- Copy `targets/<slug>/decisions.md` to `targets/<slug>/decisions-pre-reonboard-<date>.md`
-- Note in the journal that a re-onboard was initiated and why
+If the user picks option 3: proceed with Phase 2, but first preserve continuity:
+- Add a `[DECISION]` entry to `targets/<slug>/journal.md` recording that a re-onboard was initiated and why (the journal is append-only, so prior `[DECISION]` / `[REVIEW]` history is preserved automatically -- no separate backup file needed)
 
 ### New target
 
@@ -142,7 +141,7 @@ Then jump straight to a condensed flow:
 2. **Skip Phase 3a (assessment checklist).** Every item is N/A on a greenfield. Write `targets/<slug>/assessment.md` with a single line: `Greenfield project. Assessment N/A until first feature.`
 3. **Skip Phase 3b (review criteria).** Nothing to review.
 4. **Skip Phase 3c (existing setup migration).** Nothing to migrate.
-5. **Skip Phase 3d (inconsistency report).** Nothing to be inconsistent with. Write `targets/<slug>/inconsistencies.md` with a single line: `Greenfield project. No inconsistencies.`
+5. **Skip Phase 3d (inconsistency report).** Nothing to be inconsistent with. The single-line `assessment.md` from step 2 already covers this; do NOT create a separate inconsistency file.
 6. **Run Phase 3e (create workspace).** Write `profile.md` with placeholder fields:
 
    ```markdown
@@ -172,7 +171,7 @@ Then jump straight to a condensed flow:
 
    Do NOT ask domain/stack/team questions -- those are explicitly out of scope for onboarding.
 
-   **Delivery policy: do NOT ask -- default to `direct`.** Direct delivery (harness writes prompts to both `targets/<slug>/prompts/` and `<target-path>/docs/AE/prompts/`) is the only mode under which the orchestrator's standard handoff one-liner (`Read and execute docs/AE/prompts/NNN-title.md`) actually works -- target-side Claude sessions are filesystem-scoped to the target project tree and cannot read harness-side paths. Set `policy: direct` in `profile.md` without asking. If the operator explicitly volunteers a preference for manual delivery, honour it AND surface the trade-off ("under manual you'll need to copy each prompt to the target tree before pasting the handoff -- direct is the default for that reason"); record the decision in `decisions.md` with the reason.
+   **Delivery policy: do NOT ask -- default to `direct`.** Direct delivery (harness writes prompts to both `targets/<slug>/prompts/` and `<target-path>/docs/AE/prompts/`) is the only mode under which the orchestrator's standard handoff one-liner (`Read and execute docs/AE/prompts/NNN-title.md`) actually works -- target-side Claude sessions are filesystem-scoped to the target project tree and cannot read harness-side paths. Set `policy: direct` in `profile.md` without asking. If the operator explicitly volunteers a preference for manual delivery, honour it AND surface the trade-off ("under manual you'll need to copy each prompt to the target tree before pasting the handoff -- direct is the default for that reason"); record the decision as a `[DECISION]` entry in `journal.md` with the reason.
 
 7. **Skip Phase 4 (report).** There is nothing to report. Note in the journal that the target was onboarded as greenfield.
 8. **Phase 5 (plan): use the standard greenfield plan.** Identical for every greenfield target -- no per-project tailoring needed:
@@ -402,7 +401,7 @@ Cross-reference all findings and produce a ranked inconsistency report:
 - **MEDIUM**: Structural debt (naming inconsistencies, stale references, incomplete coverage)
 - **LOW**: Cosmetic or minor (formatting, optional improvements, nice-to-haves)
 
-Write to `targets/<slug>/inconsistencies.md`.
+Write the ranked report as a `## Inconsistency Report` section in `targets/<slug>/assessment.md` (the assessment checklist and the ranked findings are one assessment-phase artifact -- do NOT create a separate `inconsistencies.md`).
 
 ### 3e. Create Target Workspace
 
@@ -411,17 +410,15 @@ If not already created, set up the full workspace:
 ```
 targets/<slug>/
 ├── profile.md
-├── assessment.md          (written above)
-├── inconsistencies.md     (written above)
-├── review-history.md      (first entry written from assessment findings)
+├── assessment.md          (checklist + ## Inconsistency Report section, written above)
 ├── transformation-plan.md (placeholder -- filled in Phase 5)
 ├── tasks.md               (placeholder)
-├── decisions.md
-├── open-questions.md
 ├── prompts/
 ├── deliverables/
-└── journal.md
+└── journal.md             (first [REVIEW] entry written from assessment findings)
 ```
+
+The live dashboard (`orchestrator-state.md`, carrying the `## Open Questions` section) is created by the orchestrator on first engagement, not here. Decisions and review findings are recorded as `[DECISION]` / `[REVIEW]` tagged entries in `journal.md`; open questions, once the orchestrator initialises, live on the dashboard. There are no separate `decisions.md` / `open-questions.md` / `review-history.md` / `inconsistencies.md` files.
 
 **profile.md** must include:
 - Project name and path
@@ -466,8 +463,7 @@ Top issues:
   [C] I-02: <one-line description>
   [H] I-03: <one-line description>
 
-Full report: targets/<slug>/inconsistencies.md
-Assessment:  targets/<slug>/assessment.md
+Full report: targets/<slug>/assessment.md (## Inconsistency Report)
 ```
 
 If existing role setup was detected:
@@ -492,15 +488,16 @@ it that way is a known derailment.
 
 Instead, state where the findings go:
 
-> The findings above are recorded in inconsistencies.md and review-history.md.
+> The findings above are recorded in assessment.md (the ## Inconsistency
+> Report section) and summarised as a [REVIEW] journal entry.
 > Onboarding does not fix them -- it stands up the AEH structure around the
 > project. The findings become a handoff artifact the archaeologist and the
 > reviewer-implementer loop consume later. Phase 7 is where you choose whether
 > to queue that remediation now or onboard only.
 
 No severity-scoped decision is recorded here. The Phase 7 option choice is the
-only scope decision, and it is recorded in `targets/<slug>/decisions.md` at
-that point.
+only scope decision, and it is recorded as a `[DECISION]` entry in
+`targets/<slug>/journal.md` at that point.
 
 ---
 
@@ -561,7 +558,7 @@ A persona task that merges an existing role file should note the source:
 
 > Approve this plan, modify it, or skip tasks? (say task numbers to skip, or describe changes)
 
-Record approvals and modifications in `targets/<slug>/decisions.md`.
+Record approvals and modifications as `[DECISION]` entries in `targets/<slug>/journal.md`.
 Write the final task list to `targets/<slug>/tasks.md`.
 
 **Note to operator:** The orchestrator enforces mandatory reviewer cadence (every 5 developer tasks or at phase boundaries — non-discretionary). This is built into the orchestrator template and does not need to be configured per-project. The plan should anticipate reviewer passes at regular intervals; they are not optional extras.
@@ -789,7 +786,7 @@ Default: set up OpenSpec as part of onboarding scope.
 
 **Default behavior (Y / silence / "continue" / "yes"):** Read `templates/tools/openspec-setup.md`, generate the setup prompt adapted to this target, and add it to the prompt sequence (insert before the regression check prompt). Record the decision in `profile.md` under a `## Specification Management` section: `policy: openspec`.
 
-**If operator explicitly opts out ("opt-out" / "skip" / "never"):** Record in `profile.md` under `## Specification Management`: `policy: manual (spec.md)`. Personas fall back to `requirements.md` / `spec.md` conventions. The decision is reversible via `tools`. Note the operator-stated reason in `decisions.md` so future sessions don't second-guess.
+**If operator explicitly opts out ("opt-out" / "skip" / "never"):** Record in `profile.md` under `## Specification Management`: `policy: manual (spec.md)`. Personas fall back to `requirements.md` / `spec.md` conventions. The decision is reversible via `tools`. Note the operator-stated reason as a `[DECISION]` entry in `journal.md` so future sessions don't second-guess.
 
 **If operator defers ("not now" / "defer" / "later"):** Record in `profile.md` under `## Specification Management`: `policy: deferred`. OpenSpec will be offered again when the user runs `tools`. The default-in-scope status is preserved -- defer is "not yet", not "no".
 
@@ -814,7 +811,7 @@ Default: set up context7 (CLI + Skills) as part of onboarding scope.
 
 **Default behavior (Y / silence / "continue" / "yes"):** Read `templates/tools/context7-setup.md`, generate the **CLI + Skills** setup prompt adapted to this target (use the flag matching the target's coding agent), and add it to the prompt sequence. Generate the MCP-fallback variant only if the target environment cannot run the `ctx7` CLI (no Node 18+ / no npx) or the operator asks for it. Record in `profile.md` under `## Development Tools`: `context7: configured (cli-skills)` (or `configured (mcp)` for the fallback). The developer and architect overlays will need a §1a.PROJECT / §3a.PROJECT trigger list populated with the project's fast-moving libraries — generate that as part of the setup prompt.
 
-**If operator explicitly opts out:** Record in `profile.md` under `## Development Tools`: `context7: declined (operator opt-out)`. Note the reason in `decisions.md`. Reversible via `tools`.
+**If operator explicitly opts out:** Record in `profile.md` under `## Development Tools`: `context7: declined (operator opt-out)`. Note the reason as a `[DECISION]` entry in `journal.md`. Reversible via `tools`.
 
 **If operator defers:** Record in `profile.md` under `## Development Tools`: `context7: deferred`. Will be offered again via `tools`.
 
@@ -923,7 +920,7 @@ If either file fails to load, onboarding is NOT complete. Fix the placement and 
 
 ### 6j. Standard-Tool Verification Completion Gate
 
-Onboarding MUST NOT be declared complete until each standard SDLC tool is either **proven working** or **explicitly opted out in `decisions.md`**. A `profile.md` line that says `configured` is a claim, not proof -- the gate requires functional evidence (or a recorded deliberate opt-out). This closes the failure mode where a tool is "set up" in the plan but never actually functions, and nobody notices until a developer prompt needs it.
+Onboarding MUST NOT be declared complete until each standard SDLC tool is either **proven working** or **explicitly opted out via a `[DECISION]` journal entry**. A `profile.md` line that says `configured` is a claim, not proof -- the gate requires functional evidence (or a recorded deliberate opt-out). This closes the failure mode where a tool is "set up" in the plan but never actually functions, and nobody notices until a developer prompt needs it.
 
 For **context7** (one of three outcomes must hold):
 
@@ -931,7 +928,7 @@ For **context7** (one of three outcomes must hold):
    - CLI + Skills mode: `npx ctx7@latest library react "state hooks"` then `npx ctx7@latest docs /facebook/react "useState cleanup"` returns documentation content.
    - MCP mode: the Context7 MCP smoke test from `templates/tools/tool-detection-patterns.md` returns docs.
    Record `context7: configured (cli-skills)` / `configured (mcp)` plus `verified <date>` in `profile.md`.
-2. **Explicit opt-out:** `profile.md` records `context7: declined (operator opt-out)` AND `decisions.md` has a dated entry with the operator's reason. No verification required.
+2. **Explicit opt-out:** `profile.md` records `context7: declined (operator opt-out)` AND `journal.md` has a dated `[DECISION]` entry with the operator's reason. No verification required.
 3. **Deferred:** `profile.md` records `context7: deferred`. Allowed, but onboarding is reported as **complete-with-deferral**, not clean-complete, and the deferral is surfaced in the Phase 7 handoff so it is not silently lost.
 
 If context7 was accepted but the smoke test has not been run or did not pass, onboarding is NOT complete: hand the operator the smoke-test commands, wait for the pass, then proceed. (Apply the same proven-or-opted-out logic to OpenSpec via its own verification.)
@@ -954,8 +951,7 @@ This phase does NOT execute implementation. It presents the assessment findings 
 Assessment complete: <project-name>
 
 Reports written:
-  Assessment:       targets/<slug>/assessment.md
-  Inconsistencies:  targets/<slug>/inconsistencies.md
+  Assessment:       targets/<slug>/assessment.md (incl. ## Inconsistency Report)
   Plan:             targets/<slug>/transformation-plan.md
 
 Findings: CRITICAL (<N>) · HIGH (<N>) · MEDIUM (<N>) · LOW (<N>)
@@ -1010,7 +1006,7 @@ Generate only the harness setup prompts. End the playbook. The user runs them ma
 **Option 2 (supervised implementation):**
 Generate a reviewer-implementer prompt pair. The reviewer prompt runs autonomously (read-only). The implementer prompt is structured to present each proposed fix and wait for user confirmation before applying.
 
-Record this choice in `targets/<slug>/decisions.md`.
+Record this choice as a `[DECISION]` entry in `targets/<slug>/journal.md`.
 
 **Option 3 (pre-approved auto):**
 Generate a single orchestration prompt that chains reviewer + implementer with no stops. Before generating, confirm:
@@ -1030,7 +1026,7 @@ To undo everything after the fact:
 Type "I understand, proceed" to confirm.
 ```
 
-Only generate the auto-prompt if the user confirms with that exact phrase or equivalent explicit acknowledgement. Record this in `targets/<slug>/decisions.md` with timestamp.
+Only generate the auto-prompt if the user confirms with that exact phrase or equivalent explicit acknowledgement. Record this as a `[DECISION]` entry in `targets/<slug>/journal.md` with timestamp.
 
 **Option 4:**
 Save progress, update journal, end the playbook. The user can return at any time to continue.
@@ -1084,9 +1080,9 @@ After any phase completes (or the user says `stop`):
 
 Do NOT mark a target as "maintaining" in `targets/index.md` until:
 
-1. **Open questions reviewed.** Every item in `targets/<slug>/open-questions.md` is either resolved (with date and outcome) or explicitly deferred (with rationale). No item may sit unmarked.
+1. **Open questions reviewed.** Every harness/orchestration-layer open question raised during onboarding is either resolved (with date and outcome, recorded in `journal.md`) or carried into the `## Open Questions` section of `orchestrator-state.md` for the orchestrator to track. No item may sit unmarked.
 2. **Retrospective received.** The target-side retrospective prompt has been executed and `docs/AE/retrospective.md` exists in the target project -- OR the user confirms the retrospective session was lost and a `health` check will substitute.
-3. **Review history baseline created.** `targets/<slug>/review-history.md` exists with at least one entry from the initial assessment findings.
+3. **Review baseline recorded.** `targets/<slug>/journal.md` has at least one `[REVIEW]`-tagged entry summarising the initial assessment findings.
 4. **Role-Activation Completion Gate passed.** The Phase 4 role-activation smoke test (see section 6i) has been run and confirmed that a role loaded both its base template (`docs/AE/personas/_base/<role>.md`) and its overlay from within the target tree. Onboarding cannot be declared complete until this gate passes.
 
 If any of these are missing, the target stays in "reviewing" phase. This gate prevents the drift that comes from marking a project as done while loose ends remain untracked.

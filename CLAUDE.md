@@ -46,7 +46,7 @@ The harness writes prompt files directly into a target project's `docs/AE/prompt
 
 **Why direct is the default.** The handoff one-liner always names a target-side path (`Read and execute docs/AE/prompts/NNN-title.md`), and the target session is filesystem-scoped to its own tree -- it cannot read a harness-side `targets/<slug>/prompts/` path. So direct delivery is not a convenience; it is what makes the handoff work at all. Default direct, opt-out only.
 
-**Opt-out: `manual` policy** (rare; recorded in `profile.md` as `policy: manual`, reason in `decisions.md`). The harness writes only to `targets/<project>/prompts/`; the orchestrator MUST then either (a) emit a one-line `cp` command alongside the handoff so the operator copies the prompt into the target tree first, or (b) inline the full prompt content in the handoff block. NEVER hand off a `Read and execute targets/<slug>/prompts/...` line -- unreadable from the target session.
+**Opt-out: `manual` policy** (rare; recorded in `profile.md` as `policy: manual`, reason as a `[DECISION]` entry in `journal.md`). The harness writes only to `targets/<project>/prompts/`; the orchestrator MUST then either (a) emit a one-line `cp` command alongside the handoff so the operator copies the prompt into the target tree first, or (b) inline the full prompt content in the handoff block. NEVER hand off a `Read and execute targets/<slug>/prompts/...` line -- unreadable from the target session.
 
 ---
 
@@ -85,10 +85,7 @@ targets/
     ├── assessment.md                 # Completed assessment checklist with findings
     ├── transformation-plan.md        # Phased plan for the transformation
     ├── tasks.md                      # Task tracking for THIS transformation (not the target's dev tasks)
-    ├── decisions.md                  # Key decisions made during transformation, with rationale
-    ├── open-questions.md             # Unresolved questions requiring human input or investigation
-    ├── review-history.md                # Append-only longitudinal findings log
-    ├── orchestrator-state.md             # Pipeline position, execution log, outcome scorecard
+    ├── orchestrator-state.md             # Live dashboard (see note below)
     ├── prompts/                      # Ready-to-paste prompts for execution in the TARGET project
     │   ├── 001-create-claude-md.md
     │   ├── 002-create-analyst-prompt.md
@@ -97,10 +94,10 @@ targets/
     │   ├── CLAUDE.md                 # Adapted CLAUDE.md for this specific target
     │   ├── analyst.md                # Adapted analyst persona for this target
     │   └── ...
-    └── journal.md                    # Chronological log of transformation sessions
+    └── journal.md                    # Append-only history (see note below)
 ```
 
-Key files: `profile.md` (read first every session), `tasks.md` + `open-questions.md` (updated every session), `orchestrator-state.md` (pipeline position, append-only execution log), `review-history.md` (append-only findings log), `journal.md` (session log). `targets/index.md` is the entry point — lists all projects with phase and status. A fresh session reads `CLAUDE.md` → `targets/index.md` → active target's `profile.md` + `tasks.md`.
+State is organised by function -- durable identity (`profile.md`), live dashboard (`orchestrator-state.md`, incl. `## Open Questions`), append-only history (`journal.md`, with `[DECISION]`/`[REVIEW]`/`[GATE]` tags), phase artifacts (`assessment.md`, `transformation-plan.md`, `tasks.md`), substructure (`prompts/`, `deliverables/`); full model in orchestrator.md "State model and journal tagging". Decisions, review findings and open questions are no longer separate files; legacy targets migrate via `templates/prompts/migrate-state-satellites.md.template`. A fresh session reads `CLAUDE.md` → `targets/index.md` → active `profile.md` + `tasks.md`.
 
 ---
 
@@ -156,7 +153,7 @@ Every prompt must include: header (target, directory, execute-in, role, prerequi
 Rules don't live in chat transcripts. They live in files:
 - **Target project rules** -> deliverables (adapted CLAUDE.md, persona prompts)
 - **Harness process rules** -> this file (CLAUDE.md)
-- **Per-target decisions** -> `targets/<project>/decisions.md`
+- **Per-target decisions** -> `targets/<project>/journal.md` as `[DECISION]`-tagged entries
 - **Governance criteria** -> `templates/governance/`
 
 When a conversation produces a new insight about how the harness should work, or how a target project should be configured, always ask: "Where does this rule belong?" and write it there. Don't rely on the human remembering it from a previous session.
@@ -321,7 +318,7 @@ When no persona is active, Claude operates as a general assistant within the har
 ### After the banner
 
 If continuing an existing target:
-  a. Read that target's `profile.md`, `tasks.md`, and `open-questions.md`.
+  a. Read that target's `profile.md`, `tasks.md`, and `orchestrator-state.md` (its `## Open Questions` section carries unresolved items).
   b. Summarise current state and propose next steps.
 
 If adding a new target:
@@ -366,6 +363,7 @@ If working on the harness itself:
 │   │   ├── seed-harness-sync-marker.md.template  # Seed harness-sync-sha for pre-existing targets
 │   │   ├── seed-target-owner.md.template  # Seed .owner-container for pre-existing targets
 │   │   ├── refresh-base-personas.md.template  # Refresh all 6 base personas from harness master
+│   │   ├── migrate-state-satellites.md.template  # Fold a legacy target's satellite state files into journal tags + dashboard
 │   │   └── openspec-close-out-retrofit.md.template  # Install OpenSpec close-out convention
 │   ├── scripts/
 │   │   └── loop-driver.sh.template        # Autonomous dev->gates->reviewer loop template

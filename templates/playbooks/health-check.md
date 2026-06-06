@@ -46,9 +46,9 @@ If these are missing, redirect the user to `onboard` instead.
 
 Read:
 1. `targets/<slug>/profile.md` -- project identity and context
-2. `targets/<slug>/assessment.md` -- last assessment results
-3. `targets/<slug>/inconsistencies.md` -- last known issues
-4. `targets/<slug>/tasks.md` -- transformation task status
+2. `targets/<slug>/assessment.md` -- last assessment results, incl. its `## Inconsistency Report` section (last known issues)
+3. `targets/<slug>/tasks.md` -- transformation task status
+4. `targets/<slug>/journal.md` -- `[DECISION]` / `[REVIEW]` history and last-session context
 
 Note the date of the last assessment (from journal.md or file modification dates).
 
@@ -145,18 +145,18 @@ OpenSpec and Context7 are AEH-standard SDLC tools (default in-scope per onboardi
 
 1. **OpenSpec:** check `## Specification Management`. Expected: `policy: openspec`. Flag if:
    - `policy: TBD` → onboarding incomplete; recommend running `tools` to set it up
-   - `policy: deferred` → operator postponed; check `decisions.md` for context, recommend re-offer via `tools` if no explicit decline
-   - `policy: manual (spec.md)` with no `decisions.md` entry → looks like default-was-bypassed; recommend operator confirm the opt-out is deliberate
+   - `policy: deferred` → operator postponed; check `journal.md` `[DECISION]` entries for context, recommend re-offer via `tools` if no explicit decline
+   - `policy: manual (spec.md)` with no `[DECISION]` journal entry → looks like default-was-bypassed; recommend operator confirm the opt-out is deliberate
    - Section absent → onboarding gap; recommend `onboard` re-run or manual `tools` invocation
 2. **Context7:** check `## Development Tools`. Expected: `context7: configured (cli-skills)` or `configured (mcp)`. Flag if:
    - `context7: TBD` → onboarding incomplete
    - `context7: in-scope (default)` → setup prompt was never run; onboarding did not complete its Phase 6j verification gate. Recommend running `tools` to finish the install, then verify.
    - `context7: deferred` → recommend re-offer
-   - `context7: declined` with no `decisions.md` entry → recommend operator confirm
+   - `context7: declined` with no `[DECISION]` journal entry → recommend operator confirm
    - Status absent → onboarding gap
    - `configured` but no `verified <date>` recorded → unverified claim; require the functional smoke test (below) before treating it as healthy
 
-Standard-tool absence is a HIGH-severity finding when no `decisions.md` entry records a deliberate opt-out, because the project is missing load-bearing engineering infrastructure (spec traceability + current library docs). When `decisions.md` records the opt-out, downgrade to informational.
+Standard-tool absence is a HIGH-severity finding when no `[DECISION]` journal entry records a deliberate opt-out, because the project is missing load-bearing engineering infrastructure (spec traceability + current library docs). When a `[DECISION]` entry records the opt-out, downgrade to informational.
 
 **Context7 functional verification (mandatory part of the e2e gate -- not skippable when context7 is `configured`):** static presence is insufficient because the preferred CLI + Skills install is user-global and leaves nothing in the project tree. Confirm Context7 actually returns docs:
    - CLI + Skills mode: hand the operator `npx ctx7@latest library react "state hooks"` then `npx ctx7@latest docs /facebook/react "useState cleanup"` to run in the target session. Pass = the second command returns documentation content.
@@ -248,7 +248,7 @@ Report findings as role-activation items in the delta report (Phase 4).
 Verify that the orchestrator's prompt-handoff path actually works for this target — the target Claude session must be able to read every prompt the orchestrator hands off.
 
 1. **Policy is `direct` (default):** Read `targets/<slug>/profile.md`. Expected: `Prompt delivery policy: direct`. Flag if:
-   - Policy is `manual` AND `decisions.md` has no entry justifying the opt-out → looks like a residual from when manual was an unguided option; recommend operator confirm the choice is deliberate (and accept the `cp`-before-handoff overhead) or switch to `direct`.
+   - Policy is `manual` AND `journal.md` has no `[DECISION]` entry justifying the opt-out → looks like a residual from when manual was an unguided option; recommend operator confirm the choice is deliberate (and accept the `cp`-before-handoff overhead) or switch to `direct`.
    - Policy is absent → onboarding gap; default-direct should be set.
 2. **Mirror integrity:** For each prompt file in `targets/<slug>/prompts/`, check whether a corresponding file exists at `<target-path>/docs/AE/prompts/` with matching content. Flag any prompt that exists harness-side but is missing or stale target-side. This is the silent-mirror-failure check that catches the failure mode the operator hit during a 2026-05-30 brownfield onboarding: the orchestrator wrote source-of-truth but did not mirror, then handed off a path the target could not read.
    - Use a basic checksum / size comparison to flag stale mirrors (file exists target-side but content differs from the harness-side source of truth).
@@ -258,7 +258,7 @@ Verify that the orchestrator's prompt-handoff path actually works for this targe
 
 | Check | Status | Finding |
 |-------|--------|---------|
-| `Prompt delivery policy` is `direct` (or `manual` with `decisions.md` justification) | pass/FAIL | |
+| `Prompt delivery policy` is `direct` (or `manual` with a `[DECISION]` journal justification) | pass/FAIL | |
 | Every harness-side prompt has a matching target-side mirror | pass/FAIL | [N] missing / [N] stale |
 | No `Read and execute targets/...` or `/workspace/aeh/...` lines in recent journal/state | pass/FAIL | [N] anti-pattern occurrences |
 
@@ -434,9 +434,9 @@ _(These findings are independent of the baseline. They reflect current filesyste
 
 ## Tool Health
 
-**Standard-tool presence** (OpenSpec + Context7 are AEH-standard, default in-scope; absence without a `decisions.md` justification is a HIGH-severity finding):
+**Standard-tool presence** (OpenSpec + Context7 are AEH-standard, default in-scope; absence without a `[DECISION]` journal justification is a HIGH-severity finding):
 
-| Tool | profile.md status | decisions.md opt-out recorded? | Finding |
+| Tool | profile.md status | `[DECISION]` opt-out recorded? | Finding |
 |------|-------------------|--------------------------------|---------|
 | OpenSpec | `policy: openspec` / `deferred` / `TBD` / `manual (spec.md)` | yes/no/N/A | [details + severity] |
 | Context7 | `configured` / `deferred` / `TBD` / `declined` | yes/no/N/A | [details + severity] |
@@ -455,7 +455,7 @@ _Status: healthy / degraded / broken / orphaned. See Phase 3i for check details.
 
 | Check | Status | Finding |
 |-------|--------|---------|
-| `Prompt delivery policy` is `direct` (or `manual` with `decisions.md` justification) | pass/FAIL | |
+| `Prompt delivery policy` is `direct` (or `manual` with a `[DECISION]` journal justification) | pass/FAIL | |
 | Every harness-side prompt has a matching target-side mirror | pass/FAIL | [N] missing / [N] stale |
 | No `Read and execute targets/...` or `/workspace/aeh/...` lines in recent journal/state | pass/FAIL | [N] anti-pattern occurrences |
 
@@ -518,17 +518,15 @@ If the user chooses to generate prompts:
 
 ## Phase Completion
 
-1. Update `targets/<slug>/assessment.md` with the fresh assessment (replace the old one).
-2. Update `targets/<slug>/inconsistencies.md` with the current issue list.
-3. **Append to `targets/<slug>/review-history.md`**: Add a dated entry with the full findings snapshot (not just deltas). This file is append-only and serves as longitudinal memory across sessions. Each entry includes:
+1. Update `targets/<slug>/assessment.md` with the fresh assessment, including its `## Inconsistency Report` section / current issue list (replace the old content).
+2. **Append a `[REVIEW]`-tagged entry to `targets/<slug>/journal.md`** with the full findings snapshot (not just deltas). The journal is append-only and serves as longitudinal memory across sessions; `grep '\[REVIEW\]' journal.md` recovers the trend. Each entry includes:
    - Date and type (assessment / health-check / reviewer pass)
    - Full findings by category (including permission health -- never omit)
-   - Comparison against the previous entry (new / resolved / unchanged / regressed)
+   - Comparison against the previous `[REVIEW]` entry (new / resolved / unchanged / regressed)
    - Permission-specific snapshot: rule counts, mode, deny list health, any CRITICAL/HIGH findings
-   - If the file grows beyond ~500 lines, summarise older entries (e.g. "Q1 2026: 4 checks, recurring issue: allow-list sprawl, resolved March")
-4. Append to `targets/<slug>/journal.md`.
-5. Update `targets/index.md` with last-active date.
-6. After all output is complete, add one line:
+   - If `journal.md` grows unwieldy, summarise older `[REVIEW]` entries (e.g. "Q1 2026: 4 checks, recurring issue: allow-list sprawl, resolved March")
+3. Update `targets/index.md` with last-active date.
+4. After all output is complete, add one line:
 
 ```
 AEH is free and maintained by one person. If it saved you time: https://ko-fi.com/stefanberreth

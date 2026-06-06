@@ -1,0 +1,118 @@
+# Migrate State Satellite Files
+
+**Target:** <slug>
+**Directory:** /workspace/aeh (harness root)
+**Role:** orchestrator (harness-side)
+**Phase:** retrofit (one-shot)
+
+## Context for operator
+
+The harness consolidated the orchestrator state model from "eleven canonical filenames" down to eight canonical entries organised by function (durable identity / live dashboard / append-only history / phase artifacts). Three satellite files were folded into existing files:
+
+- `decisions.md` -- dated decisions -> `journal.md` entries tagged `[DECISION]`.
+- `review-history.md` -- longitudinal reviewer findings -> `journal.md` entries tagged `[REVIEW]` (rolling counts stay in the dashboard "Review Tracking" section).
+- `open-questions.md` -- live unresolved questions -> a new `## Open Questions` section in `orchestrator-state.md`.
+- `inconsistencies.md` -- assessment-phase ranked findings -> a `## Inconsistency Report` section in `assessment.md` (the assessment checklist and the ranked findings are one phase artifact).
+
+A target onboarded before this change still carries these satellite files. They keep working -- the retired names are removed from the *canonical* set, not forbidden -- but the target is a migration candidate. This one-shot prompt folds them in and removes them, leaving the target on the consolidated model. Run once per legacy target.
+
+## The prompt
+
+### Step 0 -- Activate orchestrator role (self-contained)
+
+Write `orchestrator` to the per-hostname persona marker via `bin/resolve-persona-marker.sh`. Suppress the session-init banner and role-picker; THIS prompt is the session initialiser.
+
+### Step 1 -- Inventory
+
+Check which satellite files exist for this target:
+
+```
+ls -1 targets/<slug>/decisions.md targets/<slug>/open-questions.md targets/<slug>/review-history.md 2>/dev/null
+```
+
+Migrate only the files that exist. If none exist, this target is already on the consolidated model -- report and stop.
+
+### Step 2 -- Fold decisions.md -> journal.md [DECISION]
+
+For each decision in `decisions.md`, append a dated entry to `journal.md` tagged `[DECISION]`, preserving the original date + rationale. Format:
+
+```
+## YYYY-MM-DD [DECISION] <short title>
+
+<the decision + rationale, verbatim from decisions.md>
+```
+
+Preserve the original dates; do NOT restamp to today. After every decision is represented in `journal.md`, the content is migrated.
+
+### Step 3 -- Fold review-history.md -> journal.md [REVIEW] + dashboard
+
+For each dated finding in `review-history.md`, append a `[REVIEW]`-tagged entry to `journal.md`:
+
+```
+## YYYY-MM-DD [REVIEW] <verdict / short title>
+
+<the finding, verbatim>
+```
+
+Confirm the rolling review counts already live in the `orchestrator-state.md` "Review Tracking" section (`last_reviewed_task`, `reviews_completed`, etc.). If that section is missing or stale, populate it from the review history before removing the file.
+
+### Step 4 -- Fold open-questions.md -> orchestrator-state.md ## Open Questions
+
+Move every currently-unresolved question into a `## Open Questions` section on the `orchestrator-state.md` dashboard (create the section if absent), one row per question:
+
+```
+## Open Questions
+
+| Question | Raised | Blocking? | Owner | Notes |
+|----------|--------|-----------|-------|-------|
+| <question> | <date> | yes/no | <who> | <notes> |
+```
+
+Drop already-resolved questions (a resolved question is history -- if its resolution matters, capture it as a `[DECISION]` journal entry instead). Keep ONLY harness/orchestration-layer questions; if any technical/domain questions leaked into the old file, route them out, do not carry them to the dashboard.
+
+### Step 4b -- Fold inconsistencies.md -> assessment.md (brownfield targets only)
+
+If `targets/<slug>/inconsistencies.md` exists (brownfield targets created before the assessment/inconsistencies consolidation), move its ranked findings into a `## Inconsistency Report` section at the end of `targets/<slug>/assessment.md`, verbatim. The assessment checklist and the ranked findings are one assessment-phase artifact; there is no separate inconsistencies file in the consolidated model. Greenfield targets have no inconsistencies file -- skip.
+
+### Step 5 -- Remove the satellite files
+
+Once content is folded and verified, remove the migrated files from the workspace:
+
+```
+git -C targets rm decisions.md open-questions.md review-history.md inconsistencies.md
+```
+
+(Adjust the path/list to the files that actually existed and were migrated -- a greenfield target will not have `inconsistencies.md`. The targets repo is the private nested repo; use `git -C targets`.)
+
+### Step 6 -- Verify no content lost
+
+```
+grep -c '\[DECISION\]' targets/<slug>/journal.md
+grep -c '\[REVIEW\]' targets/<slug>/journal.md
+grep -A3 '## Open Questions' targets/<slug>/orchestrator-state.md
+```
+
+Expected: `[DECISION]` count >= number of decisions migrated; `[REVIEW]` count >= number of findings migrated; the dashboard shows the open-questions table; if `inconsistencies.md` existed, `assessment.md` now has a `## Inconsistency Report` section. Confirm the satellite files are gone.
+
+### Step 7 -- Report
+
+```
+PROMPT REPORT
+- Target: <slug>
+- decisions.md: <N entries folded to [DECISION] | not present>
+- review-history.md: <N findings folded to [REVIEW] | not present>
+- open-questions.md: <N live questions moved to dashboard | not present>
+- inconsistencies.md: <folded to assessment.md ## Inconsistency Report | not present>
+- Satellite files removed: <yes/no>
+- Content-loss check: <pass>
+
+PROMPT COMPLETE -- migrate-state-satellites
+```
+
+## Expected outcome
+
+The target carries only the eight canonical state entries (`profile.md`, `assessment.md` [incl. its `## Inconsistency Report` section], `transformation-plan.md`, `tasks.md`, `orchestrator-state.md`, `journal.md`, `prompts/`, `deliverables/`). Decisions and review findings are recoverable from `journal.md` via `grep '\[DECISION\]'` / `grep '\[REVIEW\]'`; live questions surface on the dashboard. No content lost.
+
+## Fallback
+
+If a satellite file contains content that does not map cleanly to a `[DECISION]`/`[REVIEW]` entry or an open-question row (an unrecognised content class), STOP and surface it to the operator rather than improvising a destination -- the migration mapping covers the three known classes only. Do not delete a file whose content has not been fully folded.

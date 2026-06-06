@@ -37,6 +37,9 @@ Every retired file's content and lookup function maps to a destination. Nothing 
 | `decisions.md` | dated decision + rationale | `journal.md` entry tagged `[DECISION]` | `grep '\[DECISION\]' journal.md` |
 | `open-questions.md` | current unresolved questions | `orchestrator-state.md` -> new `## Open Questions` section | it is current state, surfaced on the dashboard every session |
 | `review-history.md` | longitudinal reviewer findings | `journal.md` entries tagged `[REVIEW]`; rolling counts stay in `orchestrator-state.md` "Review Tracking" | `grep '\[REVIEW\]' journal.md` + the dashboard summary |
+| `inconsistencies.md` (added during implementation -- see note) | assessment-phase ranked findings | `assessment.md` -> `## Inconsistency Report` section | it is part of the same assessment-phase findings as the checklist |
+
+**`inconsistencies.md` -- a fourth fold surfaced during the consumer sweep.** The implementation pass that swept every *consumer* of the retired files (onboarding playbook, health-check, tools, governance, docs -- see section 8) found a fourth file the original three-file analysis missed: `inconsistencies.md`, the assessment-phase ranked findings report, which onboarding scaffolds and which was never even listed in CLAUDE.md's canonical tree. It duplicates the "assessment findings" concern with `assessment.md`. Passing it through the same "still earns its place" gate, it fails as a separate file (two files for one phase's findings), so it folds into `assessment.md` as a `## Inconsistency Report` section. This keeps the canonical set at eight and shrinks the consumer surface. Unlike the three churny satellites, this is a write-once phase-artifact merge, not a churn fix; it is in scope because the consumers were explicitly directed through the simplification/de-duplication gate, not just repointed.
 
 Why this preserves function:
 - **Decisions** were dated events; they belong in the chronological ledger. The `[DECISION]` tag gives the same "why did we choose X" lookup the separate file gave, without a separate file to keep current.
@@ -85,3 +88,14 @@ No new dimension, no new tool. The reviewer already reads `CLAUDE.md` and the pe
 
 - `journal.md` carries more (decisions + reviews + sessions). Mitigation: tags make it filterable; if size becomes a problem, periodise (`journal.md` + `journal-archive/`) -- not built now (YAGNI).
 - Existing targets need a one-time migration of their satellite files. Mitigation: retrofit prompt template (task 6). Targets that never adopt the migration keep working -- the retired filenames are removed from the *canonical* set, not forbidden; a target with a legacy `decisions.md` is a migration candidate, not a breakage.
+
+## 8. Consumer sweep (recording + consumption, end to end)
+
+Folding the files in the *description* (orchestrator persona + CLAUDE.md tree) is not enough: every place that *records into* or *reads from* the retired files must move to the new model, or the harness contradicts itself (e.g. the persona says "eight entries" while the onboarding playbook scaffolds eleven and a new target is "born legacy"). The implementation pass therefore swept all consumers, passing each through the same simplification / de-duplication / "still earns its place" gate rather than mechanically repointing paths:
+
+- **`onboarding.md`** -- workspace scaffold drops the three satellites + `inconsistencies.md`; the assessment flow writes the ranked report as an `assessment.md` section; all "record in decisions.md" opt-out spots become `[DECISION]` journal entries; the re-onboard backup step is removed (the journal is append-only, so `[DECISION]`/`[REVIEW]` history is preserved without a copy); close-out gates rephrased to journal `[REVIEW]` + dashboard `## Open Questions`.
+- **`health-check.md`** -- baseline read list updated; standard-tool opt-out checks look for a `[DECISION]` journal entry; phase-completion writes a `[REVIEW]` journal entry (the former `review-history.md` append) and folds the redundant `inconsistencies.md` update into the assessment update.
+- **`tools.md`, `tools/README.md`, `permission-baselines.md`, `seed-harness-sync-marker.md.template`, `docs/tool-integration-architecture-analysis.md`** -- all "record in decisions.md" -> `[DECISION]` journal entries.
+- **`harness-reviewer.md`** -- the lift-candidate extended-scan sources point at `grep '[DECISION]'/'[REVIEW]'` over the journal instead of the retired files (the target-side `docs/AE/decisions.md` convention is a separate, target-owned file and is left alone).
+
+Out of scope (deliberately not rewritten): historical CHANGELOG entries (a changelog records what was true at each release; rewriting it falsifies history), archived/intake OpenSpec proposals (frozen history), and OpenSpec change-proposal-level `decisions.md` files (an OpenSpec convention, not the target state model).
