@@ -6,12 +6,12 @@ This project is a **meta-engineering harness**. It does not implement software. 
 
 ## What This Project Contains
 
-- **Persona templates** (`templates/personas/`) -- base template files for the five engineering roles (Archaeologist, Analyst, Architect, Developer, Reviewer), plus the Orchestrator, Harness Reviewer, and optional Strategist. Engineering base templates use numbered sections with `§.PROJECT` extension points for project-specific overlays.
-- **Project templates** (`templates/project/`) -- scaffold files (`CLAUDE.md`, `agents.md`, governance checklists) to be adapted for target projects.
-- **Governance criteria** (`templates/governance/`) -- assessment checklists and quality rubrics for evaluating and evolving the agentic configuration of a target project.
-- **Agent knowledge** (`templates/agents/`) -- agent-specific reference knowledge (permission schemas, detection patterns, baselines) for coding agent runtimes like Claude Code.
+- **Persona templates** (`templates/personas/`) -- base templates for the five engineering roles (Archaeologist, Analyst, Architect, Developer, Reviewer) plus Orchestrator, Harness Reviewer and optional Strategist. Engineering bases use numbered sections with `§.PROJECT` extension points for project-specific overlays.
+- **Project templates** (`templates/project/`) -- scaffold files (`CLAUDE.md`, `agents.md`, governance checklists) adapted per target.
+- **Governance criteria** (`templates/governance/`) -- assessment checklists and quality rubrics for evaluating and evolving a target's agentic config.
+- **Agent knowledge** (`templates/agents/`) -- runtime-specific reference (permission schemas, detection patterns, baselines) for coding agents like Claude Code.
 - **Reference documentation** (`docs/`) -- source material, transcripts and curated resources.
-- **Target project workspaces** (`targets/`) -- per-project directories holding all planning, assessment, transformation artifacts and generated prompts. See below.
+- **Target project workspaces** (`targets/`) -- per-project planning, assessment, transformation artifacts and generated prompts. See below.
 
 ---
 
@@ -19,18 +19,18 @@ This project is a **meta-engineering harness**. It does not implement software. 
 
 **Claude Code running in this harness project must NEVER directly modify application code, configuration, or general files in any target project directory.**
 
-This is not a suggestion. It is a hard boundary. The reasons are:
+This is not a suggestion. It is a hard boundary, for three reasons:
 
-1. **Context separation.** This harness and a target project are different scopes with different permissions, conventions and objectives. Mixing them creates confusion and risk.
-2. **Auditability.** Every change to a target project should be made by a Claude Code instance running *inside* that project, where it reads that project's `CLAUDE.md`, follows that project's conventions, and operates within that project's permission model.
+1. **Context separation.** Harness and target are different scopes with different permissions, conventions and objectives; mixing them creates confusion and risk.
+2. **Auditability.** Every target change should be made by a Claude Code instance running *inside* that project -- reading its `CLAUDE.md`, following its conventions, within its permission model.
 3. **Reproducibility.** The prompts generated here are artifacts that can be reviewed, edited, versioned and re-run. Direct file writes are fire-and-forget.
 
 ### What this harness DOES produce
 
-- **Assessment documents** -- analysis of a target project's current state
+- **Assessment documents** -- analysis of a target's current state
 - **Transformation plans** -- phased, prioritised plans for what to create/change
-- **Generated prompts** -- complete, ready-to-paste prompts that a human takes to a Claude Code session running *inside the target project* to execute changes there
-- **Adapted templates** -- project-specific versions of persona prompts, `CLAUDE.md`, etc., written as files *in this harness* under `targets/<project>/deliverables/`, for the human to copy or for a prompt to instruct the target-side Claude to create
+- **Generated prompts** -- complete, ready-to-paste prompts a human takes to a Claude Code session *inside the target project* to execute changes there
+- **Adapted templates** -- project-specific persona prompts, `CLAUDE.md`, etc., written *in this harness* under `targets/<project>/deliverables/`, for the human to copy or for a prompt to have the target-side Claude create
 
 ### What this harness NEVER does
 
@@ -42,17 +42,17 @@ When producing deliverables, always write them to `targets/<project>/deliverable
 
 ### Selective exception: Direct Prompt Delivery (default)
 
-The harness writes prompt files directly into a target project's `docs/AE/prompts/` directory (prompt files only — never deliverables or other files). This is the **default behavior** for every target and is recorded in `profile.md` as `policy: direct`. Under `direct`: the harness writes to both `targets/<project>/prompts/` (source of truth) and `<target-path>/docs/AE/prompts/` (delivery). The target-side Claude then runs: "Read and execute `docs/AE/prompts/NNN-title.md`". The target-side directory path can be overridden per-project in `profile.md` if a project uses a different convention.
+The harness writes prompt files directly into a target project's `docs/AE/prompts/` directory (prompt files only -- never deliverables or other files). This is the **default behavior** for every target and is recorded in `profile.md` as `policy: direct`. Under `direct`: the harness writes to both `targets/<project>/prompts/` (source of truth) and `<target-path>/docs/AE/prompts/` (delivery). The target-side Claude then runs: "Read and execute `docs/AE/prompts/NNN-title.md`". The target-side directory path can be overridden per-project in `profile.md` if a project uses a different convention.
 
-**Why direct is the default.** The orchestrator's handoff one-liner always names a target-side path (`Read and execute docs/AE/prompts/NNN-title.md`) because the target-side Claude session is filesystem-scoped to the target project tree and cannot read harness-side paths. If a prompt file lives only at `targets/<slug>/prompts/` (harness side), the handoff fails: the target agent cannot read that path. Direct delivery is therefore not a convenience option — it is what makes the handoff actually work. Default direct, opt-out only.
+**Why direct is the default.** The handoff one-liner always names a target-side path (`Read and execute docs/AE/prompts/NNN-title.md`), and the target session is filesystem-scoped to its own tree -- it cannot read a harness-side `targets/<slug>/prompts/` path. So direct delivery is not a convenience; it is what makes the handoff work at all. Default direct, opt-out only.
 
-**Opt-out: `manual` policy** (rare; recorded in `profile.md` as `policy: manual` with a reason in `decisions.md`). Under `manual`, the harness writes only to `targets/<project>/prompts/`. The orchestrator MUST then either (a) emit a one-line `cp` command alongside the handoff so the operator copies the prompt into the target tree before pasting `Read and execute ...`, or (b) inline the full prompt content in the handoff block as a fallback. The orchestrator NEVER hands off a `Read and execute targets/<slug>/prompts/...` line — that path is unreadable from the target session.
+**Opt-out: `manual` policy** (rare; recorded in `profile.md` as `policy: manual`, reason in `decisions.md`). The harness writes only to `targets/<project>/prompts/`; the orchestrator MUST then either (a) emit a one-line `cp` command alongside the handoff so the operator copies the prompt into the target tree first, or (b) inline the full prompt content in the handoff block. NEVER hand off a `Read and execute targets/<slug>/prompts/...` line -- unreadable from the target session.
 
 ---
 
 ## Artifact Output Rule
 
-**All artifacts, reports, reference documents, and deliverables must be written to the workspace tree — never to Claude Code's memory directory (`~/.claude/`).**
+**All artifacts, reports, reference documents, and deliverables must be written to the workspace tree -- never to Claude Code's memory directory (`~/.claude/`).**
 
 Claude Code's built-in memory (`~/.claude/projects/*/memory/`) is for session-to-session recall notes only (e.g., user preferences, conversation context). It must not be used for:
 - Reports, diagnostics, or review outputs
@@ -60,7 +60,7 @@ Claude Code's built-in memory (`~/.claude/projects/*/memory/`) is for session-to
 - Deliverables or generated content
 - Any artifact that a human or another agent session might need to read
 
-**Why:** The harness often runs inside a Docker container where `~/.claude/` is a named volume invisible from the host. The workspace directories (`/workspace/aeh/`, `/workspace/<project>/`) are bind-mounted and visible. Anything written to Claude's memory is effectively lost between environments.
+**Why:** The harness often runs in a Docker container where `~/.claude/` is a named volume invisible from the host, while workspace dirs (`/workspace/aeh/`, `/workspace/<project>/`) are bind-mounted and visible. Anything written to Claude's memory is effectively lost between environments.
 
 **Where artifacts go:**
 
@@ -69,7 +69,7 @@ Claude Code's built-in memory (`~/.claude/projects/*/memory/`) is for session-to
 | Harness planning/state | `targets/<slug>/` |
 | Harness reference docs | `docs/` or inline in templates |
 | Target-side reports | `docs/AE/reports/` or `docs/AE/reviews/` (in target project) |
-| Target-side deliverables | `targets/<slug>/deliverables/` → delivered via prompts |
+| Target-side deliverables | `targets/<slug>/deliverables/` (delivered via prompts) |
 
 ---
 
@@ -165,23 +165,23 @@ When a conversation produces a new insight about how the harness should work, or
 
 ## Harness Maintenance Discipline
 
-> **Full reference:** See "Nested Repository Structure" below and the harness-reviewer persona at `templates/personas/harness-reviewer.md`.
+> **Full reference:** the harness-reviewer persona at `templates/personas/harness-reviewer.md`.
 
 **Key rules (always active):**
 - Two git repos: harness (root, public) and targets (`targets/`, private, nested). Always use `git -C targets/` (relative path) for the targets repo.
 - On commit: check BOTH repos (`git status` + `git -C targets/ status`). Commit targets repo first if both changed.
 - Target-specific commits go to targets repo only. No CHANGELOG update for target work.
-- After harness changes: verify CLAUDE.md, README.md, CHANGELOG.md, and project structure tree are current before committing.
-- CHANGELOG follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Update for template/persona/playbook/governance/CLAUDE.md changes. Skip for target work and typo fixes.
-- **Publication gate before commit/push.** Run `bin/validate-personas.sh --staged` over staged content and `bin/validate-personas.sh --message "<text>"` over the commit message before any harness commit or push. Block on FAIL. Owner: orchestrator. Commit-message leakage is in scope (clean diff + leaky message still fails).
-- **Validator blocklist is private.** The leak-detector pattern list lives at `bin/.leakage-patterns` (gitignored, populated per environment). The tracked script must contain NO real identifiers -- a leak-detector that publishes the identifiers it is meant to catch is itself the leak. Only `bin/.leakage-patterns.example` (placeholders) is committed.
-- **Review intermediaries are local-only.** Findings reports, planning notes, scratch analyses, longform retrospectives that carry real identifiers are working drafts and never committed to the harness repo. Name them `*.private.md` / `*.local.md` (auto-ignored) or add a named line to `.gitignore`. Durable outputs of a review or planning session are the resulting changes + CHANGELOG entry + commit message body, NOT the intermediate report. A tracked review/planning intermediary in the harness repo is itself a Dimension-1 finding regardless of its content.
-- **gitignore != untrack.** Adding a file to `.gitignore` does not remove it from tracking if it was previously committed. Use `git rm --cached <file>` followed by the `.gitignore` entry. The harness-reviewer's Dimension 1 explicitly checks for already-tracked files that match local-only patterns.
-- **OpenSpec for substantive harness changes.** The harness dogfoods OpenSpec for its own substantive changes -- proposals live under `openspec/changes/<slug>/` (proposal.md + optional design.md + tasks.md); archived proposals seed and update canonical specs under `openspec/specs/`. Trivial changes (typos, ASCII fixes, broken-link fixes, single-file cosmetic updates with no rule/behaviour change) bypass OpenSpec and commit directly with a `[trivial]` or `[hygiene]` prefix in the commit message. See `openspec/project.md` for full discipline. The spec corpus is intentionally empty at adoption time and grows organically; no retrofit of pre-adoption capability is planned.
-- **OpenSpec authoring is target-detail-free.** Everything in `openspec/**` ships in the public harness repo. Proposals and specs must never carry target-project identifiers (slugs, project names, real commit SHAs from target work, real incident detail, real RPC / file / column names from target codebases). Local-only triage scratchpads (`BACKLOG.md`, `*.private.md`, `*.local.md`) are inspiration not source-of-text. The publication gate catches pattern-matched leakage automatically; authoring discipline catches paraphrase-class leakage the validator cannot pattern-match. The harness-reviewer's Dimension 1 covers `openspec/**` explicitly.
-- **Cross-container isolation.** Multiple AEH orchestrator sessions can run in parallel from separate Docker containers, all bind-mounting the same host harness directory and each driving its own target. The shared mount is by design; the isolation discipline addresses the contamination risks. Per-target ownership markers (`targets/<slug>/.owner-container`, gitignored) record `hostname=` + `session-id=` + `last-touched=` of the most recent writer; orchestrator session-init step 6 checks against current container and prompts the operator on mismatch before any write. Per-host scheduler lockfile path via `bin/resolve-scheduler-lock.sh` (echoes `.claude/scheduled_tasks.lock.$HOSTNAME` in containers; effectiveness depends on scheduler honouring the redirection, otherwise informational-only pending upstream support). Per-host persona marker already in place via `bin/resolve-persona-marker.sh`. Journal entries carry `container=<HOSTNAME> session=<uuid-prefix>` headers for retrospective attribution. Future-risk: `~/.claude/projects/` is container-private in the reference setup; if ever bind-mounted host-to-container, transcript JSONLs collide. Known limitation: `.claude/settings.local.json` accumulates cross-container entries (Claude Code owns the path; upstream-issue path planned). Helpers: `bin/resolve-target-owner.sh`, `bin/resolve-scheduler-lock.sh`. Retrofit prompts: `templates/prompts/seed-target-owner.md.template` (seed marker for existing targets). Full mechanism: `templates/personas/orchestrator.md` § "Cross-Container Caveats".
-- **Harness update propagation signal.** Each target's `profile.md` carries a `harness-sync-sha:` field recording the harness commit SHA at last sync. Every orchestrator session-init (target-side and harness-side) compares the marker to current harness HEAD; if behind, surfaces "Harness has advanced N commits since last sync. Say 'review changes' to run a harness-reviewer pass that scopes local impact." The harness-reviewer's Propagation-Impact Assessment Mode produces a structured retrofit-action list with reason / effort / side-effects / order per action. Operator decides per-action: apply / defer / skip. Marker bumps only to the SHA covering all applied + explicitly-skipped commits (conservative default; dismissing without action does NOT bump). Symmetric to the capture inbox: inbox flows insights upstream, sync-marker flows updates downstream; both filesystem-mediated, both session-init surfaced, both operator-gated. Full mechanism: `templates/personas/orchestrator.md` § "Harness Update Propagation Signal" and `templates/personas/harness-reviewer.md` § "Propagation-Impact Assessment Mode". Pre-existing targets seed via `templates/prompts/seed-harness-sync-marker.md.template`; new targets seed at onboarding time.
-- **Harness capture inbox.** Cross-session harness-level insights flow through `openspec/changes/_intake/` -- a filesystem-mediated inbox visible to any orchestrator session via the shared bind-mount. Capture-side orchestrators proactively identify candidates and ASK before writing (never silent capture); operator confirms; file is written atomically (write `.tmp.<name>`, rename) so cross-container readers never observe a half-written file. Triage-side (harness orchestrator) scans for `status: untriaged` on session-init, surfaces the count, and walks captures into proper `openspec/changes/<slug>/` proposals on operator request. Two landings exist deliberately: `openspec/changes/_intake/` (tracked, public, target-detail-free) and `BACKLOG.md` (untracked, private, target context permitted) -- decision is at capture time. External contributors enter through GitLab/GitHub PRs and Issues, not through the inbox. Full mechanism: `openspec/changes/_intake/README.md` and the "Harness Capture" section in `templates/personas/orchestrator.md`.
+- After harness changes: verify CLAUDE.md, README.md, CHANGELOG.md and the project structure tree are current before committing.
+- CHANGELOG follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) -- update for template/persona/playbook/governance/CLAUDE.md changes; skip for target work and typo fixes.
+- **Publication gate before commit/push.** Run `bin/validate-personas.sh --staged` over staged content and `--message "<text>"` over the commit message before any harness commit or push. Block on FAIL. Owner: orchestrator. Commit-message leakage is in scope (clean diff + leaky message still fails).
+- **Validator blocklist is private.** The leak-detector pattern list lives at `bin/.leakage-patterns` (gitignored, populated per environment); only `bin/.leakage-patterns.example` (placeholders) is committed. The tracked script must contain NO real identifiers -- a leak-detector that publishes the identifiers it catches is itself the leak.
+- **Review intermediaries are local-only.** Findings reports, planning notes, scratch analyses and longform retrospectives carrying real identifiers are working drafts -- never committed. Name them `*.private.md` / `*.local.md` (auto-ignored) or add a `.gitignore` line. The durable output of a review/planning session is the resulting changes + CHANGELOG entry + commit message body, NOT the intermediate report. A tracked intermediary is itself a Dimension-1 finding regardless of content.
+- **gitignore != untrack.** `.gitignore` does not untrack an already-committed file -- use `git rm --cached <file>` then add the `.gitignore` entry. Harness-reviewer Dimension 1 checks for already-tracked files matching local-only patterns.
+- **OpenSpec for substantive harness changes.** The harness dogfoods OpenSpec: substantive changes get proposals under `openspec/changes/<slug>/`; archived proposals seed canonical specs under `openspec/specs/`. Trivial changes (typos, ASCII fixes, broken-link fixes, cosmetic single-file edits with no rule/behaviour change) bypass OpenSpec and commit directly with a `[trivial]`/`[hygiene]` prefix. Full discipline: `openspec/project.md`.
+- **OpenSpec authoring is target-detail-free.** Everything in `openspec/**` ships public, so proposals and specs must never carry target-project identifiers (slugs, names, real SHAs/incidents/RPC/file/column names). Private triage scratchpads (`BACKLOG.md`, `*.private.md`, `*.local.md`) are inspiration, not source-of-text; authoring discipline catches the paraphrase-class leakage the validator cannot pattern-match. Harness-reviewer Dimension 1 covers `openspec/**` explicitly.
+- **Cross-container isolation.** Multiple orchestrator sessions can run in parallel from separate containers sharing this bind-mounted harness dir (by design). Per-target ownership markers (`targets/<slug>/.owner-container`, gitignored) gate writes; orchestrator session-init checks them and prompts the operator on mismatch before any write. Per-host persona/scheduler markers via `bin/resolve-persona-marker.sh` and `bin/resolve-scheduler-lock.sh`; ownership helper `bin/resolve-target-owner.sh`; retrofit via `templates/prompts/seed-target-owner.md.template`. Full mechanism + known limitations: `templates/personas/orchestrator.md` § "Cross-Container Caveats".
+- **Harness update propagation signal.** Each target's `profile.md` carries `harness-sync-sha:` (harness HEAD at last sync). Orchestrator session-init compares it to current HEAD and, if behind, offers a harness-reviewer "review changes" pass; the marker bumps only to cover applied + explicitly-skipped commits (operator-gated, conservative). Seed via `templates/prompts/seed-harness-sync-marker.md.template`. Full mechanism: `templates/personas/orchestrator.md` § "Harness Update Propagation Signal" and `templates/personas/harness-reviewer.md` § "Propagation-Impact Assessment Mode".
+- **Harness capture inbox.** Cross-session harness insights flow through `openspec/changes/_intake/` (tracked, public, target-detail-free) -- capture is proactive but ASK-before-write and atomic; the harness orchestrator triages `status: untriaged` files into proper `openspec/changes/<slug>/` proposals on request. Private target-context captures go to `BACKLOG.md` (untracked) instead. Full mechanism: `openspec/changes/_intake/README.md` and `templates/personas/orchestrator.md` § "Harness Capture".
 
 ---
 
@@ -368,7 +368,7 @@ If working on the harness itself:
 │   │   ├── refresh-base-personas.md.template  # Refresh all 6 base personas from harness master
 │   │   └── openspec-close-out-retrofit.md.template  # Install OpenSpec close-out convention
 │   ├── scripts/
-│   │   └── loop-driver.sh.template        # Autonomous dev→gates→reviewer loop template
+│   │   └── loop-driver.sh.template        # Autonomous dev->gates->reviewer loop template
 │   ├── project/
 │   │   ├── CLAUDE.md.template             # Scaffold for target project CLAUDE.md
 │   │   └── agents.md.template             # Cross-tool agent config scaffold
@@ -386,12 +386,12 @@ If working on the harness itself:
 │   ├── tools/
 │   │   ├── README.md                      # Tool integration overview
 │   │   ├── tool-detection-patterns.md     # Detection patterns for tools + equivalents
-│   │   ├── openspec-setup.md              # OpenSpec setup prompt template
-│   │   ├── openspec-teardown.md           # OpenSpec teardown prompt template
-│   │   ├── context7-setup.md              # Context7 setup prompt template
-│   │   ├── context7-teardown.md           # Context7 teardown prompt template
-│   │   ├── serena-setup.md                # Serena setup prompt template
-│   │   ├── serena-teardown.md             # Serena teardown prompt template
+│   │   ├── openspec-setup.md              # OpenSpec setup/teardown prompt templates
+│   │   ├── openspec-teardown.md
+│   │   ├── context7-setup.md              # Context7 setup/teardown prompt templates
+│   │   ├── context7-teardown.md
+│   │   ├── serena-setup.md                # Serena setup/teardown prompt templates
+│   │   ├── serena-teardown.md
 │   │   └── sandbox-env-provisioning.md    # Sandbox passthrough var provisioning mechanism
 │   └── agents/
 │       ├── README.md                      # Agent-specific knowledge overview
@@ -410,20 +410,8 @@ If working on the harness itself:
 │       │   └── README.md
 │       └── archive/                       # Archived (completed) change proposals; permanent history
 │           └── README.md
-├── targets/                               # Private nested repo (not tracked by public harness)
-│   ├── index.md                           # Registry of all target projects
-│   └── <project-slug>/                    # Per-project transformation workspace
-│       ├── profile.md                     #   Identity, path, stack, context
-│       ├── assessment.md                  #   Assessment checklist results
-│       ├── transformation-plan.md         #   Phased transformation plan
-│       ├── tasks.md                       #   Task tracking for transformation
-│       ├── decisions.md                   #   Decisions and rationale
-│       ├── open-questions.md              #   Unresolved questions
-│       ├── review-history.md              #   Append-only longitudinal findings log
-│       ├── orchestrator-state.md         #   Pipeline position, execution log, scorecard
-│       ├── prompts/                       #   Ready-to-paste prompts for target
-│       ├── deliverables/                  #   Adapted files for target project
-│       └── journal.md                     #   Chronological session log
+├── targets/                               # Private nested repo (per-project workspaces;
+│                                          #   see "Target Project Workspace Structure" above for layout)
 ├── docs/
 │   ├── Images/
 │   │   ├── AEH-Round.png                 # Project logo (circular, for avatars)
