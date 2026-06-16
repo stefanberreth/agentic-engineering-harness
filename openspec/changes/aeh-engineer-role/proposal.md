@@ -1,10 +1,12 @@
 ---
 slug: aeh-engineer-role
-status: proposed
+status: accepted
+accepted-at: 2026-06-16
+accepted-by: operator (architecture approved in full; build B1-B7 cleared to proceed in future sessions)
 since: 2026-06-16
 supersedes: harness-maintainer-role-charter
 merges: harness-maintainer-role-charter + _intake/2026-06-15-1933-harness-engineer-role-separation + _intake/2026-06-15-1811-integrity-review-entry-points (role-structure half) + _intake/2026-06-16-1200-role-location-self-check
-review: DRAFT-records-operator-decisions -- the architecture below was settled with the operator across the 2026-06-16 triage conversation; build is sequenced follow-on changes
+review: architecture settled with the operator across the 2026-06-16 triage conversation and APPROVED IN FULL; build is sequenced follow-on changes (B1-B7)
 note: slug retained for stability though scope broadened from one role to the full role architecture (per the slug-stability convention, the rename was weighed and declined to avoid churning committed cross-references)
 ---
 
@@ -55,7 +57,7 @@ A scoping sweep found ~85 distinct harness-maintenance duties, almost all curren
 The aggregated scope, by family:
 
 - **Drive harness improvement:** inbox triage; turn field-notes into OpenSpec proposals + sequence them; behaviour-vs-lore divergence detection; consolidation rounds / additive-ratchet combat / CLAUDE.md size discipline / subtraction-completeness decisions.
-- **Guard the public boundary:** the publication gate (leak scan) + the actual commit/push of harness changes + two-repo discipline + CHANGELOG + no-AI-attribution; the full OpenSpec lifecycle (target-detail-free authoring, the trivial-vs-substantive gate, AND the close-out/archive sequence); maintenance of the harness's own tooling (`bin/` scripts, the leak-pattern blocklist schema/example, the git-hook templates).
+- **Guard the public boundary:** the per-commit publication gate (leak scan) + the publication-READINESS gate (commit freely, push rarely: no push until the whole affected setup is coherent, complete, documentation-current, stale-reference-free, and passes a comprehensive integrity/consistency/deduplication sweep -- see CLAUDE.md "Publication-readiness gate before push") + the actual commit/push of harness changes + two-repo discipline + CHANGELOG + no-AI-attribution; the full OpenSpec lifecycle (target-detail-free authoring, the trivial-vs-substantive gate, AND the close-out/archive sequence); maintenance of the harness's own tooling (`bin/` scripts, the leak-pattern blocklist schema/example, the git-hook templates).
 - **Steward the structure:** the role taxonomy + valid-roles list + role-location self-checks + the AEH-side of the `docs/AE/` fence (and being the AEH-side fixer when `target-aeh-reviewer` escalates an AEH-rooted violation); harness documentation currency (CLAUDE.md/README/structure-tree/playbook cross-refs -- harness-reviewer flags, AEH-engineer fixes); harness-side downstream-consumer propagation governance.
 
 **Two previously-ownerless rot-gaps explicitly in scope** (operator-confirmed): the OpenSpec close-out/archive lifecycle (today no owner -> proposals risk never being archived/spec'd), and `bin/` tooling + git-hook template maintenance (today everyone RUNS them, nobody owns EVOLVING them -> they rot).
