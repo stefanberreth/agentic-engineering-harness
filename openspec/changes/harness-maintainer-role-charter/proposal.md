@@ -1,10 +1,19 @@
 ---
 slug: harness-maintainer-role-charter
-status: proposed
+status: superseded
+superseded-by: aeh-engineer-role
+superseded-at: 2026-06-16
 since: 2026-06-06
 decision: resolution-2 (dedicated harness-maintainer role) -- operator-confirmed 2026-06-06
 needs: design.md + tasks.md (this proposal records the charter; the build is a follow-up design round)
 ---
+
+> SUPERSEDED 2026-06-16 by `aeh-engineer-role`. At triage the operator folded this
+> charter's dedicated-role decision into a single `aeh-engineer` role reframed by the
+> AEH-vs-Target role taxonomy. This charter's three concerns are carried forward there;
+> its "downstream propagation" scope is split harness-side (AEH-engineer) vs target-side
+> (target-applied roles). Retained here as history; archive once the supersession is
+> accepted. Do not build from this file.
 
 # Harness-maintainer role charter
 
