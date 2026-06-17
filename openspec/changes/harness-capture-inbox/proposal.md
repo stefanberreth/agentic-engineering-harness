@@ -2,7 +2,15 @@
 slug: harness-capture-inbox
 status: proposed
 since: 2026-05-31
+amended-by: intake-private-relocation (2026-06-17)
 ---
+
+> AMENDED 2026-06-17 by `intake-private-relocation`: the inbox relocated from public
+> `openspec/changes/_intake/` to the PRIVATE `targets/_harness-private/intake/` (tracked,
+> never published), and the two-landing-points (public `_intake` vs untracked `BACKLOG.md`)
+> collapsed into one private landing. The mechanism below is otherwise intact; read paths
+> here as the relocated private inbox. The public/private boundary is now enforced at
+> promotion, not at capture.
 
 # Harness Capture Inbox
 

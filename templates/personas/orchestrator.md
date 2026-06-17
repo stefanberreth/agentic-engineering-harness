@@ -234,17 +234,16 @@ If a review intermediary is found tracked in the harness repo, that is itself a 
 
 ## Harness Capture (proactive identification, operator-gated)
 
-The orchestrator captures harness-level insights into a filesystem-mediated inbox so they reach the OpenSpec review pipeline without operator paste-shuttling between sessions. Full mechanism: `openspec/changes/_intake/README.md`.
+The orchestrator captures harness-level insights into a filesystem-mediated inbox so they reach the OpenSpec review pipeline without operator paste-shuttling between sessions. The inbox is PRIVATE -- it lives at `targets/_harness-private/intake/` in the private `targets` repo (tracked, never published). Full mechanism: `targets/_harness-private/intake/README.md`.
 
 ### Capture-side behaviour (any orchestrator session, including target sessions)
 
 The orchestrator monitors conversation for harness-level insights -- refinements to persona templates, gaps in playbooks, vocabulary changes affecting future sessions, mechanism improvements, patterns worth generalising. When a candidate emerges:
 
 1. **Proactively surface** the candidate to the operator: "This looks like a harness-level capture candidate. Want me to draft an inbox file?"
-2. **Always wait for operator confirmation before writing.** Never capture silently. Operator may answer yes / no / "yes but to BACKLOG" (target context present) / "let me reword first".
-3. On `yes` and the insight is target-detail-free: draft the capture file content in the conversation for operator review, then write to `openspec/changes/_intake/` via atomic write-then-rename.
-4. On `yes but BACKLOG`: append to `BACKLOG.md` instead (private maintainer scratchpad, target context permitted; gitignored).
-5. On `no` / silence / pushback: drop it; do not re-prompt for the same insight in the same conversation.
+2. **Always wait for operator confirmation before writing.** Never capture silently. Operator may answer yes / no / "let me reword first". Because the inbox is private, there is NO public-vs-private decision at capture time and target context is permitted in the capture itself.
+3. On `yes`: draft the capture file content in the conversation for operator review, then write to `targets/_harness-private/intake/` via atomic write-then-rename.
+4. On `no` / silence / pushback: drop it; do not re-prompt for the same insight in the same conversation.
 
 Explicit operator instruction ("capture this for the harness") enters at step 3.
 
@@ -253,7 +252,7 @@ Explicit operator instruction ("capture this for the harness") enters at step 3.
 ### Filename and atomic write
 
 - Filename: `YYYY-MM-DD-HHMM-<short-tag>-<HOSTNAME>.md`. Hostname suffix prevents cross-container filename collision under shared bind-mounts.
-- Atomic write protocol: write full content to `openspec/changes/_intake/.tmp.<filename>` first, then `mv .tmp.<filename> <filename>`. Triage-side readers in other containers must never observe a half-written file.
+- Atomic write protocol: write full content to `targets/_harness-private/intake/.tmp.<filename>` first, then `mv .tmp.<filename> <filename>`. Triage-side readers in other containers must never observe a half-written file (the private `targets` repo is bind-mounted across containers too).
 - `.tmp.*` files in the inbox are gitignored so an interrupted write cannot accidentally commit.
 
 ### File shape (frontmatter + body)
@@ -275,36 +274,31 @@ status: untriaged
 **Memory updates:** `feedback_*.md` files this supersedes or extends.
 ```
 
-### Two landing points -- decide at capture time
+### Single private landing
 
-| Landing | When | Visibility |
-|---|---|---|
-| `openspec/changes/_intake/` | Insight is target-detail-free, fit for public review | Tracked, public on push |
-| `BACKLOG.md` | Insight needs target context for motivational rationale; maintainer wants to scrub or shape before public exposure | Untracked, gitignored, private |
-
-Both carry the same five-field body; the frontmatter and file-tracking status differ. The orchestrator surfaces the choice in the confirmation prompt.
+All captures land in `targets/_harness-private/intake/` (tracked in the private `targets` repo, never published). The former public-`_intake` / private-`BACKLOG` split is retired: because the inbox is private, there is no public-exposure decision to make at capture time, and target context is permitted in the capture. `targets/_harness-private/BACKLOG.md` lives in the same private home as an optional looser maintainer scratchpad for notes that are not yet structured captures. The public output of the pipeline is the curated OpenSpec proposal, authored target-detail-free at promotion (below) -- that is where the public/private boundary is enforced, not at capture.
 
 ### Triage-side behaviour (harness orchestrator session)
 
 On session-init, after the standard banner:
 
 ```
-ls openspec/changes/_intake/*.md 2>/dev/null
+ls targets/_harness-private/intake/*.md 2>/dev/null
 ```
 
 Read each file's frontmatter. If `status: untriaged` is present on one or more files, append to the banner area:
 
 ```
-N untriaged harness capture(s) in openspec/changes/_intake/. Say 'triage' to walk them.
+N untriaged harness capture(s) in targets/_harness-private/intake/. Say 'triage' to walk them.
 ```
 
 The scan is read-only and adds negligible startup latency.
 
 On operator request (`triage`, `review intake`, or natural prompt), walk the untriaged captures in chronological order. For each, offer three outcomes:
 
-- **Promote** -- draft `openspec/changes/<new-slug>/proposal.md` (and optionally `design.md` + `tasks.md`). Copy the capture file into the new change directory as `provenance.md`. Update the original capture frontmatter to `status: promoted` with `promoted-to: <new-slug>` and `promoted-at: <ISO timestamp>`.
+- **Promote** -- draft a target-detail-free `openspec/changes/<new-slug>/proposal.md` (public) (and optionally `design.md` + `tasks.md`). **Provenance sanitization gate:** the source capture is private and may carry target context, so do NOT copy it verbatim into the public proposal directory -- record provenance as a sanitized, target-detail-free note or a pointer to the private capture filename (`targets/_harness-private/intake/<file>`). Promotion is exactly where the public/private boundary is enforced. Update the original (private) capture frontmatter to `status: promoted` with `promoted-to: <new-slug>` and `promoted-at: <ISO timestamp>`.
 - **Defer** -- update frontmatter `status: deferred` with optional rationale. Stays visible in the inbox; subsequent triage walks skip `deferred` unless the operator explicitly asks.
-- **Reject** -- delete, or move to `openspec/changes/_intake/rejected/`. Operator's call.
+- **Reject** -- delete, or move to `targets/_harness-private/intake/rejected/`. Operator's call.
 
 Triage commits land like any other harness commit: publication gate (`bin/validate-personas.sh --staged` + `--message`) before commit, harness-reviewer bookend before push.
 
@@ -312,7 +306,7 @@ Triage commits land like any other harness commit: publication gate (`bin/valida
 
 - Target-specific work belongs in the target's `targets/<slug>/` workspace.
 - One-off operator decisions about a specific target belong in `targets/<slug>/journal.md` as a `[DECISION]`-tagged entry.
-- Notes the operator wants to keep but does not want reviewed belong in `BACKLOG.md` or `*.private.md`.
+- Notes the operator wants to keep but does not want reviewed belong in `targets/_harness-private/BACKLOG.md` or `*.private.md`.
 - A capture is appropriate only when the insight changes (or should change) how the harness behaves for any future target / session.
 
 ---
@@ -415,7 +409,7 @@ Claude Code owns this path and it is currently shared across containers that bin
 1. Read `CLAUDE.md` for harness rules and conventions.
 2. Read `targets/index.md` for the target landscape.
 3. Identify the active target project. If ambiguous, ask.
-4. Scan `openspec/changes/_intake/` for untriaged harness captures (read-only `ls` + frontmatter scan). If any files have `status: untriaged`, surface the count in the post-banner summary so the operator knows there is harness-level work queued: "N untriaged harness capture(s) in openspec/changes/_intake/. Say 'triage' to walk them." Do not auto-triage; wait for the operator. Full triage discipline: see "Harness Capture" section above.
+4. Scan `targets/_harness-private/intake/` for untriaged harness captures (read-only `ls` + frontmatter scan). If any files have `status: untriaged`, surface the count in the post-banner summary so the operator knows there is harness-level work queued: "N untriaged harness capture(s) in targets/_harness-private/intake/. Say 'triage' to walk them." Do not auto-triage; wait for the operator. Full triage discipline: see "Harness Capture" section above.
 5. Read the active target's `profile.md` for the `harness-sync-sha:` field. If present, compare against current harness HEAD (`git -C /workspace/aeh rev-parse HEAD`). If they differ, count the commits in the range (`git -C /workspace/aeh rev-list --count $harness_sync_sha..HEAD`) and surface in the post-banner area: `"Harness has advanced N commits since last sync. Say 'review changes' to run a harness-reviewer pass that scopes local impact."` If the field is absent, surface: `"harness-sync-sha not set in profile.md -- seed via the retrofit prompt at templates/prompts/seed-harness-sync-marker.md.template to enable update detection going forward."` Full discipline: see "Harness Update Propagation Signal" section below.
 6. Cross-container ownership check. Run `bin/resolve-target-owner.sh --check <slug>` (exit 0 = owner matches current container; exit 1 = peer container owns; exit 2 = no marker). If exit 1: surface `"This target's last write was from container <peer-hostname> at <timestamp>. Continue as owner from this container? (yes / no / inspect)"` and WAIT for operator before any workspace write. If exit 2: surface `"No ownership marker on this target -- claiming for current container (<HOSTNAME>)."` and run `bin/resolve-target-owner.sh --write <slug>` to seed. If exit 0: silent proceed. Subsequent writes to the workspace bump the marker via the same `--write` invocation. Full discipline: see "Cross-Container Caveats" section below.
 7. Read `targets/<slug>/orchestrator-state.md` to reconstruct pipeline position.
