@@ -110,6 +110,8 @@ Proceed to Phase 2.
 [2/7] Reconnaissance
 ```
 
+> **This phase IS the onboarding bootstrap exception to the enforced `docs/AE/`-only fence** (CLAUDE.md § "The enforced `docs/AE/`-only fence"). First-contact reconnaissance of an un-onboarded target is the one time an AEH-side session reads the target tree directly, because the target has no `docs/AE/` and no AE roles to dispatch into yet. It is NARROW, READ-ONLY, and one-directional: read to assess, never write the target outside `docs/AE/`. The exception ends the moment `docs/AE/` exists -- after onboarding, ongoing assessment is `target-aeh-reviewer`'s (run in the target) and the orchestrator operates through the `docs/AE/` channel only.
+
 ### 2.0 Greenfield Detection (run first)
 
 Before any deep reconnaissance, run a fast greenfield check. The target is **greenfield** if ALL of the following hold:

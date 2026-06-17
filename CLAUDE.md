@@ -48,6 +48,16 @@ The harness writes prompt files directly into a target project's `docs/AE/prompt
 
 **Opt-out: `manual` policy** (rare; recorded in `profile.md` as `policy: manual`, reason as a `[DECISION]` entry in `journal.md`). The harness writes only to `targets/<project>/prompts/`; the orchestrator MUST then either (a) emit a one-line `cp` command alongside the handoff so the operator copies the prompt into the target tree first, or (b) inline the full prompt content in the handoff block. NEVER hand off a `Read and execute targets/<slug>/prompts/...` line -- unreadable from the target session.
 
+### The enforced `docs/AE/`-only fence (read AND write)
+
+The isolation rule above governs WRITES. The fence is the symmetric READ-side, and it is ENFORCED (a permission allowlist), not a soft convention:
+
+- **AEH-side roles are fenced out of the target tree.** `aeh-engineer` and `harness-reviewer` have NO target-tree access at all (they operate only on the harness). The `target-orchestrator` (a.k.a. `orchestrator`) has exactly ONE allowlisted exception: it may read AND write `<target>/docs/AE/**` -- to deliver prompts and read report-backs -- and nothing else in the target tree. Every other path in the target tree is out of bounds for every AEH-side role.
+- **Enforcement is a permission allowlist scoped to `docs/AE/`** (see `templates/agents/claude-code/permission-baselines.md` § "AEH-side fence (orchestrator session -> target)"), not a rule the role is trusted to honour. `target-aeh-reviewer` polices it: an AEH-side permission grant exceeding `docs/AE/`, or evidence of AEH-side writes outside `docs/AE/` (orchestrator-authored commits to the target app tree, stray markers), is a finding -- routed by file location (AEH-side config root-cause -> `aeh-engineer`; target-side residue -> `target-aeh-engineer`).
+- **This REPLACES the soft "harness may read a target for assessment" rule.** Post-onboarding assessment of a target is `target-aeh-reviewer`'s job, run IN the target. The orchestrator answers structural questions from dispatched-role report-backs (read via `docs/AE/`), not by reading the target tree.
+
+**Onboarding bootstrap exception (the one legitimate first-contact read).** Before onboarding, a target has no `docs/AE/` and no AE roles to dispatch into, so the first reconnaissance cannot go through the channel. The exception is a NARROW, READ-ONLY bootstrap: explicitly scoped to first-contact assessment of an un-onboarded target, one-directional (it never writes the target outside `docs/AE/`), and ending the moment `docs/AE/` exists. Once onboarded, the orchestrator operates through the `docs/AE/` channel only and ongoing assessment is `target-aeh-reviewer`'s. The bootstrap does not reopen the fence (read-only + ends at onboarding).
+
 ---
 
 ## Artifact Output Rule
@@ -191,7 +201,7 @@ When a conversation produces a new insight about how the harness should work, or
 - **NEVER modify target project files directly.** Produce prompts and deliverables here; the human executes them in the target project. (See "Target Project Isolation" above.)
 - **Always ask which target project** the user wants to work on before generating any artifacts.
 - **Onboarding is structural, not domain-discovery.** Skeleton generation (harness workspace under `targets/<slug>/` + AE infrastructure prompts for the target's `docs/AE/`) is decoupled from project content. Onboarding does NOT require knowing the project's domain, tech stack, team size, or business purpose. Persona overlays scaffold with placeholder `## Project Identity` lines and `TBD` profile fields; analyst and architect overlays are populated by the analyst persona on the first feature, not by the onboarding playbook. Do NOT interview the operator about domain/stack/team during onboarding. Empty repos and brand-new GitLab/GitHub default-README repos are the easiest onboarding case, not a blocker -- proceed straight to the greenfield branch of `templates/playbooks/onboarding.md`.
-- **Assess before prescribing.** Read the target project's existing structure (you CAN read target project files for assessment purposes) before proposing changes.
+- **Assess before prescribing.** Understand the target project's existing structure before proposing changes. Reads of the target tree are governed by the enforced `docs/AE/`-only fence (see "The enforced `docs/AE/`-only fence" above): post-onboarding, structure comes from dispatched-role report-backs read via `docs/AE/`; the only direct first-contact read is the narrow read-only onboarding bootstrap (ends when `docs/AE/` exists). `target-aeh-reviewer` does ongoing in-target assessment.
 - **Favour incremental transformation.** Don't propose a 50-file overhaul. Identify the highest-value first step and iterate.
 - **Respect existing conventions.** Encode the target project's existing patterns into generated artifacts rather than replacing them.
 - **Track everything in targets/.** Every observation, decision, question, and deliverable goes into the target's workspace.

@@ -215,6 +215,56 @@ Replace with the actual harness path. This prevents:
 - Accessing harness-internal templates and governance criteria
 - Breaking the two-project isolation model
 
+### AEH-side fence (orchestrator session -> target)
+
+This is the SYMMETRIC half of the rule above. The rule above keeps the TARGET
+agent out of the harness; this keeps the AEH-side session (the
+`target-orchestrator`, running in the harness root) out of the target tree
+EXCEPT the one allowlisted delivery channel, `<target>/docs/AE/**`. It is the
+enforced form of the `docs/AE/`-only fence (CLAUDE.md § "The enforced
+`docs/AE/`-only fence"). `aeh-engineer` and `harness-reviewer` get NO target
+access; only the orchestrator session gets the `docs/AE/` carve-out.
+
+Embed in the AEH harness project's own `.claude/settings.json` (substitute the
+real absolute target path):
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Read(/abs/path/to/target/docs/AE/**)",
+      "Write(/abs/path/to/target/docs/AE/**)",
+      "Edit(/abs/path/to/target/docs/AE/**)"
+    ],
+    "deny": [
+      "Read(/abs/path/to/target/.env*)",
+      "Read(/abs/path/to/target/.git/**)",
+      "Write(/abs/path/to/target/.git/**)"
+    ]
+  }
+}
+```
+
+The orchestrator session's working directory is the harness root, so the target
+tree is outside it and reachable only through explicit rules: the `docs/AE/**`
+allow is the only grant, and anything else target-side falls to the default
+`ask` posture (it cannot be written silently). The explicit deny rules harden the
+sensitive areas (secrets, git internals) against an accidental allow.
+
+> **Design call (B6, for operator ratification) -- the airtight "deny everything
+> else target-side" shape is DEFERRED.** Deny takes precedence over allow (see
+> `permissions.md`), so a blanket `Deny(Read(/abs/path/to/target/**))` would also
+> kill the `docs/AE/**` allow -- you cannot express "allow docs/AE, deny the rest"
+> as one allow + one blanket deny. The enforceable shape shipped here is
+> **allow `docs/AE/**` + specific sensitive-path denies + default-`ask` for the
+> remainder** -- which prevents silent out-of-channel writes and is what
+> `target-aeh-reviewer` polices (it flags an EFFECTIVE grant exceeding `docs/AE/`,
+> regardless of how it is expressed). A fully-locked-down, negation-based
+> expression needs the Claude Code permission-schema / repo-owner conversation and
+> is deferred with the rest of the concrete propagation/permission mechanism.
+> Until then: the allowlist above + the reviewer's fence-policing dimension are
+> the enforcement.
+
 ---
 
 ## Adapting Baselines to Target Projects
