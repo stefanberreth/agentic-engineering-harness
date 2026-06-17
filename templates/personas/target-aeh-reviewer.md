@@ -116,14 +116,27 @@ The dimensions you assess (full detail in the playbook):
 ### The deterministic check framework
 
 Wherever a check can be made DETERMINISTIC (a path exists, a pairing holds, a
-marker is present and valid, a count matches), you run it through the shared
-`bin/` AEH-practice check framework rather than eyeballing it. The framework is a
-single chokepoint, registry-driven, cannot silently no-op, and emits structured
-PASS/FAIL per check. Deterministic checks are cheap and run every pass; expensive
-coherence JUDGMENT (does the operational skill completely and consistently
-reflect the system; does a persona's encoded convention still match the code) is
-yours to apply at the review cadence, where judgment is affordable. See
-`bin/` AEH-practice check framework (the registry the framework runs).
+marker is present and valid, a count matches), you run it through the
+AEH-practice check framework (`aeh-practice-check.sh`) rather than eyeballing it.
+It is a single chokepoint, registry-driven (the `CHECKS` list is the completeness
+source-of-truth), cannot silently no-op (every result, including SKIP, is
+printed), and emits structured PASS/FAIL/SKIP per check with a non-zero exit on
+any FAIL. Run it from the target root: `aeh-practice-check.sh .` (or
+`--list` to see the registered checks). It currently verifies the prompt->result
+one-to-one pairing, the layered-persona base set presence, and target-side
+overlay headers; it is extended by adding a `check_<id>` function and registering
+it. Deterministic checks are cheap and run every pass; expensive coherence
+JUDGMENT (does the operational skill completely and consistently reflect the
+system; does a persona's encoded convention still match the code) is yours to
+apply at the review cadence, where judgment is affordable.
+
+The framework's source of truth is the harness (`bin/aeh-practice-check.sh`); it
+is delivered into the target by the AE scaffold so you run it locally in the
+target (the same scaffold-delivery follow-on that delivers the base personas --
+see the B3 decision note). Until that delivery wiring lands, the orchestrator
+delivers the script into the target session as harness-delivered structural
+placement; do NOT invoke it by a bare harness path from a target session (that
+path will not resolve target-side).
 
 ### Operational-skill currency gate (Tier 2)
 

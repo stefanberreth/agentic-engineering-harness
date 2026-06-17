@@ -361,6 +361,7 @@ If working on the harness itself:
 │   ├── resolve-target-owner.sh           # Per-target ownership marker helper (cross-container isolation)
 │   ├── resolve-scheduler-lock.sh         # Per-host scheduler lockfile path resolver
 │   ├── validate-personas.sh              # Structural validation + leak scan (staged/message/full modes)
+│   ├── aeh-practice-check.sh             # Deterministic AEH-practice checks (registry; target-aeh-reviewer runs it in a target)
 │   └── .leakage-patterns.example         # Placeholder blocklist template (real list at .leakage-patterns is gitignored)
 ├── templates/
 │   ├── personas/
