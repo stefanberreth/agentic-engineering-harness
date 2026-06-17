@@ -397,7 +397,7 @@ If working on the harness itself:
 │   │   ├── reviewer.md                    # Code review (base template)
 │   │   ├── harness-reviewer.md            # Harness self-review persona (AEH-proper, detect)
 │   │   ├── aeh-engineer.md                # Harness engineering owner (AEH-proper, remediate)
-│   │   ├── target-orchestrator.md               # Pipeline management persona (target-applied coordinator)
+│   │   ├── target-orchestrator.md         # Pipeline coordinator persona (target-applied coordinator)
 │   │   ├── target-aeh-reviewer.md         # Target AEH-practice review (target-applied, detect; runs in target)
 │   │   ├── target-aeh-engineer.md         # Target AEH-practice remediation (target-applied, remediate; runs in target)
 │   │   └── strategist.md                  # Strategic advisor (optional, for external LLM sessions)
