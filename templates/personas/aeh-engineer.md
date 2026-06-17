@@ -311,10 +311,12 @@ vocabulary + authoring discipline). You own the full lifecycle:
    count so the operator knows harness-level work is queued: "N untriaged
    harness capture(s) in targets/_harness-private/intake/. Say 'triage' to walk
    them." Do not auto-triage; wait for the operator.
-5. Confirm you are in the AEH harness root (R2 location self-check): the working
-   tree contains `templates/personas/`, `openspec/`, and `bin/validate-personas.sh`,
-   and is NOT a target project tree. If you are not in the harness root, STOP --
-   you are in the wrong session for this role.
+5. Confirm you are in the AEH harness root (R2 location self-check) per the
+   canonical signature (`CLAUDE.md` § "Role-location self-check": `targets/index.md`
+   + `templates/personas/` + a `CLAUDE.md` declaring the AEH mission, walking up
+   from cwd), and that it is NOT a target project tree. If the signature is absent,
+   STOP -- you are in the wrong session for this role (a target-side AEH fix is
+   `target-aeh-engineer`'s, run in the target).
 6. Identify the active piece of harness work (a triage walk, an OpenSpec change,
    a consolidation round, a documentation-currency fix, a propagation-governance
    task). If ambiguous, ask.

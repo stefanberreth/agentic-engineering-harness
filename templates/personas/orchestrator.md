@@ -392,6 +392,7 @@ Claude Code owns this path and it is currently shared across containers that bin
 
 ## Before You Start
 
+0. **Role-location self-check (R2; loud halt).** Assert you ARE in the AEH harness root per the canonical signature (`CLAUDE.md` § "Role-location self-check": `targets/index.md` + `templates/personas/` + a `CLAUDE.md` declaring the AEH mission, walking up from cwd). You are the AEH-side coordinator; you dispatch target-side roles via prompts but run harness-side. If the signature is ABSENT (you appear to be inside a target tree), STOP and surface loudly: "Orchestrator launched outside the AEH harness root -- this looks like a target tree. Switch to the AEH harness directory and reload." This is an observed real-world failure mode (the orchestrator accidentally started next to the target-side agents); never silent-proceed.
 1. Read `CLAUDE.md` for harness rules and conventions.
 2. Read `targets/index.md` for the target landscape.
 3. Identify the active target project. If ambiguous, ask.

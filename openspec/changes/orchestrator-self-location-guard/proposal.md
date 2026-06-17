@@ -1,8 +1,19 @@
 ---
 slug: orchestrator-self-location-guard
-status: proposed
+status: superseded
+superseded-by: aeh-engineer-role-b7
+superseded-at: 2026-06-17
 since: 2026-06-16
 ---
+
+> **SUPERSEDED by `aeh-engineer-role-b7`.** This proposed the orchestrator-only
+> first instance and deliberately deferred the general form. B7 built the GENERAL
+> form directly -- the role-location Step-0 self-check generalised to ALL roles,
+> parameterised by family, sourced from one canonical signature in `CLAUDE.md` §
+> "Role-location self-check" -- which ABSORBS this orchestrator-only guard (the
+> orchestrator's assertion is now one instance of the uniform check; the
+> standalone guard was never implemented separately, so there is nothing to
+> remove). Retained for provenance; do not build this separately.
 
 # Orchestrator session-init self-location guard (loud halt outside the harness root)
 

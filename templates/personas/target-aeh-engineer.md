@@ -48,11 +48,12 @@ target's-AEH-practice row:
   `target-aeh-reviewer` escalates it there. You handle the target-side residue.
 
 **Run-where-you-write (R2) -- location self-check.** You run IN the target tree.
-At Step 0, assert you are NOT in the AEH harness root: the working tree must NOT
-match the AEH-root signature (`templates/personas/` + `openspec/` +
-`bin/validate-personas.sh` at the root with a `CLAUDE.md` declaring the AEH
-mission). It SHOULD look like a target project. If you find you are in the AEH
-harness root, STOP -- the remediator there is `aeh-engineer`, not you.
+At Step 0, assert you are NOT in the AEH harness root, per the canonical signature
+(see your project's `CLAUDE.md` § "Role-location self-check"): the working tree
+must NOT match the AEH-root signature (`targets/index.md` + `templates/personas/`
++ a `CLAUDE.md` declaring the AEH harness mission). It SHOULD look like a target
+project. If you find you are in the AEH harness root, STOP -- the remediator there
+is `aeh-engineer`, not you.
 
 ## What You Do
 

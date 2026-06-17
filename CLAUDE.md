@@ -269,6 +269,18 @@ Every AEH role is either AEH-proper or target-applied, and the role's name says 
 
 The name encoding the family is the deliverable, not decoration: an adopter tells from the role list alone which roles touch their tree. The detect/remediate split (a reviewer detects read-only; an engineer remediates read-write) and run-where-you-write (a role runs in the tree it writes) are the two derived rules. Full architecture: `openspec/changes/aeh-engineer-role/` (proposal + design).
 
+### Role-location self-check (R2 enforcement -- the canonical signature)
+
+This is the ONE shared source for the per-role Step-0 tree-location self-check. Every role asserts at activation that it was launched in its correct tree TYPE; the check is the same deterministic signature test, only the expected answer flips by family. Loud-halt on mismatch, never silent-proceed.
+
+- **The AEH-root signature (deterministic, walk up from cwd to tolerate a harness subdirectory):** the nearest ancestor that has `targets/index.md` present AND `templates/personas/` present AND a local `CLAUDE.md` declaring the AEH harness mission. A target project has none of these.
+- **The target signature:** its own `CLAUDE.md` and (once onboarded) a `docs/AE/` directory, AND the ABSENCE of the AEH-root signature.
+- **Per-family expected answer:**
+  - **AEH-proper roles** (`aeh-engineer`, `harness-reviewer`) and the **AEH-side coordinator** (`orchestrator` / `target-orchestrator`): assert they ARE in the AEH root. Halt if launched in a target tree.
+  - **Target-applied-in-target roles** (`target-aeh-reviewer`, `target-aeh-engineer`, and the engineering base personas `analyst`/`archaeologist`/`architect`/`developer`/`reviewer` dispatched INTO the target): assert they are NOT in the AEH root -- they are in a target tree. Halt if launched in the harness root.
+
+It is a structural-invariant gate (single chokepoint = Step 0; deterministic; cannot silently no-op) and the first-person PREVENTION counterpart to `target-aeh-reviewer`'s after-the-fact DETECTION of wrong-tree execution. The harness-side personas reference this definition; the target-facing base personas carry the same check stated in their own terms (the fence forbids a base persona citing this harness `CLAUDE.md`), and `templates/project/CLAUDE.md.template` propagates the definition into every onboarded target's `CLAUDE.md` as that layer's shared source. Keeping the harness definition and the propagated/inlined copies in sync is part of the `aeh-engineer`'s declaration/machinery coherence-audit duty.
+
 Note: A `strategist` persona template also exists (`templates/personas/strategist.md`) but is not an active harness-side role. It is designed for use in external LLM sessions (Claude Web, etc.) where the human pastes an adapted briefing document. When users ask about roles or say "role info", mention the strategist as an available option for users who want a strategic conversation partner outside Claude Code. Don't push it -- just make it discoverable.
 
 The `aeh-engineer` role is the harness's read-write engineering owner (AEH-proper). It is the single catch-all owner of harness "tinkering": intake triage, turning field-notes into OpenSpec proposals, consolidation / anti-bloat rounds, behaviour-vs-lore divergence detection, the publication gates and the actual commit/push of the public harness repo, the OpenSpec close-out lifecycle, `bin/` tooling + hook maintenance, and harness-side propagation/release governance. It runs only in the harness root and never touches a target tree. The `harness-reviewer` is its detection gate; the engineering personas are instruments it points at harness work. See `templates/personas/aeh-engineer.md`.
@@ -281,6 +293,7 @@ An absent or empty file means no role is active.
 
 ### On first message of every session
 
+0. **Role-location self-check (loud halt).** Before anything else, assert this is the AEH harness root per the canonical signature above (`targets/index.md` + `templates/personas/` + a `CLAUDE.md` declaring the AEH mission, walking up from cwd). This session adopts harness-side roles, all of which must run in the AEH root. If the signature is ABSENT (you appear to be inside a target tree), STOP and surface loudly: "Launched outside the AEH harness root -- this looks like a target tree. Switch to the AEH harness directory and reload, or (if target work was intended) you want a target-side role in the target's own session." Never silent-proceed. (CLAUDE.md carries this because the persona file is not loaded until the role is confirmed, so a misplaced session must be caught here first.)
 1. Resolve the persona marker path via `bin/resolve-persona-marker.sh`, then read it if it exists (path is `.claude/persona` for non-Docker setups, `.claude/persona.$HOSTNAME` inside Docker containers).
 2. Read `targets/index.md` for landscape context.
 3. Output the session banner. **Keep it to 3 lines max.** Style: clean, minimal, terminal-native.
