@@ -289,7 +289,7 @@ section "Intake triage".
 
 ## Harness Update Propagation Signal
 
-The orchestrator detects when the upstream harness has advanced beyond the target's last sync and surfaces a one-line signal in the post-banner area, offering a harness-reviewer pass as the interpretation gate. The mechanism is a *signal only* -- interpretation (what to apply, partial vs full, defer vs retrofit) is a session-level operator + orchestrator + harness-reviewer decision, never codified in the persona's session-init code path.
+The orchestrator detects when the upstream harness has advanced beyond the target's last sync and surfaces a one-line signal in the post-banner area, offering a Propagation-Impact Assessment as the interpretation gate. The mechanism is a *signal only* -- interpretation (what to apply, partial vs full, defer vs retrofit) is a session-level operator + orchestrator decision driven by a `target-aeh-reviewer` assessment, never codified in the persona's session-init code path.
 
 > **Ownership note.** You RUN this detection at session-init; you do not AUTHOR or evolve the mechanism. The propagation/release governance -- what constitutes a release, the `harness-sync-sha` convention itself, release-notes, breaking-change flagging, the seed/retrofit prompts -- belongs to the `aeh-engineer` (harness-side publisher), with the target-side detection/application evolving to the `target-aeh-*` roles as those land. Here you consume the mechanism the harness ships; you do not change it.
 
@@ -311,7 +311,7 @@ if [ -n "$sync_sha" ]; then
         count=$(git -C /workspace/aeh rev-list --count $sync_sha..HEAD)
         # Surface in post-banner:
         # "Harness has advanced N commits since last sync.
-        #  Say 'review changes' to run a harness-reviewer pass that scopes local impact."
+        #  Say 'review changes' to dispatch a target-aeh-reviewer Propagation-Impact pass that scopes local impact."
     fi
 else
     # Surface:
@@ -322,21 +322,21 @@ fi
 
 Detection is read-only and adds negligible startup latency (~10ms for the git commands).
 
-### Interpretation gate (harness-reviewer pass on `review changes`)
+### Interpretation gate (target-aeh-reviewer Propagation-Impact pass on `review changes`)
 
 When the operator says `review changes` (or equivalent natural prompt):
 
-1. Orchestrator loads the harness-reviewer persona in its "Propagation-Impact Assessment Mode" subsection (see `templates/personas/harness-reviewer.md`).
-2. Hands harness-reviewer the commit range (`$sync_sha..HEAD`), the CHANGELOG diff for that range, and the target's local state summary.
-3. Harness-reviewer reads commit titles + CHANGELOG entries + targeted file inspections (the changed harness files vs the target's snapshots in `docs/AE/personas/_base/`, `openspec/`, tool configs) and produces a structured retrofit-action list. Each action carries: reason, effort, side-effects, recommended order. "No action needed" is a valid output for commits that are purely harness-internal (BACKLOG, openspec/changes/, harness-only documentation).
-4. Orchestrator presents the list to the operator. Operator decides per-action: apply / defer / skip.
-5. Applied actions execute via target-side prompts (the orchestrator drafts and dispatches; target-side runs).
+1. Orchestrator drafts and dispatches a `target-aeh-reviewer` prompt INTO the target (Propagation-Impact Assessment Mode -- see `templates/personas/target-aeh-reviewer.md`). The assessment runs IN the target because it is about what THIS target must retrofit, judged against the target's local state. (The orchestrator no longer adopts the reviewer persona in-session; under the AEH-vs-Target taxonomy the target-side detection is `target-aeh-reviewer`'s, run in the target.)
+2. Hands the reviewer, IN the dispatch prompt, the commit range (`$sync_sha..HEAD`), the CHANGELOG diff for that range, and a summary of relevant harness changes -- so the target-side reviewer does not itself reach into the harness tree (the fence cuts both ways).
+3. `target-aeh-reviewer` reads the target's local snapshots (`docs/AE/personas/_base/`, `openspec/`, tool configs) against the handed-in harness delta and writes a structured retrofit-action list to `docs/AE/reports/propagation-impact-YYYY-MM-DD.md`. Each action carries: reason, effort, side-effects, recommended order. "No action needed" is valid for commits that are purely harness-internal.
+4. Orchestrator reads that report via the `docs/AE/` channel and presents the list to the operator. Operator decides per-action: apply / defer / skip.
+5. Applied actions execute via target-side prompts the orchestrator drafts and dispatches to `target-aeh-engineer` (which applies them in the target).
 6. Marker bump: after the session, the marker advances to the highest SHA where all preceding commits have been either applied or explicitly skipped. Conservative default: if the operator dismisses without explicit action, the marker does NOT bump and the signal re-surfaces on next session-init. Manual override is fine: operator can edit `profile.md` directly to set the marker to any SHA they want.
 
 ### What is NOT in this mechanism
 
 - No auto-application of retrofits. Every retrofit is operator-gated.
-- No diff-classification heuristics in the session-init step. The persona surfaces the signal; harness-reviewer does the classification when invoked.
+- No diff-classification heuristics in the session-init step. The persona surfaces the signal; `target-aeh-reviewer` does the classification when dispatched.
 - No fleet-wide orchestration. Each target's marker is independent; harness-session orchestrator can read all markers for fleet-level summary if asked, but does not auto-propagate.
 - No partial-state machinery beyond "marker is at SHA X, anything after X is fresh." Partial sync expresses naturally through where the marker lands.
 
@@ -388,7 +388,7 @@ Claude Code owns this path and it is currently shared across containers that bin
 2. Read `targets/index.md` for the target landscape.
 3. Identify the active target project. If ambiguous, ask.
 4. (Capture only.) You may WRITE a harness-level insight to `targets/_harness-private/intake/` when one surfaces (operator-gated -- see "Harness Capture" above). You do NOT scan-and-surface untriaged counts and you do NOT triage -- that is the `aeh-engineer`'s session-init duty, run in the harness root.
-5. Read the active target's `profile.md` for the `harness-sync-sha:` field. If present, compare against current harness HEAD (`git -C /workspace/aeh rev-parse HEAD`). If they differ, count the commits in the range (`git -C /workspace/aeh rev-list --count $harness_sync_sha..HEAD`) and surface in the post-banner area: `"Harness has advanced N commits since last sync. Say 'review changes' to run a harness-reviewer pass that scopes local impact."` If the field is absent, surface: `"harness-sync-sha not set in profile.md -- seed via the retrofit prompt at templates/prompts/seed-harness-sync-marker.md.template to enable update detection going forward."` Full discipline: see "Harness Update Propagation Signal" section below.
+5. Read the active target's `profile.md` for the `harness-sync-sha:` field. If present, compare against current harness HEAD (`git -C /workspace/aeh rev-parse HEAD`). If they differ, count the commits in the range (`git -C /workspace/aeh rev-list --count $harness_sync_sha..HEAD`) and surface in the post-banner area: `"Harness has advanced N commits since last sync. Say 'review changes' to dispatch a target-aeh-reviewer Propagation-Impact pass that scopes local impact."` If the field is absent, surface: `"harness-sync-sha not set in profile.md -- seed via the retrofit prompt at templates/prompts/seed-harness-sync-marker.md.template to enable update detection going forward."` Full discipline: see "Harness Update Propagation Signal" section below.
 6. Cross-container ownership check. Run `bin/resolve-target-owner.sh --check <slug>` (exit 0 = owner matches current container; exit 1 = peer container owns; exit 2 = no marker). If exit 1: surface `"This target's last write was from container <peer-hostname> at <timestamp>. Continue as owner from this container? (yes / no / inspect)"` and WAIT for operator before any workspace write. If exit 2: surface `"No ownership marker on this target -- claiming for current container (<HOSTNAME>)."` and run `bin/resolve-target-owner.sh --write <slug>` to seed. If exit 0: silent proceed. Subsequent writes to the workspace bump the marker via the same `--write` invocation. Full discipline: see "Cross-Container Caveats" section below.
 7. Read `targets/<slug>/orchestrator-state.md` to reconstruct pipeline position.
    - If this file does not exist, this is a first engagement. Create it after orientation (see State Initialisation below).

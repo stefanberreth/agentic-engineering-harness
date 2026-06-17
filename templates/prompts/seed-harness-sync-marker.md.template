@@ -66,7 +66,7 @@ PROMPT COMPLETE -- seed-harness-sync-marker
 
 `profile.md` carries a valid `harness-sync-sha:` line. Next orchestrator session-init detects the marker, runs the harness-update comparison, and either:
 - Surfaces nothing (marker == harness HEAD), or
-- Surfaces "Harness has advanced N commits since last sync. Say 'review changes' to run a harness-reviewer pass that scopes local impact."
+- Surfaces "Harness has advanced N commits since last sync. Say 'review changes' to dispatch a target-aeh-reviewer Propagation-Impact pass that scopes local impact."
 
 ## Fallback
 

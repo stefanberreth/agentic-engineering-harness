@@ -156,8 +156,12 @@ fi
 
 # --- Full mode: structural checks + broad leak scan -------------------------
 
-# Harness-internal roles: intentionally NOT layered.
-HARNESS_ROLES="orchestrator.md strategist.md harness-reviewer.md aeh-engineer.md"
+# Single-file roles: intentionally NOT layered (no _base/overlay split). Covers
+# both the AEH-proper / coordinator roles (run in the harness root) and the
+# target-applied AEH roles whose subject is the generic AEH method, not a
+# target's domain (target-aeh-reviewer / target-aeh-engineer run in the target
+# but need no project-domain overlay).
+HARNESS_ROLES="orchestrator.md strategist.md harness-reviewer.md aeh-engineer.md target-aeh-reviewer.md target-aeh-engineer.md"
 
 echo "=== Base Templates ($BASE_DIR) ==="
 echo ""
