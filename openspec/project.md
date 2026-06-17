@@ -25,6 +25,10 @@ The publication gate (`bin/validate-personas.sh --staged` over staged content + 
 
 The harness-reviewer persona's Dimension 1 (target detail leakage) covers `openspec/**` explicitly.
 
+## Role taxonomy (who authors here)
+
+Every AEH role is either **AEH-proper** (no "target" in the name -- owns the harness as a published product; operates only on harness files) or **target-applied** ("target" in the name -- applies AEH to one specific target). This `openspec/` tree is harness-self, so authoring, sequencing, and closing out proposals here is the **`aeh-engineer`**'s lane (the AEH-proper read-write engineering owner); the `harness-reviewer` is its detection gate (bookends substantive changes before close-out). The engineering personas (`analyst` / `architect` / etc.) are layer-neutral instruments the `aeh-engineer` may point at harness work. A target-pipeline session (`orchestrator`) does NOT author harness proposals -- it only WRITES captures to the private inbox; the `aeh-engineer` promotes those into proposals here. Promotion is where the public/private boundary is enforced (target-detail-free AND name-free: refer to roles, not people). Full architecture: `openspec/changes/aeh-engineer-role/`.
+
 ## Status vocabulary
 
 Inherits the AEH canonical OpenSpec status vocabulary (when established harness-wide; see BACKLOG entry "AEH canonical OpenSpec status vocabulary"). Until then, this tree uses the standard OpenSpec change lifecycle:

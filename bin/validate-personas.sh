@@ -157,7 +157,7 @@ fi
 # --- Full mode: structural checks + broad leak scan -------------------------
 
 # Harness-internal roles: intentionally NOT layered.
-HARNESS_ROLES="orchestrator.md strategist.md harness-reviewer.md"
+HARNESS_ROLES="orchestrator.md strategist.md harness-reviewer.md aeh-engineer.md"
 
 echo "=== Base Templates ($BASE_DIR) ==="
 echo ""

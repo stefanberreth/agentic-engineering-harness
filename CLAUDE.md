@@ -162,7 +162,9 @@ When a conversation produces a new insight about how the harness should work, or
 
 ## Harness Maintenance Discipline
 
-> **Full reference:** the harness-reviewer persona at `templates/personas/harness-reviewer.md`.
+> **Full reference:** the `aeh-engineer` persona at `templates/personas/aeh-engineer.md` (the harness's read-write engineering owner) and the `harness-reviewer` persona at `templates/personas/harness-reviewer.md` (its detection gate).
+
+> **Owner: `aeh-engineer`.** The rules in this section are the `aeh-engineer`'s standing duties (commit/push of the public harness repo, the publication gates, OpenSpec lifecycle, intake triage, `bin/` tooling, consolidation). A target-pipeline session (`orchestrator`) holds only the universal capture right; it does not publish harness changes. See the AEH-vs-Target taxonomy under "Session Init and Role Selection".
 
 **Key rules (always active):**
 - Two git repos: harness (root, public) and targets (`targets/`, private, nested). Always use `git -C targets/` (relative path) for the targets repo.
@@ -170,7 +172,7 @@ When a conversation produces a new insight about how the harness should work, or
 - Target-specific commits go to targets repo only. No CHANGELOG update for target work.
 - After harness changes: verify CLAUDE.md, README.md, CHANGELOG.md and the project structure tree are current before committing.
 - CHANGELOG follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) -- update for template/persona/playbook/governance/CLAUDE.md changes; skip for target work and typo fixes.
-- **Publication gate before commit/push.** Run `bin/validate-personas.sh --staged` over staged content and `--message "<text>"` over the commit message before any harness commit or push. Block on FAIL. Owner: orchestrator. Commit-message leakage is in scope (clean diff + leaky message still fails).
+- **Publication gate before commit/push.** Run `bin/validate-personas.sh --staged` over staged content and `--message "<text>"` over the commit message before any harness commit or push. Block on FAIL. Owner: aeh-engineer. Commit-message leakage is in scope (clean diff + leaky message still fails).
 - **Publication-readiness gate before push (commit freely, push rarely).** A `git push` to the public harness repo IS the publication event; the repo is consumed downstream. Commit freely as work progresses, but do NOT push until the affected setup is coherent and complete AS A WHOLE -- not merely "the current change is done." Before any push: rework/refactor complete; all affected docs, onboarding verbiage, READMEs, CLAUDE.md and CHANGELOG updated; NO stale content referencing removed/renamed constructs anywhere in the tree; and a comprehensive integrity + consistency + deduplication sweep (a full harness-reviewer pass over the whole affected surface, not just the diff) passes. Mid-refactor work accumulates as local commits until it clears this bar. Owner: aeh-engineer (the harness-maintaining session until the role is built). This is the publication-readiness counterpart to the per-commit leak gate above: the leak gate guards WHAT is in a commit; this gate guards WHETHER the whole is ready to publish.
 - **Validator blocklist is private.** The leak-detector pattern list lives at `bin/.leakage-patterns` (gitignored, populated per environment); only `bin/.leakage-patterns.example` (placeholders) is committed. The tracked script must contain NO real identifiers -- a leak-detector that publishes the identifiers it catches is itself the leak.
 - **Review intermediaries are local-only.** Findings reports, planning notes, scratch analyses and longform retrospectives carrying real identifiers are working drafts -- never committed. Name them `*.private.md` / `*.local.md` (auto-ignored) or add a `.gitignore` line. The durable output of a review/planning session is the resulting changes + CHANGELOG entry + commit message body, NOT the intermediate report. A tracked intermediary is itself a Dimension-1 finding regardless of content.
@@ -179,7 +181,7 @@ When a conversation produces a new insight about how the harness should work, or
 - **OpenSpec authoring is target-detail-free.** Everything in `openspec/**` ships public, so proposals and specs must never carry target-project identifiers (slugs, names, real SHAs/incidents/RPC/file/column names). Private triage scratchpads (the private capture inbox `targets/_harness-private/intake/`, `targets/_harness-private/BACKLOG.md`, `*.private.md`, `*.local.md`) are inspiration, not source-of-text; authoring discipline catches the paraphrase-class leakage the validator cannot pattern-match. Harness-reviewer Dimension 1 covers `openspec/**` explicitly.
 - **Cross-container isolation.** Multiple orchestrator sessions can run in parallel from separate containers sharing this bind-mounted harness dir (by design). Per-target ownership markers (`targets/<slug>/.owner-container`, gitignored) gate writes; orchestrator session-init checks them and prompts the operator on mismatch before any write. Per-host persona/scheduler markers via `bin/resolve-persona-marker.sh` and `bin/resolve-scheduler-lock.sh`; ownership helper `bin/resolve-target-owner.sh`; retrofit via `templates/prompts/seed-target-owner.md.template`. Full mechanism + known limitations: `templates/personas/orchestrator.md` § "Cross-Container Caveats".
 - **Harness update propagation signal.** Each target's `profile.md` carries `harness-sync-sha:` (harness HEAD at last sync). Orchestrator session-init compares it to current HEAD and, if behind, offers a harness-reviewer "review changes" pass; the marker bumps only to cover applied + explicitly-skipped commits (operator-gated, conservative). Seed via `templates/prompts/seed-harness-sync-marker.md.template`. Full mechanism: `templates/personas/orchestrator.md` § "Harness Update Propagation Signal" and `templates/personas/harness-reviewer.md` § "Propagation-Impact Assessment Mode".
-- **Harness capture inbox (private).** Cross-session harness insights flow through a PRIVATE inbox at `targets/_harness-private/intake/` -- tracked in the private `targets` repo, never published. Capture is proactive but ASK-before-write and atomic; because the inbox is private, target context is permitted in the capture and there is no public-vs-private decision at capture time. `targets/_harness-private/BACKLOG.md` is an optional looser maintainer scratchpad in the same private home. The harness orchestrator triages `status: untriaged` captures into proper `openspec/changes/<slug>/` proposals (PUBLIC, authored target-detail-free) on request -- promotion is where the public/private boundary is enforced (sanitize provenance; never copy a target-laden capture verbatim into a public proposal). Relocation note: the inbox formerly lived at public `openspec/changes/_intake/`; any `openspec/changes/_intake/` path cited in existing/archived proposals or CHANGELOG history refers to this now-relocated private inbox. Full mechanism: `targets/_harness-private/intake/README.md` and `templates/personas/orchestrator.md` § "Harness Capture".
+- **Harness capture inbox (private).** Cross-session harness insights flow through a PRIVATE inbox at `targets/_harness-private/intake/` -- tracked in the private `targets` repo, never published. Capture is proactive but ASK-before-write and atomic; because the inbox is private, target context is permitted in the capture and there is no public-vs-private decision at capture time. `targets/_harness-private/BACKLOG.md` is an optional looser maintainer scratchpad in the same private home. The `aeh-engineer` (running in the harness root) triages `status: untriaged` captures into proper `openspec/changes/<slug>/` proposals (PUBLIC, authored target-detail-free) on request -- promotion is where the public/private boundary is enforced (sanitize provenance; never copy a target-laden capture verbatim into a public proposal). Capture is universal (any session may write a capture); only triage/promotion is the `aeh-engineer`'s. Relocation note: the inbox formerly lived at public `openspec/changes/_intake/`; any `openspec/changes/_intake/` path cited in existing/archived proposals or CHANGELOG history refers to this now-relocated private inbox. Full mechanism: `targets/_harness-private/intake/README.md` and `templates/personas/orchestrator.md` § "Harness Capture".
 
 ---
 
@@ -245,11 +247,23 @@ Call `bin/resolve-persona-marker.sh` to get the resolved path for the current en
 
 The marker file (in either form) is NOT tracked in git — `.claude/persona` and `.claude/persona.*` are both gitignored. The resolver also performs opportunistic stale-marker cleanup on session init: per-hostname markers untouched for >30 days are removed, so container-rebuild churn doesn't accumulate cruft.
 
-Valid roles: `analyst`, `archaeologist`, `architect`, `developer`, `reviewer`, `harness-reviewer`, `orchestrator`
+Valid roles: `analyst`, `archaeologist`, `architect`, `developer`, `reviewer`, `harness-reviewer`, `aeh-engineer`, `orchestrator`
+
+### AEH-vs-Target role taxonomy
+
+Every AEH role is either AEH-proper or target-applied, and the role's name says which:
+
+- **AEH-proper** (no "target" in the name): owns the harness as a published, generic product. Operates only on harness files; runs in the harness root. Members: `aeh-engineer` (read-write engineering owner), `harness-reviewer` (its read-only detection gate).
+- **Target-applied** ("target" in the name): owns applying AEH to one specific target. The `orchestrator` is the target-pipeline coordinator (its name will become `target-orchestrator` in a later build step); the `target-aeh-reviewer` / `target-aeh-engineer` pair (detection / remediation of a target's AEH practice, running in the target) are forthcoming.
+- The engineering personas (`analyst` / `archaeologist` / `architect` / `developer` / `reviewer`) are layer-neutral instruments reused by both families; they carry no "target" in their name for that reason.
+
+The name encoding the family is the deliverable, not decoration: an adopter tells from the role list alone which roles touch their tree. The detect/remediate split (a reviewer detects read-only; an engineer remediates read-write) and run-where-you-write (a role runs in the tree it writes) are the two derived rules. Full architecture: `openspec/changes/aeh-engineer-role/` (proposal + design).
 
 Note: A `strategist` persona template also exists (`templates/personas/strategist.md`) but is not an active harness-side role. It is designed for use in external LLM sessions (Claude Web, etc.) where the human pastes an adapted briefing document. When users ask about roles or say "role info", mention the strategist as an available option for users who want a strategic conversation partner outside Claude Code. Don't push it -- just make it discoverable.
 
-The `harness-reviewer` role is special: it reviews the harness itself, not target projects. It checks for target detail leakage, documentation currency, template consistency, and public-facing quality. Use it before publishing or after significant harness changes. See `templates/personas/harness-reviewer.md`.
+The `aeh-engineer` role is the harness's read-write engineering owner (AEH-proper). It is the single catch-all owner of harness "tinkering": intake triage, turning field-notes into OpenSpec proposals, consolidation / anti-bloat rounds, behaviour-vs-lore divergence detection, the publication gates and the actual commit/push of the public harness repo, the OpenSpec close-out lifecycle, `bin/` tooling + hook maintenance, and harness-side propagation/release governance. It runs only in the harness root and never touches a target tree. The `harness-reviewer` is its detection gate; the engineering personas are instruments it points at harness work. See `templates/personas/aeh-engineer.md`.
+
+The `harness-reviewer` role is special: it reviews the harness itself, not target projects. It checks for target detail leakage, documentation currency, template consistency, and public-facing quality. It DETECTS and produces verdicts; the `aeh-engineer` acts on its findings. Use it before publishing or after significant harness changes. See `templates/personas/harness-reviewer.md`.
 
 The `orchestrator` role manages the agentic pipeline for a single target project. It tracks prompt execution, assesses agent output quality, maintains outcome metrics, and generates the next action. Unlike other roles that do work, the orchestrator manages the flow of work across roles. It persists state in `targets/<slug>/orchestrator-state.md` so any session can reconstruct the full pipeline position. The orchestrator enforces **mandatory reviewer cadence** (every 5 developer tasks or at phase boundaries — non-discretionary) and tracks review state (`last_reviewed_task`, `current_gap`) to prevent reviews from being skipped. No phase can be signed off without a reviewer PASS/WARN covering its full scope. See `templates/personas/orchestrator.md`.
 
@@ -273,7 +287,7 @@ agentic-engineering-harness · reviewer (from last session)
 
 ```
 agentic-engineering-harness · no active role
-  Roles: analyst · archaeologist · architect · developer · reviewer · harness-reviewer · orchestrator
+  Roles: analyst · archaeologist · architect · developer · reviewer · harness-reviewer · aeh-engineer · orchestrator
   Pick a role, or "no role" to work freestyle. Say "role info" for details.
 ```
 
@@ -355,8 +369,9 @@ If working on the harness itself:
 │   │   ├── architect.md                   # Solution design (base template)
 │   │   ├── developer.md                   # TDD implementation (base template)
 │   │   ├── reviewer.md                    # Code review (base template)
-│   │   ├── harness-reviewer.md            # Harness self-review persona
-│   │   ├── orchestrator.md               # Pipeline management persona
+│   │   ├── harness-reviewer.md            # Harness self-review persona (AEH-proper, detect)
+│   │   ├── aeh-engineer.md                # Harness engineering owner (AEH-proper, remediate)
+│   │   ├── orchestrator.md               # Pipeline management persona (target-applied coordinator)
 │   │   └── strategist.md                  # Strategic advisor (optional, for external LLM sessions)
 │   ├── prompts/
 │   │   ├── regression-check.md.template   # Post-transformation functional regression check

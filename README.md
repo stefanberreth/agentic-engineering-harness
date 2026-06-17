@@ -72,7 +72,7 @@ AEH ships a known-good default arrangement of these patterns, ready to drive a r
 
 ## The roles
 
-AEH defines five engineering roles plus three coordinating ones. Each role is a methodology template -- a set of instructions an agent loads to take that role for a session. Each role has a generic base template (ships with AEH) plus a project-specific overlay (lives in your project, encodes your conventions, hard boundaries, and domain knowledge). The base is a working default; the overlay is where the harness becomes yours.
+AEH defines five engineering roles plus a set of coordinating and harness-maintenance ones. Each role is a methodology template -- a set of instructions an agent loads to take that role for a session. Each role has a generic base template (ships with AEH) plus a project-specific overlay (lives in your project, encodes your conventions, hard boundaries, and domain knowledge). The base is a working default; the overlay is where the harness becomes yours.
 
 | Role | Scope | Key discipline |
 |---|---|---|
@@ -88,7 +88,8 @@ The coordinating roles:
 |---|---|---|
 | **Orchestrator** | In the harness session | Team manager. Picks who runs next, holds the reviewer cadence, refuses to dispatch out-of-spec work, owns chain composition, tracks state across sessions. |
 | **Strategist** | In any LLM chat (browser is fine; not necessarily a coding-agent runtime) | Optional external strategic advisor; runs higher-level conversations on priorities and direction without needing project-code access. |
-| **Harness Reviewer** | In the harness session | Self-review of AEH itself across review dimensions (template consistency, isolation boundary, leak detection); separate from project-level reviewing. |
+| **Harness Reviewer** | In the harness session | Detects: self-review of AEH itself across review dimensions (template consistency, isolation boundary, leak detection); separate from project-level reviewing. Produces verdicts; does not remediate. |
+| **AEH Engineer** | In the harness session | Remediates: the harness's own read-write engineering owner. Triages captured field-notes into change proposals, runs consolidation rounds, guards the publication boundary, commits/pushes the public repo, maintains `bin/` tooling. Acts on the Harness Reviewer's findings. |
 
 The standard engineering loop is **Analyst -> Architect -> Developer -> Reviewer**, with the Archaeologist running upstream on existing codebases and the Strategist available externally when you want a higher-level conversation. Each prompt names its role and its governing spec. Each role's report carries a verdict -- **PASS / WARN / FAIL / BLOCK** -- with evidence, written to files. The Orchestrator reads the report, decides the next move (advance to the next role, generate a correction prompt, escalate to the operator), and writes the next prompt. Verdicts and reasoning are auditable after the fact because the reports and decisions are committed alongside the code they govern. Humans can review, other agents can review, future sessions can replay. Nothing important is in chat alone.
 
