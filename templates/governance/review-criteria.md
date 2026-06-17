@@ -145,7 +145,7 @@ Use this rubric to evaluate the quality of the agentic engineering files in a ta
 
 ## 4a. Polish-pass review (lightweight, for Polish Mode commits)
 
-> Apply ONLY to commits produced by Polish Mode sessions (see orchestrator persona § Polish Mode). Polish Mode commits do NOT go through the full reviewer 10-dimension walk. The operator was the live eyeball reviewer during the session; this lightweight check confirms scope was honoured and the audit trail is complete. For all other commits use the standard rubrics above.
+> Apply ONLY to commits produced by Polish Mode sessions (see target-orchestrator persona § Polish Mode). Polish Mode commits do NOT go through the full reviewer 10-dimension walk. The operator was the live eyeball reviewer during the session; this lightweight check confirms scope was honoured and the audit trail is complete. For all other commits use the standard rubrics above.
 
 | Criterion | Score | Notes |
 |---|---|---|
@@ -155,7 +155,7 @@ Use this rubric to evaluate the quality of the agentic engineering files in a ta
 | **Audit-trail coverage**: Every diff hunk accounted for in the polish-session log or openspec record. No silent changes | | |
 | **Commit hygiene**: Conventional commits, ASCII, no AI attribution, message references `[change:<slug>]` | | |
 
-A failed criterion blocks the commit. Polish Mode developer runs this self-check at exit; orchestrator routes any failure back as a focused fix.
+A failed criterion blocks the commit. Polish Mode developer runs this self-check at exit; target-orchestrator routes any failure back as a focused fix.
 
 ---
 

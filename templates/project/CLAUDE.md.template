@@ -138,7 +138,7 @@ This project uses a persona-driven agentic engineering workflow:
 4. **Developer** -- TDD implementation
 5. **Reviewer** -- code review and compliance checking
 
-The orchestrator enforces reviewer cadence automatically: a formal reviewer pass runs every 5 developer tasks (or at phase boundaries). Reviews are non-discretionary — they happen whether anyone remembers to schedule them or not.
+The target-orchestrator enforces reviewer cadence automatically: a formal reviewer pass runs every 5 developer tasks (or at phase boundaries). Reviews are non-discretionary — they happen whether anyone remembers to schedule them or not.
 
 ### Reviewer Expectations
 

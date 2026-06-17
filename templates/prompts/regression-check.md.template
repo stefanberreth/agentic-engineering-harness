@@ -90,14 +90,14 @@ There should be no untracked files left over from the transformation. If there a
 
 ### 6. Orchestrator State Verification
 
-If the project is managed by the AEH orchestrator, verify that `orchestrator-state.md` (in the harness workspace or referenced from the target) includes a Review Tracking section with:
+If the project is managed by the AEH target-orchestrator, verify that `orchestrator-state.md` (in the harness workspace or referenced from the target) includes a Review Tracking section with:
 - `last_reviewed_task` — set to a valid task number
 - `review_cadence` — set to `every-5` or `phase-boundary`
 - `reviews_completed` — count > 0 if any implementation has been done
 
-If the Review Tracking section is missing, flag it — the orchestrator will not enforce reviewer cadence without it.
+If the Review Tracking section is missing, flag it — the target-orchestrator will not enforce reviewer cadence without it.
 
-If no orchestrator state exists at all (target is not orchestrator-managed), skip this check.
+If no target-orchestrator state exists at all (target is not target-orchestrator-managed), skip this check.
 
 ### 7. Report
 

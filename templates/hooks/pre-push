@@ -23,7 +23,7 @@ if ! "$VALIDATOR" >/tmp/aeh-pre-push.log 2>&1; then
   echo "pre-push: leak scan FAILED. Push blocked." >&2
   cat /tmp/aeh-pre-push.log >&2
   echo "" >&2
-  echo "Resolve leaks before pushing. The orchestrator's Publication Gate" >&2
+  echo "Resolve leaks before pushing. The target-orchestrator's Publication Gate" >&2
   echo "should have caught this earlier -- treat the bypass as a finding." >&2
   exit 1
 fi

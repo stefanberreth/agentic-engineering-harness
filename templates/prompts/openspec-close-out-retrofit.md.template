@@ -2,7 +2,7 @@
 
 **Target:** <slug>
 **Directory:** <target-absolute-path>
-**Role:** orchestrator (target-side)
+**Role:** freestyle (harness-delivered structural placement)
 **Phase:** retrofit (one-shot)
 
 ## Context for operator
@@ -13,9 +13,9 @@ This one-shot prompt creates the missing components and optionally walks any log
 
 ## The prompt
 
-### Step 0 -- Activate orchestrator role (self-contained)
+### Step 0 -- Freestyle structural placement (no role, self-contained)
 
-Write `orchestrator` to `.claude/persona` (or per-hostname marker via the harness resolver). Suppress the session-init banner; this prompt is the session initialiser.
+This prompt is freestyle (per CLAUDE.md): pre-authored mechanical placement. Do NOT adopt a role and do NOT write a persona marker -- leave the marker untouched. Suppress the session-init banner; this prompt is the session initialiser.
 
 ### Step 1 -- Verify openspec/ exists
 

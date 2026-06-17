@@ -161,7 +161,7 @@ fi
 # target-applied AEH roles whose subject is the generic AEH method, not a
 # target's domain (target-aeh-reviewer / target-aeh-engineer run in the target
 # but need no project-domain overlay).
-HARNESS_ROLES="orchestrator.md strategist.md harness-reviewer.md aeh-engineer.md target-aeh-reviewer.md target-aeh-engineer.md"
+HARNESS_ROLES="target-orchestrator.md strategist.md harness-reviewer.md aeh-engineer.md target-aeh-reviewer.md target-aeh-engineer.md"
 
 echo "=== Base Templates ($BASE_DIR) ==="
 echo ""

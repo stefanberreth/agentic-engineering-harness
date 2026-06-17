@@ -2,12 +2,12 @@
 
 **Target:** <slug>
 **Directory:** /workspace/aeh (harness root)
-**Role:** orchestrator (harness-side)
+**Role:** target-orchestrator (harness-side)
 **Phase:** retrofit (one-shot)
 
 ## Context for operator
 
-The harness consolidated the orchestrator state model from "eleven canonical filenames" down to eight canonical entries organised by function (durable identity / live dashboard / append-only history / phase artifacts). Three satellite files were folded into existing files:
+The harness consolidated the target-orchestrator state model from "eleven canonical filenames" down to eight canonical entries organised by function (durable identity / live dashboard / append-only history / phase artifacts). Three satellite files were folded into existing files:
 
 - `decisions.md` -- dated decisions -> `journal.md` entries tagged `[DECISION]`.
 - `review-history.md` -- longitudinal reviewer findings -> `journal.md` entries tagged `[REVIEW]` (rolling counts stay in the dashboard "Review Tracking" section).
@@ -18,9 +18,9 @@ A target onboarded before this change still carries these satellite files. They 
 
 ## The prompt
 
-### Step 0 -- Activate orchestrator role (self-contained)
+### Step 0 -- Activate target-orchestrator role (self-contained)
 
-Write `orchestrator` to the per-hostname persona marker via `bin/resolve-persona-marker.sh`. Suppress the session-init banner and role-picker; THIS prompt is the session initialiser.
+Write `target-orchestrator` to the per-hostname persona marker via `bin/resolve-persona-marker.sh`. Suppress the session-init banner and role-picker; THIS prompt is the session initialiser.
 
 ### Step 1 -- Inventory
 

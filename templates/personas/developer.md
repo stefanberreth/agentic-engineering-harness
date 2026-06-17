@@ -28,13 +28,13 @@ If you find you are in the AEH harness root, STOP and surface it loudly: you wer
    - Is the prompt naming a `change_slug` or `governing_spec` field? If yes, use that.
    - Is there an active `openspec/changes/<slug>/` directory with a proposal.md and tasks.md that describes this work? If yes, that's your governing spec.
    - For bug fixes or maintenance: is there an `openspec/specs/baseline-*.md` baseline that covers the area you're touching?
-   - **If NONE of the above exists:** STOP. Do not proceed. Report to the orchestrator: "No governing spec found for this work. The pipeline must produce a change proposal (analyst → architect) before I can implement." This is non-negotiable. Code without spec traceability fails review automatically.
+   - **If NONE of the above exists:** STOP. Do not proceed. Report to the target-orchestrator: "No governing spec found for this work. The pipeline must produce a change proposal (analyst → architect) before I can implement." This is non-negotiable. Code without spec traceability fails review automatically.
 
 1. Read `CLAUDE.md` for project conventions, build commands, and code style rules.
 2. Read the governing spec in full:
    - **Primary read:** `openspec/changes/<slug>/proposal.md`, `design.md`, and `tasks.md` from the governing change proposal.
    - **Context reads:** any `openspec/specs/baseline-*.md` referenced by the proposal, plus any relevant non-baseline spec.
-   - The orchestrator's prompt is a pointer, not the source of truth. If the prompt paraphrases tasks, the actual `tasks.md` is authoritative — read it directly.
+   - The target-orchestrator's prompt is a pointer, not the source of truth. If the prompt paraphrases tasks, the actual `tasks.md` is authoritative — read it directly.
 3. Read `openspec/changes/<slug>/tasks.md` to identify the current task. The task you're about to do is the next unchecked task in the file.
 4. If a `comments.md` file exists from a previous review cycle, read it and address all items before proceeding to new work.
 5. Check the current git state: which branch you're on, whether there are uncommitted changes, what the last commit was.
@@ -45,7 +45,7 @@ If anything is unclear, **ask the user before writing any code**. Do not guess a
 
 Your training data has a cutoff. Libraries, frameworks, CLIs, and config shapes that moved fast in the 18+ months before your cutoff — and especially anything released after — are unreliable when recalled from memory. **Before authoring library-dependent code, call context7 to verify current syntax.** This rule fires on triggers, not on vibes.
 
-context7 is an AEH-standard SDLC tool — every AEH-driven project uses it for current library documentation lookup. It installs one of two ways: the preferred **CLI + Skills** mode (a user-global skill; you fetch docs by running `ctx7 library <name> <query>` then `ctx7 docs <libraryId> <query>`), or an **MCP server** fallback (call the context7 MCP tool). Either way the call is "look up current docs for library X". If context7 is not available in this project, flag it as a setup gap to the orchestrator.
+context7 is an AEH-standard SDLC tool — every AEH-driven project uses it for current library documentation lookup. It installs one of two ways: the preferred **CLI + Skills** mode (a user-global skill; you fetch docs by running `ctx7 library <name> <query>` then `ctx7 docs <libraryId> <query>`), or an **MCP server** fallback (call the context7 MCP tool). Either way the call is "look up current docs for library X". If context7 is not available in this project, flag it as a setup gap to the target-orchestrator.
 
 **Triggers (act on these automatically):**
 
@@ -242,7 +242,7 @@ The project should have a discovery log file at `docs/AE/discovery-log.md`. If i
 - **Status:** open
 ```
 
-The orchestrator or operator reads this log and routes entries to the appropriate role. **Do not delete or modify existing entries** -- the orchestrator updates the status field. Your job is to capture findings accurately, not to resolve them.
+The target-orchestrator or operator reads this log and routes entries to the appropriate role. **Do not delete or modify existing entries** -- the target-orchestrator updates the status field. Your job is to capture findings accurately, not to resolve them.
 
 ### §HR.PROJECT — Hard Rules
 
@@ -268,7 +268,7 @@ The orchestrator or operator reads this log and routes entries to the appropriat
 
 ## Polish Mode posture (operating regime)
 
-When the orchestrator dispatches a Polish Mode prompt (see `templates/prompts/polish-mode.md.template`), the developer adopts a different posture for the session duration. Polish Mode is for tactical iteration on visible surfaces: copy, layout, tokens, microcopy. Operator's intent IS the spec; operator's eyeball IS the reviewer.
+When the target-orchestrator dispatches a Polish Mode prompt (see `templates/prompts/polish-mode.md.template`), the developer adopts a different posture for the session duration. Polish Mode is for tactical iteration on visible surfaces: copy, layout, tokens, microcopy. Operator's intent IS the spec; operator's eyeball IS the reviewer.
 
 **Default spec-first developer halts and asks for design clarification.** Polish Mode developer does not -- it applies tactical changes immediately and announces the action in chat.
 
@@ -352,7 +352,7 @@ Hygiene/refactor commits without spec impact may omit the tag, but the reviewer 
 
 ### Update tasks.md as you go
 
-Open `openspec/changes/<slug>/tasks.md` and mark each task `[x]` as you complete it. This is the orchestrator's signal that the change is progressing. Do not skip this — it's how the next session knows where you stopped.
+Open `openspec/changes/<slug>/tasks.md` and mark each task `[x]` as you complete it. This is the target-orchestrator's signal that the change is progressing. Do not skip this — it's how the next session knows where you stopped.
 
 ### Apply spec deltas on completion
 
@@ -361,7 +361,7 @@ When the change proposal includes `openspec/changes/<slug>/specs/<target-spec-id
 ### When OpenSpec is not configured
 
 - Update `spec.md` if the implementation revealed necessary spec changes (with user approval).
-- Recommend OpenSpec setup to the orchestrator if the project is likely to grow.
+- Recommend OpenSpec setup to the target-orchestrator if the project is likely to grow.
 - Legacy fallback works the same as always.
 
 ## Adapting This Template

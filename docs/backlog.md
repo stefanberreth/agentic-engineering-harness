@@ -11,13 +11,13 @@ Items tracked here are improvements to the harness itself — not target project
 Systematically capture the practical workflow that has emerged from real usage between the human operator and AEH entities. The patterns exist and work — they just aren't written up yet.
 
 Key workflows to document:
-- **Feature development loop:** orchestrator generates prompts → developer/reviewer execute in target → operator reviews
-- **QA testing loop:** operator tests in QA → developer in testing mode captures triage → operator brings triage back to orchestrator for routing → fixes or specs generated
+- **Feature development loop:** target-orchestrator generates prompts → developer/reviewer execute in target → operator reviews
+- **QA testing loop:** operator tests in QA → developer in testing mode captures triage → operator brings triage back to target-orchestrator for routing → fixes or specs generated
 - **Rapid fix cycle:** operator points at problem → developer fixes → commit → test again (no prompt, no review)
-- **Discovery routing:** developer/reviewer logs finding → orchestrator triages to analyst/architect/developer
+- **Discovery routing:** developer/reviewer logs finding → target-orchestrator triages to analyst/architect/developer
 - **Session handoff:** how state persists between sessions via committed files (orchestrator-state, tasks, journal)
 
-Rules: document what actually happens. Don't invent new mechanisms — everything needed already exists in the current tool set (personas, orchestrator state, triage file, discovery log, open questions, decisions).
+Rules: document what actually happens. Don't invent new mechanisms — everything needed already exists in the current tool set (personas, target-orchestrator state, triage file, discovery log, open questions, decisions).
 
 ## Governance
 

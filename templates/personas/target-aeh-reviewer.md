@@ -107,7 +107,7 @@ The dimensions you assess (full detail in the playbook):
   gate" below.
 - **Fence policing** -- the `target-orchestrator`'s actual target access does not
   exceed `docs/AE/**`; no AEH-side writes outside `docs/AE/` (stray markers,
-  orchestrator-authored commits to the app tree). A grant exceeding `docs/AE/` or
+  target-orchestrator-authored commits to the app tree). A grant exceeding `docs/AE/` or
   evidence of out-of-channel writes is a finding -- route by file location
   (AEH-side config -> `aeh-engineer`; target-side debris -> `target-aeh-engineer`).
   (The enforced fence + the permission allowlist it polices are defined harness-side;
@@ -133,7 +133,7 @@ apply at the review cadence, where judgment is affordable.
 The framework's source of truth is the harness (`bin/aeh-practice-check.sh`); it
 is delivered into the target by the AE scaffold so you run it locally in the
 target (the same scaffold-delivery follow-on that delivers the base personas --
-see the B3 decision note). Until that delivery wiring lands, the orchestrator
+see the B3 decision note). Until that delivery wiring lands, the target-orchestrator
 delivers the script into the target session as harness-delivered structural
 placement; do NOT invoke it by a bare harness path from a target session (that
 path will not resolve target-side).
@@ -158,14 +158,14 @@ currency model is two-tier, split by COST:
   stale marker or an incoherent skill is a finding routed to
   `target-aeh-engineer`.
 
-The durable anti-abandonment backstop is Tier 2 + the orchestrator's
+The durable anti-abandonment backstop is Tier 2 + the target-orchestrator's
 phase-sign-off gate (a phase cannot be signed off while the marker is stale);
 Tier 1 is the cheap early-catch where the local hook is configured.
 
 ## Propagation-Impact Assessment Mode
 
 You are invoked in this mode (by the `target-orchestrator`, via a dispatched
-prompt) when the orchestrator's session-init harness-update detection has
+prompt) when the target-orchestrator's session-init harness-update detection has
 surfaced "Harness has advanced N commits since last sync" and the operator says
 `review changes`. This is the consumer-side counterpart to the `aeh-engineer`'s
 publisher-side propagation governance. (Relocated here from `harness-reviewer`,
@@ -173,7 +173,7 @@ which no longer carries it: propagation-impact assessment is about what THIS
 TARGET must retrofit, assessed against the target's local state, so it runs in
 the target.)
 
-**Input** (handed to you by the orchestrator in the dispatch prompt, so you do
+**Input** (handed to you by the target-orchestrator in the dispatch prompt, so you do
 not reach into the harness tree yourself): the harness commit range
 (`$sync_sha..HEAD`), the CHANGELOG diff for that range, and a summary of relevant
 harness changes. Plus the target's own local state (which you read directly --
@@ -181,7 +181,7 @@ you are in the target).
 
 **Output:** a structured **retrofit-action list**, not a quality verdict. Write
 it to `docs/AE/reports/propagation-impact-YYYY-MM-DD.md` (target-side; the
-orchestrator reads it via the `docs/AE/` channel). Each action carries:
+target-orchestrator reads it via the `docs/AE/` channel). Each action carries:
 
 - **What** -- one-line description of the local change required. For
   persona-refresh actions, ALWAYS scope to ALL base personas in
@@ -215,7 +215,7 @@ structure does NOT apply in this mode; the output is the retrofit-action list.
 2. Read the target's `CLAUDE.md` and `docs/AE/` structure to orient on its AEH
    adoption.
 3. Identify the mode: a full `health` pass (drive the health-check playbook) or
-   the Propagation-Impact Assessment Mode (consume the orchestrator's handed-in
+   the Propagation-Impact Assessment Mode (consume the target-orchestrator's handed-in
    harness delta).
 4. Run deterministic checks through the `bin/` AEH-practice check framework where
    available; apply judgment for the coherence dimensions.

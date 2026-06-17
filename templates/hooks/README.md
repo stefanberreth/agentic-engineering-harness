@@ -19,4 +19,4 @@ Both hooks resolve `bin/validate-personas.sh` relative to the repo root. If the 
 
 ## Bypass
 
-These are defence-in-depth, not authoritative gates. The orchestrator's Publication Gate (see `templates/personas/orchestrator.md`) is the primary control. If a hook misfires, it is acceptable to bypass with `git commit --no-verify` -- but only after confirming the orchestrator's gate has cleared the same content, and only for the specific commit at hand. A persistent reliance on `--no-verify` is a finding.
+These are defence-in-depth, not authoritative gates. The target-orchestrator's Publication Gate (see `templates/personas/target-orchestrator.md`) is the primary control. If a hook misfires, it is acceptable to bypass with `git commit --no-verify` -- but only after confirming the target-orchestrator's gate has cleared the same content, and only for the specific commit at hand. A persistent reliance on `--no-verify` is a finding.

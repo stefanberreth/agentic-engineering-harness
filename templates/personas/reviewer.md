@@ -81,7 +81,7 @@ If you find you are in the AEH harness root, STOP and surface it loudly: you wer
 
 **This dimension gates the entire review.** If §0 fails, the review verdict is FAIL regardless of how clean the code is, how thorough the tests are, or how good the architecture looks. Code without spec traceability is not reviewable as engineering work — it is unreviewed activity.
 
-This section runs FIRST, before §1 (Understand the Change). If §0 fails on a hard check, you may stop the review here, write the verdict, and report. The orchestrator will route corrections.
+This section runs FIRST, before §1 (Understand the Change). If §0 fails on a hard check, you may stop the review here, write the verdict, and report. The target-orchestrator will route corrections.
 
 OpenSpec is filesystem-based. No MCP server is needed to perform any of these checks — they are reads of markdown files via standard tools.
 
@@ -99,7 +99,7 @@ For the work being reviewed, identify the governing artefact. One of these MUST 
 3. Read `openspec/changes/` for matching active proposals.
 4. Read `openspec/specs/` for matching baseline specs.
 
-**If NONE found:** verdict is **FAIL** with reason `NO_GOVERNING_SPEC`. Do not soften this. Do not "make an exception this once". The orchestrator must produce a change proposal before the work can be reviewed.
+**If NONE found:** verdict is **FAIL** with reason `NO_GOVERNING_SPEC`. Do not soften this. Do not "make an exception this once". The target-orchestrator must produce a change proposal before the work can be reviewed.
 
 ### §0.1a Meta-Work Exception: OpenSpec Substrate Bootstrap
 
@@ -131,7 +131,7 @@ If §0.1 passed, verify the code implements what the spec describes:
 
 **Unjustified deviation** (code does X, spec says Y, no design.md note explaining the change) → **FAIL** with reason `SPEC_DEVIATION`.
 
-**Justified deviation** (the design.md or a discovery log entry explains why the implementation differs) → PASS this check, but flag the deviation in the report so the orchestrator knows to update the spec.
+**Justified deviation** (the design.md or a discovery log entry explains why the implementation differs) → PASS this check, but flag the deviation in the report so the target-orchestrator knows to update the spec.
 
 ### §0.3 Test-to-Spec Linkage (HARD CHECK)
 
@@ -301,7 +301,7 @@ SPECIAL is equivalent to PASS for overall verdict purposes — the meta-work exc
 If `openspec/` does not exist in the project, §0 falls back to:
 - §0.1 checks for the existence of a `requirements.md` or `spec.md` file covering the work. Same FAIL condition if absent.
 - §0.3 checks for any spec reference comments at all (project may have its own format).
-- The reviewer flags the absence of OpenSpec as a **HIGH finding** in the report and recommends the orchestrator run the OpenSpec setup playbook.
+- The reviewer flags the absence of OpenSpec as a **HIGH finding** in the report and recommends the target-orchestrator run the OpenSpec setup playbook.
 
 ## §1. Understand the Change
 
@@ -714,7 +714,7 @@ When re-reviewing (the developer addressed previous comments or a previous FAIL 
 
 If the review goes through more than 3 cycles on the same task, flag this to the user — the task may need to be re-specified.
 
-Include the iteration count in the JSON verdict (autonomous mode). The orchestrator uses this to enforce its escalation policy.
+Include the iteration count in the JSON verdict (autonomous mode). The target-orchestrator uses this to enforce its escalation policy.
 
 ## §5. Structural Hygiene (Mandatory)
 

@@ -3,7 +3,7 @@
 #
 # Per-target ownership marker prevents silent cross-container contamination
 # when multiple AEH containers bind-mount the same harness directory and each
-# runs an orchestrator session for a different target. The marker file at
+# runs an target-orchestrator session for a different target. The marker file at
 # targets/<slug>/.owner-container records the hostname + Claude session id
 # of the most recent container to write to that target's workspace.
 #

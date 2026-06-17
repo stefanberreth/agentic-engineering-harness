@@ -5,7 +5,7 @@
 
 # Local session state (not project config)
 # Legacy single-marker + per-hostname markers (used when running multiple
-# AEH orchestrator sessions in separate Docker containers that bind-mount
+# AEH target-orchestrator sessions in separate Docker containers that bind-mount
 # the same harness directory — each container gets its own persona.<hostname>).
 .claude/persona
 .claude/persona.*

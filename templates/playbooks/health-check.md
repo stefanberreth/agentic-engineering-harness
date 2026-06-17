@@ -100,8 +100,8 @@ Check whether reviewer cadence has been maintained since the last assessment:
    - `current_gap` — how many developer tasks since the last review?
    - `reviews_completed` / `reviews_with_corrections` — ratio of reviews to correction rounds
 2. If `current_gap >= 5` (Regime 1) or a phase was signed off without a reviewer pass: flag as **HIGH** — review debt has accumulated.
-3. If no Review Tracking section exists in `orchestrator-state.md`: flag as **MEDIUM** — the orchestrator state predates the cadence enforcement upgrade. Add the section.
-4. If no `orchestrator-state.md` exists: this target has not been managed by the orchestrator. Not a finding — just note it.
+3. If no Review Tracking section exists in `orchestrator-state.md`: flag as **MEDIUM** — the target-orchestrator state predates the cadence enforcement upgrade. Add the section.
+4. If no `orchestrator-state.md` exists: this target has not been managed by the target-orchestrator. Not a finding — just note it.
 
 **Review cadence health checks:**
 
@@ -245,12 +245,12 @@ Report findings as role-activation items in the delta report (Phase 4).
 
 ### 3m. Prompt Delivery Health
 
-Verify that the orchestrator's prompt-handoff path actually works for this target — the target Claude session must be able to read every prompt the orchestrator hands off.
+Verify that the target-orchestrator's prompt-handoff path actually works for this target — the target Claude session must be able to read every prompt the target-orchestrator hands off.
 
 1. **Policy is `direct` (default):** Read `targets/<slug>/profile.md`. Expected: `Prompt delivery policy: direct`. Flag if:
    - Policy is `manual` AND `journal.md` has no `[DECISION]` entry justifying the opt-out → looks like a residual from when manual was an unguided option; recommend operator confirm the choice is deliberate (and accept the `cp`-before-handoff overhead) or switch to `direct`.
    - Policy is absent → onboarding gap; default-direct should be set.
-2. **Mirror integrity:** For each prompt file in `targets/<slug>/prompts/`, check whether a corresponding file exists at `<target-path>/docs/AE/prompts/` with matching content. Flag any prompt that exists harness-side but is missing or stale target-side. This is the silent-mirror-failure check that catches the failure mode the operator hit during a 2026-05-30 brownfield onboarding: the orchestrator wrote source-of-truth but did not mirror, then handed off a path the target could not read.
+2. **Mirror integrity:** For each prompt file in `targets/<slug>/prompts/`, check whether a corresponding file exists at `<target-path>/docs/AE/prompts/` with matching content. Flag any prompt that exists harness-side but is missing or stale target-side. This is the silent-mirror-failure check that catches the failure mode the operator hit during a 2026-05-30 brownfield onboarding: the target-orchestrator wrote source-of-truth but did not mirror, then handed off a path the target could not read.
    - Use a basic checksum / size comparison to flag stale mirrors (file exists target-side but content differs from the harness-side source of truth).
 3. **No broken-on-arrival handoffs in recent journal entries:** grep `targets/<slug>/journal.md` and `targets/<slug>/orchestrator-state.md` for the anti-pattern `Read and execute targets/<slug>/prompts/` (or any absolute path beginning with `/workspace/aeh/` or `targets/`). Such entries are evidence of broken handoffs the operator likely had to correct manually. Flag with the journal-line cites so the operator can decide whether to back-fill mirrors or just note the friction.
 
@@ -262,11 +262,11 @@ Verify that the orchestrator's prompt-handoff path actually works for this targe
 | Every harness-side prompt has a matching target-side mirror | pass/FAIL | [N] missing / [N] stale |
 | No `Read and execute targets/...` or `/workspace/aeh/...` lines in recent journal/state | pass/FAIL | [N] anti-pattern occurrences |
 
-Report findings as delivery-health items in the delta report (Phase 4). Missing-mirror findings are HIGH severity (broken handoffs the next time the orchestrator dispatches against this slug); broken-on-arrival anti-pattern occurrences are HIGH (orchestrator drift, will recur without intervention); manual-policy-without-justification is MEDIUM (working as configured but likely accidental).
+Report findings as delivery-health items in the delta report (Phase 4). Missing-mirror findings are HIGH severity (broken handoffs the next time the target-orchestrator dispatches against this slug); broken-on-arrival anti-pattern occurrences are HIGH (target-orchestrator drift, will recur without intervention); manual-policy-without-justification is MEDIUM (working as configured but likely accidental).
 
 ### 3n. Harness Sync Marker
 
-Verify the target's `profile.md` carries a `harness-sync-sha:` field so the orchestrator's session-init harness-update detection step has something to compare against.
+Verify the target's `profile.md` carries a `harness-sync-sha:` field so the target-orchestrator's session-init harness-update detection step has something to compare against.
 
 1. **Field presence:** `grep -c "^harness-sync-sha:" targets/<slug>/profile.md`. Must be >= 1. Missing field = LOW finding ("seed via the retrofit prompt at templates/prompts/seed-harness-sync-marker.md.template").
 2. **Field non-empty:** the SHA value must be a valid 40-char hex string. Empty or malformed = LOW finding.
@@ -288,12 +288,12 @@ Findings feed Phase 4 delta report. Missing marker is LOW (mechanism degrades gr
 
 Verify the target's `.owner-container` marker is present and matches the current container (or surface for operator review if it doesn't).
 
-1. **Marker presence:** `test -f targets/<slug>/.owner-container`. Missing = INFO ("marker not yet seeded; will seed on next orchestrator session-init via the new step-6 check").
+1. **Marker presence:** `test -f targets/<slug>/.owner-container`. Missing = INFO ("marker not yet seeded; will seed on next target-orchestrator session-init via the new step-6 check").
 2. **Owner hostname matches current container:** `bin/resolve-target-owner.sh --check <slug>` (exit 0 = match, exit 1 = peer container, exit 2 = absent).
    - Match: pass.
    - Peer container: MEDIUM ("last write was from peer container; verify intended ownership before continuing work in this container").
    - Absent: see check 1.
-3. **Recency:** if `last-touched=` field is older than 30 days, surface as informational ("ownership marker is stale; consider running orchestrator session-init to refresh").
+3. **Recency:** if `last-touched=` field is older than 30 days, surface as informational ("ownership marker is stale; consider running target-orchestrator session-init to refresh").
 
 **Report format:**
 
@@ -303,7 +303,7 @@ Verify the target's `.owner-container` marker is present and matches the current
 | Owner hostname matches current container | pass/FAIL | [hostname mismatch details if fail] |
 | Marker recency reasonable (< 30 days) | pass/INFO | [age if stale] |
 
-Findings feed Phase 4 delta report. Missing-marker is INFO (mechanism handles seeding automatically). Peer-container mismatch is MEDIUM (silent cross-container write is the exact risk the mechanism addresses; operator should confirm intended ownership). See `templates/personas/orchestrator.md` § "Cross-Container Caveats" for full mechanism.
+Findings feed Phase 4 delta report. Missing-marker is INFO (mechanism handles seeding automatically). Peer-container mismatch is MEDIUM (silent cross-container write is the exact risk the mechanism addresses; operator should confirm intended ownership). See `templates/personas/target-orchestrator.md` § "Cross-Container Caveats" for full mechanism.
 
 ---
 
@@ -459,7 +459,7 @@ _Status: healthy / degraded / broken / orphaned. See Phase 3i for check details.
 | Every harness-side prompt has a matching target-side mirror | pass/FAIL | [N] missing / [N] stale |
 | No `Read and execute targets/...` or `/workspace/aeh/...` lines in recent journal/state | pass/FAIL | [N] anti-pattern occurrences |
 
-_Missing-mirror findings are HIGH (broken handoffs the next time the orchestrator dispatches against this slug); anti-pattern occurrences in journal/state are HIGH (orchestrator drift, will recur without intervention); manual-policy-without-justification is MEDIUM (working as configured but likely accidental)._
+_Missing-mirror findings are HIGH (broken handoffs the next time the target-orchestrator dispatches against this slug); anti-pattern occurrences in journal/state are HIGH (target-orchestrator drift, will recur without intervention); manual-policy-without-justification is MEDIUM (working as configured but likely accidental)._
 
 **Operator action required:** If any server shows `broken` or `degraded`, run the functional smoke test from `templates/tools/tool-detection-patterns.md` in the target project's Claude Code session. A passing smoke test overrides `degraded` to `healthy`; a failing smoke test confirms `broken`.
 

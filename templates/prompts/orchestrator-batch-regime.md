@@ -1,6 +1,6 @@
-# Orchestrator Directive: Batch Execution + Review Regime
+# Target Orchestrator Directive: Batch Execution + Review Regime
 
-Paste this into an AEH orchestrator session to switch it to batch execution mode.
+Paste this into an AEH target-orchestrator session to switch it to batch execution mode.
 
 ---
 

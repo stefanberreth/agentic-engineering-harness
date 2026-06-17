@@ -25,7 +25,7 @@ It allows you to do enterprise grade software delivery powered by AI, where writ
 If this sounds not off-putting to you but actually like what you really want and need, read on. AEH might be for you.
 
 <div align="center">
-<img src="https://gitlab.com/stefanberreth/agentic-engineering-harness/-/raw/main/docs/Images/Screenshot%202026-05-04%20at%2015.04.37.png" alt="AEH role architecture: an operator works through the orchestrator, which routes work to analyst, architect, developer, and reviewer; the team produces specifications and code that compose the final product." width="780">
+<img src="https://gitlab.com/stefanberreth/agentic-engineering-harness/-/raw/main/docs/Images/Screenshot%202026-05-04%20at%2015.04.37.png" alt="AEH role architecture: an operator works through the target-orchestrator, which routes work to analyst, architect, developer, and reviewer; the team produces specifications and code that compose the final product." width="780">
 </div>
 
 ## Who is this for?
@@ -86,17 +86,17 @@ The coordinating roles:
 
 | Role | Where it runs | Job |
 |---|---|---|
-| **Orchestrator** | In the harness session | Team manager. Picks who runs next, holds the reviewer cadence, refuses to dispatch out-of-spec work, owns chain composition, tracks state across sessions. |
+| **Target Orchestrator** | In the harness session | Team manager. Picks who runs next, holds the reviewer cadence, refuses to dispatch out-of-spec work, owns chain composition, tracks state across sessions. |
 | **Strategist** | In any LLM chat (browser is fine; not necessarily a coding-agent runtime) | Optional external strategic advisor; runs higher-level conversations on priorities and direction without needing project-code access. |
 | **Harness Reviewer** | In the harness session | Detects (harness): self-review of AEH itself across review dimensions (template consistency, isolation boundary, leak detection); separate from project-level reviewing. Produces verdicts; does not remediate. |
 | **AEH Engineer** | In the harness session | Remediates (harness): the harness's own read-write engineering owner. Triages captured field-notes into change proposals, runs consolidation rounds, guards the publication boundary, commits/pushes the public repo, maintains `bin/` tooling. Acts on the Harness Reviewer's findings. |
 | **Target AEH Reviewer** | In the target project session | Detects (target): read-only review of how well one onboarded target practises the AEH method -- role activation, convention conformance, the prompt->result audit trail, tool/spec health, and what the target must retrofit when the harness has advanced. Drives the health-check procedure. Produces routed findings; does not remediate. |
 | **Target AEH Engineer** | In the target project session | Remediates (target): read-write, in the target's own permission model. Applies pulled harness changes to the target's overlays and fixes the target-side AEH violations the Target AEH Reviewer routes to it. Fenced out of the harness tree. |
 
-The standard engineering loop is **Analyst -> Architect -> Developer -> Reviewer**, with the Archaeologist running upstream on existing codebases and the Strategist available externally when you want a higher-level conversation. Each prompt names its role and its governing spec. Each role's report carries a verdict -- **PASS / WARN / FAIL / BLOCK** -- with evidence, written to files. The Orchestrator reads the report, decides the next move (advance to the next role, generate a correction prompt, escalate to the operator), and writes the next prompt. Verdicts and reasoning are auditable after the fact because the reports and decisions are committed alongside the code they govern. Humans can review, other agents can review, future sessions can replay. Nothing important is in chat alone.
+The standard engineering loop is **Analyst -> Architect -> Developer -> Reviewer**, with the Archaeologist running upstream on existing codebases and the Strategist available externally when you want a higher-level conversation. Each prompt names its role and its governing spec. Each role's report carries a verdict -- **PASS / WARN / FAIL / BLOCK** -- with evidence, written to files. The Target Orchestrator reads the report, decides the next move (advance to the next role, generate a correction prompt, escalate to the operator), and writes the next prompt. Verdicts and reasoning are auditable after the fact because the reports and decisions are committed alongside the code they govern. Humans can review, other agents can review, future sessions can replay. Nothing important is in chat alone.
 
 <div align="center">
-<img src="https://gitlab.com/stefanberreth/agentic-engineering-harness/-/raw/main/docs/Images/Screenshot%202026-05-04%20at%2015.04.52.png" alt="The prompt-execution loop: the orchestrator issues a mandate, the agent executes against the workspace (text, code, files), returns a report, and the orchestrator decides whether to correct and iterate or advance." width="720">
+<img src="https://gitlab.com/stefanberreth/agentic-engineering-harness/-/raw/main/docs/Images/Screenshot%202026-05-04%20at%2015.04.52.png" alt="The prompt-execution loop: the target-orchestrator issues a mandate, the agent executes against the workspace (text, code, files), returns a report, and the target-orchestrator decides whether to correct and iterate or advance." width="720">
 </div>
 
 Two sessions, two scopes. The harness session manages the pipeline (state, prompts, cadence, chain composition). Your project's own session executes the prompts and modifies the code. Most teams keep them separate for the audit trail and predictable permission boundaries; collapsing them works too where the audit trail is not a priority. The default keeps them separate.
@@ -106,8 +106,8 @@ Two sessions, two scopes. The harness session manages the pipeline (state, promp
 Three modes along a spectrum:
 
 - **Conversational.** You dialogue with any role mid-session for investigations, decisions, and document edits before anything commits. Useful for exploring a domain, debating a design choice, or refining a proposal interactively before dispatch.
-- **Operator-paced.** You read each generated prompt, paste it into the role's session, watch the result, then decide the next move. This is where review happens -- you can dialogue with the role on the prompt before pasting, edit the prompt file directly, or amend it after a partial run. The orchestrator drives the pipeline but the operator approves and shapes each step. Default for sensitive or first-of-its-kind work.
-- **Autonomous chained.** A wrapper invokes prompts back-to-back with halt conditions. You step away. The chain handles implementation, test runs, and end-to-end browser-based testing where the project requires it. On clean completion you get a morning-readable summary; on halt the wrapper writes a diagnostic the orchestrator picks up next session. Default for established patterns where the discipline is proven.
+- **Operator-paced.** You read each generated prompt, paste it into the role's session, watch the result, then decide the next move. This is where review happens -- you can dialogue with the role on the prompt before pasting, edit the prompt file directly, or amend it after a partial run. The target-orchestrator drives the pipeline but the operator approves and shapes each step. Default for sensitive or first-of-its-kind work.
+- **Autonomous chained.** A wrapper invokes prompts back-to-back with halt conditions. You step away. The chain handles implementation, test runs, and end-to-end browser-based testing where the project requires it. On clean completion you get a morning-readable summary; on halt the wrapper writes a diagnostic the target-orchestrator picks up next session. Default for established patterns where the discipline is proven.
 
 The choice is per-change, per-phase, per-project. Mix freely.
 
@@ -119,7 +119,7 @@ Why it exists: the spec-first ceremony (analyst -> architect -> developer -> rev
 
 Why it stays safe: the developer holds a strict scope boundary (API / schema / data-model / new tests' assertions / new deps are OUT; substantive requests halt the mode automatically). Every operator observation is categorised as IMMEDIATE-FIX (apply now) or DEFERRED-TRIAGE (capture for later spec-first cycle). The exit ceremony produces a session log + an openspec record (amendment to the active CP or a new polish change-slug) so future readers see what changed and why. A lightweight reviewer self-check (`templates/governance/review-criteria.md` § Polish-pass review) gates the commit before push.
 
-Full mechanism: `templates/personas/orchestrator.md` § Polish Mode + `templates/personas/developer.md` § Polish Mode posture + `templates/prompts/polish-mode.md.template`.
+Full mechanism: `templates/personas/target-orchestrator.md` § Polish Mode + `templates/personas/developer.md` § Polish Mode posture + `templates/prompts/polish-mode.md.template`.
 
 ## Onboarding modes
 
@@ -178,7 +178,7 @@ Then say `onboard /path/to/your/project`. The harness reads your project, runs t
 - `CLAUDE.md` -- Claude-Code-specific instructions for your project's session
 - `AGENTS.md` -- cross-tool agent config (read by other coding-agent runtimes too)
 - `docs/AE/personas/<role>.md` -- your project-specific overlays for each role; encode conventions, hard boundaries, domain knowledge
-- `docs/AE/prompts/` -- the handover point: AEH writes prompts directly into your project tree (this is the default; the harness orchestrator never asks you to copy prompts in by hand) and your project's session reads and executes them via a single-line paste: `Read and execute docs/AE/prompts/NNN-title.md`
+- `docs/AE/prompts/` -- the handover point: AEH writes prompts directly into your project tree (this is the default; the harness target-orchestrator never asks you to copy prompts in by hand) and your project's session reads and executes them via a single-line paste: `Read and execute docs/AE/prompts/NNN-title.md`
 - `docs/AE/reports/` -- target-side reports (verdicts, halt reports, retrospectives)
 - `docs/AE/reviews/` -- reviewer outputs
 - `openspec/project.md` -- project conventions (slug naming, status vocabulary)

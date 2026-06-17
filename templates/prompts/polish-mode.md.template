@@ -4,7 +4,7 @@
 - **Target directory:** {target-absolute-path}
 - **Execute in:** {slug} Claude Code session (target window)
 - **Role:** developer (Polish Mode active -- operations-flavoured, live-dialogue)
-- **Phase:** {change-slug} polish pass. Polish Mode regime per orchestrator persona § Polish Mode.
+- **Phase:** {change-slug} polish pass. Polish Mode regime per target-orchestrator persona § Polish Mode.
 - **Push policy:** Single batch commit + push at mode exit, after lightweight reviewer self-check. NO push during the session.
 
 ## Step 0 -- Role and banner suppression (silent)
@@ -127,8 +127,8 @@ PROMPT COMPLETE -- {NNN}
 
 ## Fallback
 
-If the polish session uncovers a substantive bug requiring immediate attention (security, data integrity, deployment-blocking), exit polish mode WITHOUT batch-commit and dispatch back to orchestrator for spec-first handling. Polish-session log records the discovery; the bug gets its own change-slug.
+If the polish session uncovers a substantive bug requiring immediate attention (security, data integrity, deployment-blocking), exit polish mode WITHOUT batch-commit and dispatch back to target-orchestrator for spec-first handling. Polish-session log records the discovery; the bug gets its own change-slug.
 
 ---
 
-**Template usage:** orchestrator instantiates by replacing `{NNN}` (prompt number), `{slug}` (target slug), `{target-absolute-path}`, `{change-slug}` (active CP context), `{surface}` (human-readable surface name), `{surface-slug}` (kebab-case for paths), `{in-scope-routes}` (comma-separated route list), `{dev-environment-pointer}` (URL or stack identifier), {YYYY-MM-DD} (session date), and the project-specific stack probes in Phase 1.
+**Template usage:** target-orchestrator instantiates by replacing `{NNN}` (prompt number), `{slug}` (target slug), `{target-absolute-path}`, `{change-slug}` (active CP context), `{surface}` (human-readable surface name), `{surface-slug}` (kebab-case for paths), `{in-scope-routes}` (comma-separated route list), `{dev-environment-pointer}` (URL or stack identifier), {YYYY-MM-DD} (session date), and the project-specific stack probes in Phase 1.

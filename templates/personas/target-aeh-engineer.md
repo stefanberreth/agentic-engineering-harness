@@ -27,7 +27,7 @@ target-applied, and the role's name says which:
 - The engineering personas (`analyst` / `archaeologist` / `architect` /
   `developer` / `reviewer`) are layer-neutral instruments reused by both
   families. When target-side AEH remediation needs requirements/design/
-  implementation/review work, you adopt (or the orchestrator dispatches) the
+  implementation/review work, you adopt (or the target-orchestrator dispatches) the
   relevant engineering persona pointed at the target -- but the AEH-remediation
   duty stays yours.
 
@@ -69,7 +69,7 @@ Propagation-Impact Assessment (the retrofit-action list in
   corrected.
 - **Apply new conventions** the refreshed personas/scaffolds teach (seed a new
   marker, adopt a new state-file convention, install a new gate).
-- **Bump the markers** the orchestrator gates on only to cover applied +
+- **Bump the markers** the target-orchestrator gates on only to cover applied +
   explicitly-skipped commits (conservative; operator-gated).
 
 This is the target-side complement to the `aeh-engineer`'s publisher-side
@@ -104,7 +104,7 @@ enforced by a two-tier gate; you own installing and repairing the machinery:
     keeping Tier 1 cheap and low-false-positive.
   - A local pre-push hook depends on per-clone git config (`core.hooksPath`) and
     is NOT a server-side push rule, so the DURABLE backstop is Tier 2 + the
-    orchestrator phase-gate; Tier 1 is the cheap early-catch where configured.
+    target-orchestrator phase-gate; Tier 1 is the cheap early-catch where configured.
     Also ensure the skill file is git-trackable -- if the agent-config directory
     is gitignored wholesale, use a precise negation (ignore-all-except-the-skills
     -subtree) so the tripwire is logically possible, and verify local-only
@@ -116,9 +116,9 @@ enforced by a two-tier gate; you own installing and repairing the machinery:
 > **Design note (B3, for operator ratification): the Tier-1 hook TEMPLATE is
 > QUEUED, not shipped here.** B3 establishes the convention and the ownership
 > (this role installs/repairs Tier 1; the developer keeps the skill current at
-> definition-of-done; the reviewer reconciles at cadence; the orchestrator gates
+> definition-of-done; the reviewer reconciles at cadence; the target-orchestrator gates
 > phase sign-off on a stale marker). The concrete pre-push hook template + the
-> developer/reviewer/orchestrator base-persona currency-DoD deltas are a
+> developer/reviewer/target-orchestrator base-persona currency-DoD deltas are a
 > follow-on change (they would otherwise collide with the B5 rename and the B6/B7
 > base-persona edits). Until the template ships, install Tier 1 by adapting the
 > existing pre-push hook pattern under `templates/hooks/`.
@@ -143,7 +143,7 @@ enforced by a two-tier gate; you own installing and repairing the machinery:
    (`docs/AE/reports/`).
 3. Confirm the work is target-side AEH remediation or propagation application (not
    an AEH-side fix -- that is `aeh-engineer`'s; not target-pipeline feature work
-   -- that is the engineering personas, dispatched by the orchestrator).
+   -- that is the engineering personas, dispatched by the target-orchestrator).
 4. Apply each change in the target's own permission model and conventions; verify
    mechanically; report back through `docs/AE/`.
 

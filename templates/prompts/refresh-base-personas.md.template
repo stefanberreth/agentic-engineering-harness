@@ -2,24 +2,26 @@
 
 **Target:** <slug>
 **Directory:** <target-absolute-path>
-**Role:** orchestrator (target-side)
+**Role:** freestyle (harness-delivered structural placement)
 **Phase:** retrofit (one-shot)
 
 ## Context for operator
 
-When the propagation flow surfaces that the harness has advanced and a refresh-snapshots retrofit action is approved, this prompt refreshes ALL six base personas (analyst, archaeologist, architect, developer, reviewer, orchestrator) in the target's `docs/AE/personas/_base/` directory from harness master. The refresh is `_base/`-directory-scoped, not persona-scoped, because:
+When the propagation flow surfaces that the harness has advanced and a refresh-snapshots retrofit action is approved, this prompt refreshes ALL five engineering base personas (analyst, archaeologist, architect, developer, reviewer) in the target's `docs/AE/personas/_base/` directory from harness master. The refresh is `_base/`-directory-scoped, not persona-scoped, because:
 
 - More than one persona may have updated in the unsynced range.
 - Pre-existing drift on personas not touched by the most recent update is silently corrected.
-- The cost of refreshing all six vs one is negligible (six file copies).
+- The cost of refreshing all five vs one is negligible (five file copies).
 
-The discipline is consistent with the broader propagation-signal philosophy: mechanism is a signal + action; operator approves; harness-reviewer scopes; refresh actions are not minimally-scoped because the cost saving isn't worth the staleness risk.
+The discipline is consistent with the broader propagation-signal philosophy: mechanism is a signal + action; operator approves; the `target-aeh-reviewer` scopes the Propagation-Impact; refresh actions are not minimally-scoped because the cost saving isn't worth the staleness risk.
+
+(Only the five engineering personas are snapshotted into a target's `_base/`: they are the roles that RUN in the target. The coordinator and the harness-side AEH roles run in the harness root, so they are not placed in the target tree.)
 
 ## The prompt
 
-### Step 0 -- Activate orchestrator role (self-contained)
+### Step 0 -- Freestyle structural placement (no role, self-contained)
 
-Write `orchestrator` to the per-hostname persona marker via `bin/resolve-persona-marker.sh`. Suppress the session-init banner; this prompt is the session initialiser.
+This prompt is freestyle (per CLAUDE.md): the content is pre-authored harness-side and you are only PLACING files into the target. Do NOT adopt a role and do NOT write a persona marker -- leave `.claude/persona` untouched. Suppress the session-init banner; this prompt is the session initialiser.
 
 ### Step 1 -- Confirm target's _base/ directory exists
 
@@ -29,9 +31,9 @@ test -d docs/AE/personas/_base || echo "_base directory missing"
 
 If missing, halt: "_base/ directory not present -- this target may have been onboarded before the layered-persona convention. Run onboarding's Phase 2 base-template-placement step first, then re-run this retrofit."
 
-### Step 2 -- Refresh all six personas
+### Step 2 -- Refresh all five personas
 
-For each of `analyst`, `archaeologist`, `architect`, `developer`, `reviewer`, `orchestrator`:
+For each of `analyst`, `archaeologist`, `architect`, `developer`, `reviewer`:
 
 1. Record current local file size + checksum (or "absent" if no local snapshot yet for that persona).
 2. Copy `/workspace/aeh/templates/personas/<persona>.md` to `docs/AE/personas/_base/<persona>.md`.
@@ -43,11 +45,11 @@ For each of `analyst`, `archaeologist`, `architect`, `developer`, `reviewer`, `o
 ```
 git add docs/AE/personas/_base/
 git commit -m "$(cat <<'EOF'
-docs/AE/personas/_base: refresh all six base persona snapshots from harness master
+docs/AE/personas/_base: refresh all five base persona snapshots from harness master
 
 Sync target base personas with harness templates/personas/*.md.
-All six personas (analyst, archaeologist, architect, developer, reviewer,
-orchestrator) refreshed to byte-identical with harness master.
+All five engineering personas (analyst, archaeologist, architect, developer,
+reviewer) refreshed to byte-identical with harness master.
 
 Triggered by: <propagation-pass / one-shot retrofit / etc>
 Harness master state: <SHA of harness HEAD at refresh time>
@@ -62,13 +64,12 @@ Do not push from this prompt; operator handles push separately if needed.
 ```
 PROMPT REPORT
 
-Base personas refreshed (all 6):
+Base personas refreshed (all 5):
   analyst:       <before-size> -> <after-size>  (checksum match: <yes/no>)
   archaeologist: <before-size> -> <after-size>  (checksum match: <yes/no>)
   architect:     <before-size> -> <after-size>  (checksum match: <yes/no>)
   developer:     <before-size> -> <after-size>  (checksum match: <yes/no>)
   reviewer:      <before-size> -> <after-size>  (checksum match: <yes/no>)
-  orchestrator:  <before-size> -> <after-size>  (checksum match: <yes/no>)
 
 Harness master state: <harness HEAD SHA>
 Commit: <commit SHA in target repo>
@@ -81,7 +82,7 @@ PROMPT COMPLETE -- refresh-base-personas
 
 ## Expected outcome
 
-All six base personas in `docs/AE/personas/_base/` are byte-identical with `/workspace/aeh/templates/personas/`. Subsequent role-bound prompts in this target session load the latest persona behaviour.
+All five engineering base personas in `docs/AE/personas/_base/` are byte-identical with `/workspace/aeh/templates/personas/`. Subsequent role-bound prompts in this target session load the latest persona behaviour.
 
 ## Fallback
 

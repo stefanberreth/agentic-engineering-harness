@@ -79,7 +79,7 @@ Options:
 
 Wait for the user to choose. Do not proceed with re-onboarding unless the user explicitly picks option 3.
 
-If the user picks option 1: read the target's `tasks.md` and the `## Open Questions` section of `orchestrator-state.md` (if the orchestrator has initialised it), summarise current state, and propose next steps. The playbook ends here.
+If the user picks option 1: read the target's `tasks.md` and the `## Open Questions` section of `orchestrator-state.md` (if the target-orchestrator has initialised it), summarise current state, and propose next steps. The playbook ends here.
 
 If the user picks option 2: switch to the health-check playbook (`templates/playbooks/health-check.md`). The onboarding playbook ends here.
 
@@ -110,7 +110,7 @@ Proceed to Phase 2.
 [2/7] Reconnaissance
 ```
 
-> **This phase IS the onboarding bootstrap exception to the enforced `docs/AE/`-only fence** (CLAUDE.md § "The enforced `docs/AE/`-only fence"). First-contact reconnaissance of an un-onboarded target is the one time an AEH-side session reads the target tree directly, because the target has no `docs/AE/` and no AE roles to dispatch into yet. It is NARROW, READ-ONLY, and one-directional: read to assess, never write the target outside `docs/AE/`. The exception ends the moment `docs/AE/` exists -- after onboarding, ongoing assessment is `target-aeh-reviewer`'s (run in the target) and the orchestrator operates through the `docs/AE/` channel only.
+> **This phase IS the onboarding bootstrap exception to the enforced `docs/AE/`-only fence** (CLAUDE.md § "The enforced `docs/AE/`-only fence"). First-contact reconnaissance of an un-onboarded target is the one time an AEH-side session reads the target tree directly, because the target has no `docs/AE/` and no AE roles to dispatch into yet. It is NARROW, READ-ONLY, and one-directional: read to assess, never write the target outside `docs/AE/`. The exception ends the moment `docs/AE/` exists -- after onboarding, ongoing assessment is `target-aeh-reviewer`'s (run in the target) and the target-orchestrator operates through the `docs/AE/` channel only.
 
 ### 2.0 Greenfield Detection (run first)
 
@@ -169,11 +169,11 @@ Then jump straight to a condensed flow:
    serena: TBD (codebase-dependent assessment in Phase 6g)
    ```
 
-   The `harness-sync-sha:` field records the harness commit SHA at the moment this target was onboarded; the orchestrator's session-init step compares it against current harness HEAD to detect upstream updates. See `templates/personas/orchestrator.md` § "Harness Update Propagation Signal".
+   The `harness-sync-sha:` field records the harness commit SHA at the moment this target was onboarded; the target-orchestrator's session-init step compares it against current harness HEAD to detect upstream updates. See `templates/personas/target-orchestrator.md` § "Harness Update Propagation Signal".
 
    Do NOT ask domain/stack/team questions -- those are explicitly out of scope for onboarding.
 
-   **Delivery policy: do NOT ask -- default to `direct`.** Direct delivery (harness writes prompts to both `targets/<slug>/prompts/` and `<target-path>/docs/AE/prompts/`) is the only mode under which the orchestrator's standard handoff one-liner (`Read and execute docs/AE/prompts/NNN-title.md`) actually works -- target-side Claude sessions are filesystem-scoped to the target project tree and cannot read harness-side paths. Set `policy: direct` in `profile.md` without asking. If the operator explicitly volunteers a preference for manual delivery, honour it AND surface the trade-off ("under manual you'll need to copy each prompt to the target tree before pasting the handoff -- direct is the default for that reason"); record the decision as a `[DECISION]` entry in `journal.md` with the reason.
+   **Delivery policy: do NOT ask -- default to `direct`.** Direct delivery (harness writes prompts to both `targets/<slug>/prompts/` and `<target-path>/docs/AE/prompts/`) is the only mode under which the target-orchestrator's standard handoff one-liner (`Read and execute docs/AE/prompts/NNN-title.md`) actually works -- target-side Claude sessions are filesystem-scoped to the target project tree and cannot read harness-side paths. Set `policy: direct` in `profile.md` without asking. If the operator explicitly volunteers a preference for manual delivery, honour it AND surface the trade-off ("under manual you'll need to copy each prompt to the target tree before pasting the handoff -- direct is the default for that reason"); record the decision as a `[DECISION]` entry in `journal.md` with the reason.
 
 7. **Skip Phase 4 (report).** There is nothing to report. Note in the journal that the target was onboarded as greenfield.
 8. **Phase 5 (plan): use the standard greenfield plan.** Identical for every greenfield target -- no per-project tailoring needed:
@@ -420,13 +420,13 @@ targets/<slug>/
 └── journal.md             (first [REVIEW] entry written from assessment findings)
 ```
 
-The live dashboard (`orchestrator-state.md`, carrying the `## Open Questions` section) is created by the orchestrator on first engagement, not here. Decisions and review findings are recorded as `[DECISION]` / `[REVIEW]` tagged entries in `journal.md`; open questions, once the orchestrator initialises, live on the dashboard. There are no separate `decisions.md` / `open-questions.md` / `review-history.md` / `inconsistencies.md` files.
+The live dashboard (`orchestrator-state.md`, carrying the `## Open Questions` section) is created by the target-orchestrator on first engagement, not here. Decisions and review findings are recorded as `[DECISION]` / `[REVIEW]` tagged entries in `journal.md`; open questions, once the target-orchestrator initialises, live on the dashboard. There are no separate `decisions.md` / `open-questions.md` / `review-history.md` / `inconsistencies.md` files.
 
 **profile.md** must include:
 - Project name and path
 - Tech stack summary
 - Prompt delivery policy (default `direct`; do NOT ask -- see CLAUDE.md § "Selective exception: Direct Prompt Delivery (default)" for the rationale and the rare opt-out conditions)
-- `harness-sync-sha:` -- the harness commit SHA at onboarding time (`git -C /workspace/aeh rev-parse HEAD`). Enables the orchestrator's session-init harness-update detection. See `templates/personas/orchestrator.md` § "Harness Update Propagation Signal".
+- `harness-sync-sha:` -- the harness commit SHA at onboarding time (`git -C /workspace/aeh rev-parse HEAD`). Enables the target-orchestrator's session-init harness-update detection. See `templates/personas/target-orchestrator.md` § "Harness Update Propagation Signal".
 - Key structural features noted during reconnaissance
 - Existing setup summary (if applicable)
 
@@ -563,7 +563,7 @@ A persona task that merges an existing role file should note the source:
 Record approvals and modifications as `[DECISION]` entries in `targets/<slug>/journal.md`.
 Write the final task list to `targets/<slug>/tasks.md`.
 
-**Note to operator:** The orchestrator enforces mandatory reviewer cadence (every 5 developer tasks or at phase boundaries — non-discretionary). This is built into the orchestrator template and does not need to be configured per-project. The plan should anticipate reviewer passes at regular intervals; they are not optional extras.
+**Note to operator:** The target-orchestrator enforces mandatory reviewer cadence (every 5 developer tasks or at phase boundaries — non-discretionary). This is built into the target-orchestrator template and does not need to be configured per-project. The plan should anticipate reviewer passes at regular intervals; they are not optional extras.
 
 ---
 
@@ -848,7 +848,7 @@ Serena (semantic code navigation via LSP):
 
 **If recommending:** Read `templates/tools/serena-setup.md`, generate the setup prompt with the correct language server config for this project's stack. Add to the prompt sequence.
 
-**If deferring:** Record in `profile.md` under `## Development Tools`: `serena: deferred (<rationale>)`. The orchestrator can re-assess when the project enters a heavy refactoring phase.
+**If deferring:** Record in `profile.md` under `## Development Tools`: `serena: deferred (<rationale>)`. The target-orchestrator can re-assess when the project enters a heavy refactoring phase.
 
 **If skipping:** Record in `profile.md` under `## Development Tools`: `serena: not recommended (<rationale>)`. The assessment and rationale are preserved so future sessions don't re-evaluate unnecessarily.
 
@@ -1033,12 +1033,12 @@ Only generate the auto-prompt if the user confirms with that exact phrase or equ
 **Option 4:**
 Save progress, update journal, end the playbook. The user can return at any time to continue.
 
-### 7e. Mention the Orchestrator (informational only)
+### 7e. Mention the Target Orchestrator (informational only)
 
 After presenting the options, add one line:
 
 ```
-Tip: Switch to the orchestrator role to manage prompt execution with
+Tip: Switch to the target-orchestrator role to manage prompt execution with
 continuous state tracking. It uses the five-role model (Archaeologist,
 Analyst, Architect, Developer, Reviewer) and includes two-file persona
 loading in all handover prompts. It picks up where you left off across
@@ -1082,7 +1082,7 @@ After any phase completes (or the user says `stop`):
 
 Do NOT mark a target as "maintaining" in `targets/index.md` until:
 
-1. **Open questions reviewed.** Every harness/orchestration-layer open question raised during onboarding is either resolved (with date and outcome, recorded in `journal.md`) or carried into the `## Open Questions` section of `orchestrator-state.md` for the orchestrator to track. No item may sit unmarked.
+1. **Open questions reviewed.** Every harness/orchestration-layer open question raised during onboarding is either resolved (with date and outcome, recorded in `journal.md`) or carried into the `## Open Questions` section of `orchestrator-state.md` for the target-orchestrator to track. No item may sit unmarked.
 2. **Retrospective received.** The target-side retrospective prompt has been executed and `docs/AE/retrospective.md` exists in the target project -- OR the user confirms the retrospective session was lost and a `health` check will substitute.
 3. **Review baseline recorded.** `targets/<slug>/journal.md` has at least one `[REVIEW]`-tagged entry summarising the initial assessment findings.
 4. **Role-Activation Completion Gate passed.** The Phase 4 role-activation smoke test (see section 6i) has been run and confirmed that a role loaded both its base template (`docs/AE/personas/_base/<role>.md`) and its overlay from within the target tree. Onboarding cannot be declared complete until this gate passes.

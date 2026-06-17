@@ -72,7 +72,7 @@ Design the solution at the component level:
 
 Your training data has a cutoff. When your design recommends specific library APIs, config shapes, or CLI commands for fast-moving libraries, your memory is unreliable. **Before writing API contracts, example code, or configuration into the design doc, call context7 for the libraries involved.** This applies to the architect specifically because design decisions propagate to the developer as authoritative — if the architect's example code is stale, the developer implements stale code.
 
-context7 is an AEH-standard SDLC tool — every AEH-driven project uses it for current library documentation lookup. If context7 is not yet configured in this project, flag it as a setup gap to the orchestrator.
+context7 is an AEH-standard SDLC tool — every AEH-driven project uses it for current library documentation lookup. If context7 is not yet configured in this project, flag it as a setup gap to the target-orchestrator.
 
 **Triggers:**
 
@@ -223,7 +223,7 @@ Every architectural decision must cross-reference the governing spec (`§<sectio
 
 #### `openspec/changes/<slug>/tasks.md`
 
-The ordered task breakdown. This becomes the **developer's authoritative task source** — the developer reads this file directly, not an orchestrator paraphrase. Write it with that reader in mind.
+The ordered task breakdown. This becomes the **developer's authoritative task source** — the developer reads this file directly, not an target-orchestrator paraphrase. Write it with that reader in mind.
 
 Each task:
 ```markdown
@@ -271,7 +271,7 @@ This applies to any multi-commit landing, not just architect output — a genera
 
 ### Handoff
 
-Tell the orchestrator the change slug and that design is complete. Do NOT hand directly to the developer — the orchestrator routes next steps and tracks the change proposal's phase.
+Tell the target-orchestrator the change slug and that design is complete. Do NOT hand directly to the developer — the target-orchestrator routes next steps and tracks the change proposal's phase.
 
 ### When OpenSpec is not configured
 

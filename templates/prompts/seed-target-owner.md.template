@@ -2,20 +2,20 @@
 
 **Target:** <slug>
 **Directory:** /workspace/aeh (harness root)
-**Role:** orchestrator (harness-side)
+**Role:** freestyle (harness-delivered structural placement)
 **Phase:** retrofit (one-shot)
 
 ## Context for operator
 
 The harness shipped a cross-container ownership marker mechanism that prevents silent cross-container writes when multiple AEH containers bind-mount the same harness directory and each drives its own target. Detection requires a `.owner-container` marker file in each target's `targets/<slug>/` directory. This one-shot prompt seeds the marker for an existing target that predates the mechanism.
 
-Run this once per existing target. New targets onboarded after the mechanism shipped will have the marker created automatically by the orchestrator's session-init step 6.
+Run this once per existing target. New targets onboarded after the mechanism shipped will have the marker created automatically by the target-orchestrator's session-init step 6.
 
 ## The prompt
 
-### Step 0 -- Activate orchestrator role (self-contained)
+### Step 0 -- Freestyle structural placement (no role, self-contained)
 
-Write `orchestrator` to the per-hostname persona marker via `bin/resolve-persona-marker.sh`.
+This prompt is freestyle (per CLAUDE.md): pre-authored mechanical placement. Do NOT adopt a role and do NOT write a persona marker -- leave the marker untouched.
 
 ### Step 1 -- Seed the marker
 
@@ -49,7 +49,7 @@ PROMPT COMPLETE -- seed-target-owner
 
 ## Expected outcome
 
-`targets/<slug>/.owner-container` exists with the current container's hostname. Subsequent orchestrator session-init step 6 in this container exits 0 silently; sessions in OTHER containers running on the same target surface the ownership mismatch and prompt the operator before any write.
+`targets/<slug>/.owner-container` exists with the current container's hostname. Subsequent target-orchestrator session-init step 6 in this container exits 0 silently; sessions in OTHER containers running on the same target surface the ownership mismatch and prompt the operator before any write.
 
 ## Fallback
 

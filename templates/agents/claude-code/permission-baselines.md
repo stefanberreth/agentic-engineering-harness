@@ -215,7 +215,7 @@ Replace with the actual harness path. This prevents:
 - Accessing harness-internal templates and governance criteria
 - Breaking the two-project isolation model
 
-### AEH-side fence (orchestrator session -> target)
+### AEH-side fence (target-orchestrator session -> target)
 
 This is the SYMMETRIC half of the rule above. The rule above keeps the TARGET
 agent out of the harness; this keeps the AEH-side session (the
@@ -223,7 +223,7 @@ agent out of the harness; this keeps the AEH-side session (the
 EXCEPT the one allowlisted delivery channel, `<target>/docs/AE/**`. It is the
 enforced form of the `docs/AE/`-only fence (CLAUDE.md § "The enforced
 `docs/AE/`-only fence"). `aeh-engineer` and `harness-reviewer` get NO target
-access; only the orchestrator session gets the `docs/AE/` carve-out.
+access; only the target-orchestrator session gets the `docs/AE/` carve-out.
 
 Embed in the AEH harness project's own `.claude/settings.json` (substitute the
 real absolute target path):
@@ -245,7 +245,7 @@ real absolute target path):
 }
 ```
 
-The orchestrator session's working directory is the harness root, so the target
+The target-orchestrator session's working directory is the harness root, so the target
 tree is outside it and reachable only through explicit rules: the `docs/AE/**`
 allow is the only grant, and anything else target-side falls to the default
 `ask` posture (it cannot be written silently). The explicit deny rules harden the

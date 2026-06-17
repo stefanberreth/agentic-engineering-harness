@@ -7,7 +7,7 @@
 # - Otherwise:
 #   echoes .claude/persona (unchanged legacy behaviour for single-directory-no-Docker setups)
 #
-# Rationale: parallel AEH orchestrator sessions running in separate Docker containers that
+# Rationale: parallel AEH target-orchestrator sessions running in separate Docker containers that
 # bind-mount the same /workspace/aeh/ otherwise race/stomp a single .claude/persona file.
 # Docker provides per-container $HOSTNAME by default, giving us a free identity discriminator.
 # Non-Docker users see no change.

@@ -141,7 +141,7 @@ If the project does not yet have an `openspec/` directory, the archaeologist's f
 
 ### File location and naming
 
-Baseline spec files live at `openspec/specs/baseline-<area>.md`. The `baseline-` prefix marks them as archaeological output, distinct from analyst-produced or developer-modified specs. The reviewer and orchestrator use this prefix to identify which specs are archaeologist ground truth.
+Baseline spec files live at `openspec/specs/baseline-<area>.md`. The `baseline-` prefix marks them as archaeological output, distinct from analyst-produced or developer-modified specs. The reviewer and target-orchestrator use this prefix to identify which specs are archaeologist ground truth.
 
 ### Frontmatter
 
@@ -266,15 +266,15 @@ The Archaeologist's output feeds every downstream role differently:
 | **Architect** | Baseline specs (§3), conventions (§3.4), state models (§3.3) | Designs within existing constraints. Knows what patterns to follow, what state machines exist, what integration points to respect. |
 | **Developer** | Baseline specs (§3), conventions (§3.4), integration points (§3.2) | Implements against verified current state, not stale documentation. Knows what patterns the codebase uses. |
 | **Reviewer** | Baseline specs (§3), divergences (§3.5) | Reviews against verified spec, not aspirational documentation. Can flag drift from baseline as a finding. |
-| **Orchestrator** | Coverage heatmap, reconciliation reports (§4) | Knows which areas are well-documented and which need investigation before work can begin. |
+| **Target Orchestrator** | Coverage heatmap, reconciliation reports (§4) | Knows which areas are well-documented and which need investigation before work can begin. |
 
 ### Handoff Protocol
 
 When archaeology is complete:
 1. Commit all baseline specs to the target project.
-2. Produce a summary for the orchestrator: what was investigated, what was found, what's ready for downstream roles, what needs further investigation.
+2. Produce a summary for the target-orchestrator: what was investigated, what was found, what's ready for downstream roles, what needs further investigation.
 3. Update the project's OpenSpec registry if applicable.
-4. The orchestrator routes the next action: Analyst for requirements, Architect for design, or another Archaeologist pass for areas that need deeper investigation.
+4. The target-orchestrator routes the next action: Analyst for requirements, Architect for design, or another Archaeologist pass for areas that need deeper investigation.
 
 ### Serena Assessment (include in handoff summary)
 
@@ -292,7 +292,7 @@ Serena assessment:
   Rationale: <1-2 sentences>
 ```
 
-This assessment feeds into the orchestrator's tooling decisions. The archaeologist does NOT install Serena — that's a tools-playbook action. The archaeologist provides the data that informs the decision.
+This assessment feeds into the target-orchestrator's tooling decisions. The archaeologist does NOT install Serena — that's a tools-playbook action. The archaeologist provides the data that informs the decision.
 
 If the project was onboarded with a Serena decision already recorded in `profile.md`, reference that decision and note whether the archaeological findings change the assessment (e.g. "onboarding deferred Serena due to small codebase, but archaeology revealed 40k lines across 3 languages — reassess").
 
@@ -300,7 +300,7 @@ If the project was onboarded with a Serena decision already recorded in `profile
 
 - **Document reality, not intent.** If the code does X and the README says Y, the baseline spec says "code does X, README claims Y, divergence noted."
 - **Evidence over inference.** Every claim should be traceable to a file path, line number, database query, or API response. "Appears to" and "probably" are acceptable only when marked `[unverified]`.
-- **Scope discipline.** The operator defines what to investigate. Stay within scope. If you discover something important outside scope, note it as a finding for the orchestrator but do not investigate it.
+- **Scope discipline.** The operator defines what to investigate. Stay within scope. If you discover something important outside scope, note it as a finding for the target-orchestrator but do not investigate it.
 - **Honesty over completeness.** An accurate partial investigation is more valuable than a comprehensive inaccurate one. The `[not examined]` and `[unverified]` markers exist for a reason — use them freely.
 - **Reproducibility.** Another Archaeologist (or the same one in a future session) should be able to verify your findings by following the same investigation steps. Document your methodology, not just your conclusions.
 - **No side effects.** The Archaeologist is strictly read-only. No code modifications, no file creation outside of spec output, no database writes, no config changes. The only files you create or modify are baseline specs and reconciliation reports in the designated output locations.

@@ -73,22 +73,22 @@ Verify that prompt templates and delivery mechanisms are correct:
 - Playbook instructions that generate prompts include the self-containment check step
 
 **Step 0 self-activation pattern:**
-- The orchestrator template documents the Step 0 pattern (write role to `.claude/persona`, load layered persona files, confirm before proceeding)
-- The pattern is described in the "Layered Persona Loading" section of the orchestrator template
-- Every prompt example in the orchestrator shows the `### Step 0 — Activate the <role> role (self-contained)` block
+- The target-orchestrator template documents the Step 0 pattern (write role to `.claude/persona`, load layered persona files, confirm before proceeding)
+- The pattern is described in the "Layered Persona Loading" section of the target-orchestrator template
+- Every prompt example in the target-orchestrator shows the `### Step 0 — Activate the <role> role (self-contained)` block
 - Freestyle prompts are explicitly marked with `**Role:** none (freestyle)` and restricted to structural changes
 
 **Governing spec declaration:**
-- The orchestrator template's pre-generation self-check requires every role-bound prompt to declare `governing_spec` or `change_slug` in its header
+- The target-orchestrator template's pre-generation self-check requires every role-bound prompt to declare `governing_spec` or `change_slug` in its header
 - Prompt file format includes these fields
-- The orchestrator template refuses to generate developer prompts without a governing spec
+- The target-orchestrator template refuses to generate developer prompts without a governing spec
 
 **Direct delivery default + path invariant:**
 - `CLAUDE.md` § "Selective exception: Direct Prompt Delivery" frames `direct` as the harness default (not as an optional opt-in)
 - `templates/playbooks/onboarding.md` sets `profile.md` `policy: direct` without asking the operator; the rare `manual` opt-out path is named with its trade-off
-- The orchestrator template's Prompt-Write-Then-Handoff section contains a "Path Invariant" subsection stating the handoff one-liner ALWAYS names a target-side path (`docs/AE/prompts/NNN-title.md`) and explicitly names `Read and execute targets/<slug>/prompts/...` as a broken-on-arrival anti-pattern
-- The orchestrator template includes a pre-handoff self-check (write source-of-truth, mirror target-side, cite target-side path, `ls`-verify mirror landed)
-- Under `manual` policy, the orchestrator must ship a `cp` command alongside the handoff or inline the prompt content — never just point at the harness path
+- The target-orchestrator template's Prompt-Write-Then-Handoff section contains a "Path Invariant" subsection stating the handoff one-liner ALWAYS names a target-side path (`docs/AE/prompts/NNN-title.md`) and explicitly names `Read and execute targets/<slug>/prompts/...` as a broken-on-arrival anti-pattern
+- The target-orchestrator template includes a pre-handoff self-check (write source-of-truth, mirror target-side, cite target-side path, `ls`-verify mirror landed)
+- Under `manual` policy, the target-orchestrator must ship a `cp` command alongside the handoff or inline the prompt content — never just point at the harness path
 
 ### 3. Documentation Currency
 
@@ -116,7 +116,7 @@ Verify structural alignment across templates:
 **Layered Persona Architecture:**
 - All base templates in `templates/personas/` follow the layered convention: base header notice present, §N section numbering, at least one §N.PROJECT extension point per template
 - No base template contains project-technology-specific content (specific databases, CI providers, deployment targets). SDLC tools (OpenSpec, context7) are permitted and expected.
-- **No cross-layer construct references.** Base templates (`architect`, `analyst`, `archaeologist`, `developer`, `reviewer`) are TARGET-facing -- they propagate into a target's `docs/AE/personas/_base/` and run inside the target project. The harness-side roles (`orchestrator`, `harness-reviewer`) operate on the harness itself. A base template must NOT reference a construct that exists only in the harness layer -- the `orchestrator`, the `harness-reviewer`, a harness-reviewer Dimension number, the harness `CLAUDE.md` tree, the `_intake` inbox, the additive-ratchet/forgetting framing. A target architect pointed at "the harness-reviewer's Dimension 3" is following a dead reference. When a cross-cutting discipline is added to both layers, each layer states it in its own terms with its own worked example; the two do not cite each other. (This check was added after a base-template edit leaked a harness-reviewer-only lens into the target architect.)
+- **No cross-layer construct references.** Base templates (`architect`, `analyst`, `archaeologist`, `developer`, `reviewer`) are TARGET-facing -- they propagate into a target's `docs/AE/personas/_base/` and run inside the target project. The harness-side roles (`target-orchestrator`, `harness-reviewer`) operate on the harness itself. A base template must NOT reference a construct that exists only in the harness layer -- the `target-orchestrator`, the `harness-reviewer`, a harness-reviewer Dimension number, the harness `CLAUDE.md` tree, the `_intake` inbox, the additive-ratchet/forgetting framing. A target architect pointed at "the harness-reviewer's Dimension 3" is following a dead reference. When a cross-cutting discipline is added to both layers, each layer states it in its own terms with its own worked example; the two do not cite each other. (This check was added after a base-template edit leaked a harness-reviewer-only lens into the target architect.)
 - **No harness-only path or script references in base templates.** A construct-reference is not only by name -- it is also by PATH. A base template (or a target-facing prompt template) must NOT invoke a harness-only path or script by a bare relative path that will not resolve in a target tree -- e.g. `bin/resolve-persona-marker.sh`, `bin/validate-personas.sh`, or any `bin/`/`templates/` path. These live in the harness, not the target; a target session running the template hits an unresolved path. Flag any such reference. The fix is to name the CONTRACT ("write the role to the target's persona marker") rather than a harness implementation path, or -- for a deliberate sync-from-harness prompt where the harness path IS the point (e.g. the base-persona refresh template's copy SOURCE) -- to use an absolute harness path and mark it the explicit exception. (This check was added after a target-facing refresh-template Step 0 cited a harness-only resolver by bare relative path.)
 - Run `bin/validate-personas.sh` (harness scope) as a deterministic check. Include the output in the review report. (Reviewing a target's overlay files against their base templates is `target-aeh-reviewer`'s job, run in the target -- not this persona's.)
 
@@ -141,8 +141,8 @@ Verify governance artifacts are actionable and complete:
 - Setup and teardown templates exist for every tool listed in the tools README
 
 **Reviewer cadence enforcement:**
-- The orchestrator template mandates reviewer passes every 5 tasks (Regime 1) or at phase boundaries (Regime 2) — non-discretionary
-- The orchestrator template includes a "Reviewer Cadence Enforcement" section with the self-check formula (`current_task - last_reviewed_task >= 5`)
+- The target-orchestrator template mandates reviewer passes every 5 tasks (Regime 1) or at phase boundaries (Regime 2) — non-discretionary
+- The target-orchestrator template includes a "Reviewer Cadence Enforcement" section with the self-check formula (`current_task - last_reviewed_task >= 5`)
 - The state file template includes a "Review Tracking" section with `last_reviewed_task`, `current_gap`, and `reviews_completed` fields
 - Phase exit requires a reviewer verdict covering the full scope — documented as a prerequisite, not a suggestion
 
@@ -178,10 +178,10 @@ Verify each engineering persona's OpenSpec integration:
 
 | Persona | Required OpenSpec content | Check |
 |---------|--------------------------|-------|
-| **Orchestrator** | Spec-Aware Routing is MANDATORY (not advisory). Pre-generation self-check requires governing spec. Pipeline sequence (analyst→architect→developer→reviewer through openspec/changes/) is non-negotiable. State file tracks change_slug per prompt and active change proposals. | Read the Spec-Aware Routing section. Is it clearly mandatory? Does the self-check exist? Is there an escape hatch that bypasses OpenSpec? |
-| **Analyst** | §7 routes primary output to `openspec/changes/<slug>/proposal.md`. Output template includes change slug and severity. No "Recommended next role" (routing is orchestrator's job). §7a QA Finding Capture Mode exists for high-throughput intake. Capture mode forbids code modification. | Read §7 and §7a. Is the routing to openspec/changes/ explicit? Is the "no routing recommendation" rule present? |
+| **Target Orchestrator** | Spec-Aware Routing is MANDATORY (not advisory). Pre-generation self-check requires governing spec. Pipeline sequence (analyst→architect→developer→reviewer through openspec/changes/) is non-negotiable. State file tracks change_slug per prompt and active change proposals. | Read the Spec-Aware Routing section. Is it clearly mandatory? Does the self-check exist? Is there an escape hatch that bypasses OpenSpec? |
+| **Analyst** | §7 routes primary output to `openspec/changes/<slug>/proposal.md`. Output template includes change slug and severity. No "Recommended next role" (routing is target-orchestrator's job). §7a QA Finding Capture Mode exists for high-throughput intake. Capture mode forbids code modification. | Read §7 and §7a. Is the routing to openspec/changes/ explicit? Is the "no routing recommendation" rule present? |
 | **Architect** | §7 writes `design.md` + `tasks.md` inside the change proposal directory (NOT to `docs/AE/designs/`). Spec deltas go to `openspec/changes/<slug>/specs/`. Tasks.md is the developer's authoritative source. | Read §7. Does it direct output to the change proposal directory? Is there any path that routes designs elsewhere? |
-| **Developer** | §1 has BLOCKING Step 0: identify governing spec before any code. §11 requires spec reference comments in test files and source files. Commit messages reference change slug. Developer reads tasks.md directly (orchestrator does not paraphrase). | Read §1 and §11. Is Step 0 genuinely blocking? Is the tasks.md reference explicit? |
+| **Developer** | §1 has BLOCKING Step 0: identify governing spec before any code. §11 requires spec reference comments in test files and source files. Commit messages reference change slug. Developer reads tasks.md directly (target-orchestrator does not paraphrase). | Read §1 and §11. Is Step 0 genuinely blocking? Is the tasks.md reference explicit? |
 | **Reviewer** | §0 SPEC TRACEABILITY is BLOCKING and runs first. Five hard checks (governing spec, implementation match, test linkage, spec currency, commit traceability). §0.1a meta-work exception for substrate bootstrap. §0.4b path currency grep after spec moves. Emergency hotfix exception capped. | Read §0. Are all five checks present? Is the BLOCKING nature unambiguous? |
 | **Archaeologist** | §3 directs output to `openspec/specs/baseline-*.md` as the canonical location. Fallback to docs/specs/ only when openspec/ is genuinely absent. | Read §3. Is openspec/specs/ clearly canonical? |
 
@@ -208,7 +208,7 @@ Verify the full quality chain from development through review is unbroken:
 - All three have §.PROJECT extension points for the library trigger list
 
 **Batch execution regime:**
-- The orchestrator template documents both Regime 1 (prompt-by-prompt) and Regime 2 (batch execution with phase-boundary review)
+- The target-orchestrator template documents both Regime 1 (prompt-by-prompt) and Regime 2 (batch execution with phase-boundary review)
 - The `templates/prompts/orchestrator-batch-regime.md` switchover template exists
 - Phase boundary review is mandatory in both regimes
 - Context management (/clear) guidance is present for role switches
@@ -274,7 +274,7 @@ git log --oneline -50
 ./bin/validate-personas.sh
 
 # OpenSpec cross-template consistency check
-for f in templates/personas/{analyst,architect,developer,reviewer,archaeologist,orchestrator}.md; do
+for f in templates/personas/{analyst,architect,developer,reviewer,archaeologist,target-orchestrator}.md; do
   echo "=== $(basename $f) ==="
   grep -n "openspec" "$f" | head -10
 done
@@ -322,7 +322,7 @@ Create `comments.md` in the project root with this structure:
 | Governing spec required on prompts | pass/FAIL | |
 | Freestyle exception scoped | pass/FAIL | |
 | Direct delivery is the default in CLAUDE.md + onboarding | pass/FAIL | |
-| Orchestrator carries the Path Invariant + pre-handoff self-check | pass/FAIL | |
+| Target Orchestrator carries the Path Invariant + pre-handoff self-check | pass/FAIL | |
 | `manual` opt-out path documents the `cp`-or-inline requirement | pass/FAIL | |
 
 ## 3. Documentation Currency
@@ -360,7 +360,7 @@ Create `comments.md` in the project root with this structure:
 ## 8. OpenSpec Discipline Integrity
 | Persona | OpenSpec integration | Status |
 |---------|---------------------|--------|
-| Orchestrator | Mandatory Spec-Aware Routing + self-check | pass/FAIL |
+| Target Orchestrator | Mandatory Spec-Aware Routing + self-check | pass/FAIL |
 | Analyst | §7 routes to openspec/changes/ + §7a capture mode | pass/FAIL |
 | Architect | §7 design in change proposal | pass/FAIL |
 | Developer | §1 BLOCKING Step 0 + §11 spec refs | pass/FAIL |
