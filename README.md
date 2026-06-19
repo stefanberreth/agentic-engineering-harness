@@ -8,6 +8,8 @@
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2)](https://discord.gg/qnKVnJEuQz)
 [![Support on Ko-fi](https://img.shields.io/badge/Ko--fi-Support-FF5E5B)](https://ko-fi.com/stefanberreth)
 
+> **Note:** AEH's canonical home is GitLab: https://gitlab.com/stefanberreth/agentic-engineering-harness -- issues, contributions, and discussion happen there. The GitHub repository is a read-only mirror.
+
 ## What is this?
 
 AEH is a governance harness for professional software work. It is powered by AI coding agents and driven by your own competent leadership, management and "team member" guidance and development. It turns AI native prompting and results into the shape enterprise software delivery requires: separated roles, spec-first changes, closed-loop quality gates, explicit handoffs, etc., so the work stays auditable, restartable, and amendable across sessions, scope changes, and handoffs between humans and AI agents (or any combination thereof) without ambiguity and unmanaged risk.
