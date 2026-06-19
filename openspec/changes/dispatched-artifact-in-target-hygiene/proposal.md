@@ -1,6 +1,6 @@
 ---
 slug: dispatched-artifact-in-target-hygiene
-status: proposed
+status: ready-for-archive
 since: 2026-06-19
 sibling: claude-md-size-discipline
 ---

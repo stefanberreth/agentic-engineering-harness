@@ -743,8 +743,13 @@ prompt is decided below; enact it, do not deliberate it.
 5. The overlay takes precedence where sections overlap. If either file fails to load,
    STOP and report the specific path that failed.
 
-Emit ONE line confirming <role> is active and both files loaded, then proceed
-directly to Step 1. No banner, no menu, no question.
+Announce the active role as your FIRST output line, before any other output, in
+exactly this form (it replaces the suppressed banner -- the single load-bearing
+fact for anyone watching the session):
+
+    ACTIVE ROLE: <role> -- loaded from docs/AE/personas/<role>.md (+ _base/<role>.md)
+
+Then proceed directly to Step 1. No banner, no menu, no question.
 ```
 
 The role is named in the prompt header (`**Role:** <role> — this prompt activates it`) so the target-orchestrator, operator, and audit trail all see what role the prompt is for. Freestyle prompts (harness-setup structural changes) do NOT skip Step 0 -- they carry a *freestyle Step 0* that CLEARS the persona marker and suppresses the CLAUDE.md banner / role-picker, so a freestyle prompt pasted into a session with a stale role marker does not stall. The freestyle Step 0 has this form:
@@ -761,7 +766,11 @@ NO persona.
 1. Resolve the persona marker path: if `bin/resolve-persona-marker.sh` exists,
    run it; otherwise use `.claude/persona`. CLEAR it -- truncate the file to
    empty. A carried-over persona from a previous prompt is irrelevant.
-2. Proceed directly to the task. No banner, no menu, no question.
+2. Announce the no-role state as your FIRST output line, before any other output:
+
+       ACTIVE ROLE: none (freestyle)
+
+3. Proceed directly to the task. No banner, no menu, no question.
 ```
 
 If no project overlay exists for a role, instruct loading of the base template only and note that the overlay is absent. The base templates are self-contained and functional without overlays.

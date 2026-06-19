@@ -131,7 +131,9 @@ enforced by a two-tier gate; you own installing and repairing the machinery:
 > developer/reviewer/target-orchestrator base-persona currency-DoD deltas are a
 > follow-on change (they would otherwise collide with the B5 rename and the B6/B7
 > base-persona edits). Until the template ships, install Tier 1 by adapting the
-> existing pre-push hook pattern under `templates/hooks/`.
+> existing pre-push hook pattern under `templates/hooks/` (HARNESS-side reference,
+> NOT present in a target tree -- consult it via the harness; do not expect this
+> path to resolve from a target session).
 
 ## The fence (what you must NOT touch)
 
