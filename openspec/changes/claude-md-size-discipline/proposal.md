@@ -2,23 +2,76 @@
 slug: claude-md-size-discipline
 status: proposed
 since: 2026-06-01
-blocked-pending: harness-maintainer first consolidation round
 reconcile-with: orchestrator-state-consolidation, harness-maintainer-role-charter
+absorbs: claude-md-router-discipline-anti-bloat (intake 2026-06-19), claude-md-uplift-whole-block-diff (intake 2026-06-19)
+sibling: dispatched-artifact-in-target-hygiene
 ---
 
-# CLAUDE.md size discipline (slim via pointer-to-reference-docs)
+# CLAUDE.md router discipline + size discipline (slim via pointer-to-home)
 
-## Reconciliation note (2026-06-06) -- do not lose, do not implement as-written yet
+## Consolidation resolution (2026-06-19) -- supersedes the 2026-06-06 parked note
 
-This proposal is PARKED for the harness-maintainer's first consolidation round, not cut. Status stays `proposed`; do not implement as-written. Why:
+This proposal was PARKED for "the harness-maintainer's first consolidation round."
+That round is now running (the `aeh-engineer` role exists and is doing it). This note
+resolves the parked fork and absorbs two same-family 2026-06-19 intake captures. The
+original proposal text is preserved below; this section is the controlling scope.
 
-- **Size goal partially down-paid.** A 2026-06-06 in-place compression pass (compress-to-existing-pointers, no new docs tree) brought CLAUDE.md from 44k to 39.7k -- under the 40k runtime warning, but still above this proposal's <30k target / <35k firm cap. The urgent trigger (runtime warning) is resolved; the aspirational target is not.
-- **Mechanism fork to resolve.** This proposal's mechanism (extract rationale to a new `docs/harness-rules/` tree + enforce `- **Topic.** One-sentence rule. Detail: <pointer>.` bullet shape) now competes with the proven lighter approach (in-place compression to existing pointers, no new tree). The maintainer decides: adopt in-place-compression as the mechanism and drop the new-docs-tree, or still pursue extraction for the <30k target.
-- **Durable value that must survive either way:** the bullet-shape discipline (anti-re-bloat enforcement for FUTURE rules) and the harness-reviewer pointer-resolution check (Task 7). These are NOT obsolete; they are the same anti-additive-ratchet family as `orchestrator-state-consolidation`'s forgetting question and the harness-maintainer's anti-bloat charter, and should be folded together in the consolidation round.
+**Mechanism fork -- RESOLVED.** Adopt **in-place compression to existing pointers** as
+the mechanism; **drop the new `docs/harness-rules/` tree.** The 2026-06-06 pass already
+proved in-place compression works (it cleared the runtime warning with no new tree), and
+a new parallel tree cuts against the same single-source-of-truth invariant this proposal
+now enforces. Extraction targets a rule's EXISTING owning home (its persona / playbook /
+openspec spec / docs reference), not a new bespoke tree. The `<30k` figure becomes a soft
+budget, not a hard gate (size alone is a crude signal; see below).
 
-Disposition: the harness-maintainer reconciles this against `orchestrator-state-consolidation` and `harness-maintainer-role-charter` in its first pass, then either re-scopes-and-implements or abandons-with-the-durable-bits-rehomed. Everything below is the original proposal text, preserved.
+**Reframe -- "CLAUDE.md is a router, not a manual."** The discriminating test is NOT
+length but: *does every session need this BEFORE it knows its role/task?* If yes it stays
+inline (cutting it hurts reliability: isolation/fence, ASCII-only, no-AI-attribution, the
+capture principle, session-init / role-selection). If no, it is extractable to its owning
+revision-controlled home with a one-line resolvable pointer. The harness already uses the
+pointer pattern unevenly (whole role-specific sections are still inlined -- e.g. the full
+Harness Maintenance Discipline is `aeh-engineer`-only; the full role-location 3-part
+signature; cross-container + propagation mechanics partly duplicated despite persona
+pointers existing). Those are the first extraction candidates.
+
+**Reliability is preserved by HOW you extract, not by avoiding extraction.** The hazard is
+orphaning a rule somewhere nothing reads. The safe move is a triple --
+**extract-to-home -> wire a RESOLVABLE pointer -> confirm the consumer role/playbook
+actually loads it.** This is the same single-source-of-truth + resolvable-pointer +
+consumer-loads-it invariant that the dangling-harness-path findings (the sibling
+`dispatched-artifact-in-target-hygiene`) are the DUAL of: that proposal owns
+pointer-that-does-not-resolve; this one owns content-that-should-be-a-pointer. One family,
+checks in both directions.
+
+**Absorbed: whole-block-diff retrofit scoping.** CLAUDE.md sections are interdependent
+(session-init especially: banner flow, dispatch handling, role-location, role-loading).
+Aligning one section while leaving siblings stale produces a CONTRADICTION, not just an
+incompleteness -- worse than doing nothing. So: when an uplift/retrofit touches a CLAUDE.md
+region (harness CLAUDE.md OR a target CLAUDE.md), scope the change to the whole affected
+BLOCK diffed against the canonical template, applied in ONE pass -- not section-by-section
+across prompts. This is the correct authoring AND aligning granularity for both layers and
+binds the `target-orchestrator` / propagation-refresh retrofit path.
+
+**Durable bits retained from the original:** the bullet-shape discipline
+(`- **Topic.** One-sentence rule. Detail: <pointer>.`) and the harness-reviewer
+pointer-resolution check (every `Detail:` pointer resolves). Both stay.
+
+**Added scope (the absorbed captures' contributions) -- see Scope below for the full list:**
+a router-vs-manual governance principle + the universal-pre-role-vs-role/task-specific
+authoring test; a deterministic size-budget WARN check, symmetric (harness-side
+harness-reviewer + target-side `bin/aeh-practice-check.sh`); a reviewer JUDGMENT dimension
+("is each section universal-pre-role, or should it be a pointer?"); the extract-wire-confirm
+habit; symmetric application to the target CLAUDE.md template; the whole-block-diff retrofit
+rule.
 
 ---
+
+> NOTE (2026-06-19): the "## What", original "## Scope" and original "## Acceptance
+> criteria" below are the PRESERVED original. The "Consolidation resolution (2026-06-19)"
+> section at the top is controlling where they differ (mechanism = in-place compression to
+> existing homes, NOT a new `docs/harness-rules/` tree; `<30k` is a soft budget, not a hard
+> gate). The current operative scope + acceptance are restated in "## Scope (2026-06-19
+> consolidation -- controlling)" and "## Acceptance criteria (2026-06-19 -- controlling)".
 
 ## What
 
@@ -63,6 +116,56 @@ Out of scope:
 4. No rule semantics changed; harness-reviewer can audit by comparing pre/post bullets for rule-content match (the rule sentence in post should be present verbatim or in equivalent meaning in the pre version).
 5. Pointer-resolution check landed in harness-reviewer.
 6. CHANGELOG entry.
+
+## Scope (2026-06-19 consolidation -- controlling)
+
+In scope:
+- **Govern (prevent):** add a "CLAUDE.md is a router, not a manual" governance principle +
+  a soft size budget; encode the universal-pre-role-vs-role/task-specific authoring test
+  (analog of the existing ground-truth-scan-before-new-doc rule) so every authoring role
+  applies it. Applies to BOTH the harness CLAUDE.md and the target CLAUDE.md template.
+- **Compress in place (fix):** extract role/task-specific inlined content to its EXISTING
+  owning home (persona / playbook / openspec spec / docs reference) via
+  extract-to-home -> wire-a-resolvable-pointer -> confirm-the-consumer-loads-it. NO new
+  `docs/harness-rules/` tree. First candidates: the full Harness Maintenance Discipline
+  (aeh-engineer-only), the full role-location 3-part signature, the duplicated
+  cross-container + propagation mechanics.
+- **Retain durable bits:** the `- **Topic.** One-sentence rule. Detail: <pointer>.`
+  bullet-shape discipline for future rules; the harness-reviewer pointer-resolution check.
+- **Detect:** (1) a deterministic CLAUDE.md size/line-budget WARN check -- harness-side in
+  the harness-reviewer flow AND target-side in `bin/aeh-practice-check.sh` (run by
+  target-aeh-reviewer); (2) a reviewer JUDGMENT dimension "CLAUDE.md router discipline: is
+  each section universal-pre-role, or should it be a pointer?" (size alone is crude; the
+  real signal is inlined role/task-specific content). Symmetric: harness CLAUDE.md ->
+  harness-reviewer detect / aeh-engineer fix; target CLAUDE.md -> target-aeh-reviewer
+  detect / target-aeh-engineer fix.
+- **Whole-block-diff retrofit scoping:** when an uplift/retrofit touches a CLAUDE.md
+  region, scope it to the whole affected BLOCK diffed against the canonical template,
+  applied in ONE pass (binds the target-orchestrator / propagation-refresh path).
+- CHANGELOG entry.
+
+Out of scope:
+- A new parallel docs tree (explicitly dropped).
+- Removing rules or changing rule semantics (compression preserves the rule sentence).
+- The pointer-that-does-not-resolve direction of the invariant (sibling
+  `dispatched-artifact-in-target-hygiene`).
+- A hard size GATE that blocks on length alone (budget is a WARN; the judgment dimension
+  is the real control).
+
+## Acceptance criteria (2026-06-19 -- controlling)
+
+1. The "router not manual" principle + the universal-pre-role authoring test are present in
+   the harness governance surface and applied to the target CLAUDE.md template.
+2. The named first-candidate sections are compressed in place to a one-line rule + a
+   RESOLVABLE pointer to an existing home; the consumer that needs each is confirmed to
+   load it. No new `docs/harness-rules/` tree is created.
+3. The bullet-shape discipline and the harness-reviewer pointer-resolution check are in
+   place.
+4. A deterministic CLAUDE.md size-budget WARN check exists harness-side AND target-side; a
+   reviewer router-discipline JUDGMENT dimension exists, symmetric across both layers.
+5. The whole-block-diff retrofit-scoping rule binds the CLAUDE.md alignment/refresh path.
+6. No rule semantics changed (pre/post rule-sentence match auditable); CHANGELOG entry;
+   validator + publication gate pass; harness-reviewer bookend.
 
 ## References
 
