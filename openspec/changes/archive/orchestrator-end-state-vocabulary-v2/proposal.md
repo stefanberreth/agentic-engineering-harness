@@ -1,6 +1,7 @@
 ---
 slug: orchestrator-end-state-vocabulary-v2
-status: proposed
+status: archived
+archived-at: 2026-06-19T19:18:24Z
 since: 2026-05-31
 provenance: openspec/changes/orchestrator-end-state-vocabulary-v2/provenance.md
 ---
