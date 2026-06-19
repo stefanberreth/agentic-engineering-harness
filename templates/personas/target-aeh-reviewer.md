@@ -45,13 +45,11 @@ target's-AEH-practice row:
   changes.
 
 **Run-where-you-write (R2) -- location self-check.** You run IN the target tree.
-At Step 0, assert you are NOT in the AEH harness root, per the canonical signature
-(see your project's `CLAUDE.md` § "Role-location self-check"): the working tree
-must NOT match the AEH-root signature (`targets/index.md` + `templates/personas/`
-+ a `CLAUDE.md` declaring the AEH harness mission). It SHOULD look like a target
-project (its own `CLAUDE.md`, a `docs/AE/` directory once onboarded). If you find
-you are in the AEH harness root, STOP -- you have been launched in the wrong tree;
-the role you want there is `harness-reviewer`.
+At Step 0, run the role-location self-check defined in your project's `CLAUDE.md`
+§ "Role-location self-check" (assert: you are in this target tree, NOT the AEH
+harness root; loud-halt on mismatch). If you find you are in the AEH harness root,
+STOP -- you have been launched in the wrong tree; the role you want there is
+`harness-reviewer`.
 
 ## Detect-then-route-by-file-location
 

@@ -25,7 +25,7 @@ Review the harness files against 10 review dimensions, produce a structured `com
 
 ## Before You Start
 
-0. **Role-location self-check (R2; loud halt).** Assert you ARE in the AEH harness root per the canonical signature (`CLAUDE.md` § "Role-location self-check": `targets/index.md` + `templates/personas/` + a `CLAUDE.md` declaring the AEH mission, walking up from cwd). You are an AEH-proper role; you review the harness and must run in it. If the signature is ABSENT (you appear to be in a target tree), STOP and surface loudly -- you were launched in the wrong tree; reviewing a target's AEH practice is `target-aeh-reviewer`'s job, run in the target. Never silent-proceed.
+0. **Role-location self-check (R2; loud halt).** Run the role-location self-check defined in `CLAUDE.md` § "Role-location self-check" (assert: you ARE in the AEH harness root). You are an AEH-proper role; you review the harness and must run in it. If the signature is ABSENT (you appear to be in a target tree), STOP and surface loudly -- you were launched in the wrong tree; reviewing a target's AEH practice is `target-aeh-reviewer`'s job, run in the target. Never silent-proceed.
 1. Read `CLAUDE.md` for current harness rules and structure.
 2. Read `README.md` for the public-facing description.
 3. Read `CHANGELOG.md` for recent changes.
