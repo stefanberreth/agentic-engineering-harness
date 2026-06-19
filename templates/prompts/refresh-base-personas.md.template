@@ -1,21 +1,32 @@
-# Refresh Base Personas
+# Refresh AEH Snapshots (base personas + target-applied roles + check script)
 
 **Target:** <slug>
 **Directory:** <target-absolute-path>
 **Role:** freestyle (harness-delivered structural placement)
 **Phase:** retrofit (one-shot)
 
+> Filename kept as `refresh-base-personas` for continuity (both target-applied AEH
+> personas and CLAUDE.md/CHANGELOG reference it by that convention name). Its scope
+> is broader than the name: it refreshes ALL harness-snapshotted AEH artifacts in
+> the target, not only the base personas.
+
 ## Context for operator
 
-When the propagation flow surfaces that the harness has advanced and a refresh-snapshots retrofit action is approved, this prompt refreshes ALL five engineering base personas (analyst, archaeologist, architect, developer, reviewer) in the target's `docs/AE/personas/_base/` directory from harness master. The refresh is `_base/`-directory-scoped, not persona-scoped, because:
+When the propagation flow surfaces that the harness has advanced and a refresh-snapshots retrofit action is approved, this prompt refreshes ALL harness-snapshotted AEH artifacts in the target from harness master:
 
-- More than one persona may have updated in the unsynced range.
-- Pre-existing drift on personas not touched by the most recent update is silently corrected.
-- The cost of refreshing all five vs one is negligible (five file copies).
+- The five engineering base personas (analyst, archaeologist, architect, developer, reviewer) in `docs/AE/personas/_base/`.
+- The two single-file target-applied AEH-practice roles (`target-aeh-reviewer`, `target-aeh-engineer`) in `docs/AE/roles/` -- the roles that RUN in the target.
+- The deterministic AEH-practice check script in `docs/AE/bin/aeh-practice-check.sh`.
+
+The refresh is directory-scoped, not artifact-scoped, because:
+
+- More than one artifact may have updated in the unsynced range.
+- Pre-existing drift on artifacts not touched by the most recent update is silently corrected.
+- The cost of refreshing all vs one is negligible (a handful of file copies).
 
 The discipline is consistent with the broader propagation-signal philosophy: mechanism is a signal + action; operator approves; the `target-aeh-reviewer` scopes the Propagation-Impact; refresh actions are not minimally-scoped because the cost saving isn't worth the staleness risk.
 
-(Only the five engineering personas are snapshotted into a target's `_base/`: they are the roles that RUN in the target. The coordinator and the harness-side AEH roles run in the harness root, so they are not placed in the target tree.)
+(Only the target-side artifacts are refreshed -- the five engineering personas, the two target-applied AEH roles, and the check script all RUN in the target. The coordinator and the harness-proper roles run in the harness root, so they are not placed in the target tree.)
 
 ## The prompt
 
@@ -23,33 +34,54 @@ The discipline is consistent with the broader propagation-signal philosophy: mec
 
 This prompt is freestyle (per CLAUDE.md): the content is pre-authored harness-side and you are only PLACING files into the target. Do NOT adopt a role and do NOT write a persona marker -- leave `.claude/persona` untouched. Suppress the session-init banner; this prompt is the session initialiser.
 
-### Step 1 -- Confirm target's _base/ directory exists
+### Step 1 -- Confirm target's AEH-snapshot directories exist
 
 ```
 test -d docs/AE/personas/_base || echo "_base directory missing"
+test -d docs/AE/roles || echo "roles directory missing"
+test -d docs/AE/bin || echo "bin directory missing"
 ```
 
-If missing, halt: "_base/ directory not present -- this target may have been onboarded before the layered-persona convention. Run onboarding's Phase 2 base-template-placement step first, then re-run this retrofit."
+If any are missing, halt: "An AEH-snapshot directory is not present -- this target may have been onboarded before the layered-persona / AEH-practice-delivery convention. Run onboarding's Phase 2 base-template-placement step first (it creates `docs/AE/personas/_base/`, `docs/AE/roles/`, and `docs/AE/bin/`), then re-run this retrofit." Create any missing directory before copying into it.
 
-### Step 2 -- Refresh all five personas
+### Step 2 -- Refresh all snapshots
 
-For each of `analyst`, `archaeologist`, `architect`, `developer`, `reviewer`:
+**2a. The five engineering base personas.** For each of `analyst`, `archaeologist`, `architect`, `developer`, `reviewer`:
 
 1. Record current local file size + checksum (or "absent" if no local snapshot yet for that persona).
 2. Copy `/workspace/aeh/templates/personas/<persona>.md` to `docs/AE/personas/_base/<persona>.md`.
 3. Verify byte-identical: `cmp /workspace/aeh/templates/personas/<persona>.md docs/AE/personas/_base/<persona>.md`. Exit code 0 = match.
 4. Record new file size + checksum.
 
+**2b. The two target-applied AEH-practice roles.** For each of `target-aeh-reviewer`, `target-aeh-engineer`:
+
+1. Record current local file size + checksum (or "absent").
+2. Copy `/workspace/aeh/templates/personas/<role>.md` to `docs/AE/roles/<role>.md`.
+3. Verify byte-identical: `cmp /workspace/aeh/templates/personas/<role>.md docs/AE/roles/<role>.md`.
+4. Record new file size + checksum.
+
+**2c. The deterministic check script.**
+
+1. Record current local file size + checksum (or "absent").
+2. Copy `/workspace/aeh/bin/aeh-practice-check.sh` to `docs/AE/bin/aeh-practice-check.sh`.
+3. Make it executable: `chmod +x docs/AE/bin/aeh-practice-check.sh`.
+4. Verify byte-identical: `cmp /workspace/aeh/bin/aeh-practice-check.sh docs/AE/bin/aeh-practice-check.sh`.
+5. Record new file size + checksum.
+
 ### Step 3 -- Single commit
 
 ```
-git add docs/AE/personas/_base/
+git add docs/AE/personas/_base/ docs/AE/roles/ docs/AE/bin/
 git commit -m "$(cat <<'EOF'
-docs/AE/personas/_base: refresh all five base persona snapshots from harness master
+docs/AE: refresh AEH snapshots (base personas + roles + check) from harness master
 
-Sync target base personas with harness templates/personas/*.md.
-All five engineering personas (analyst, archaeologist, architect, developer,
-reviewer) refreshed to byte-identical with harness master.
+Sync target AEH artifacts with harness master:
+- five engineering base personas (analyst, archaeologist, architect,
+  developer, reviewer) in docs/AE/personas/_base/
+- two target-applied AEH roles (target-aeh-reviewer, target-aeh-engineer)
+  in docs/AE/roles/
+- deterministic check docs/AE/bin/aeh-practice-check.sh
+All refreshed to byte-identical with harness master.
 
 Triggered by: <propagation-pass / one-shot retrofit / etc>
 Harness master state: <SHA of harness HEAD at refresh time>
@@ -71,21 +103,28 @@ Base personas refreshed (all 5):
   developer:     <before-size> -> <after-size>  (checksum match: <yes/no>)
   reviewer:      <before-size> -> <after-size>  (checksum match: <yes/no>)
 
+AEH-practice roles refreshed (both):
+  target-aeh-reviewer: <before-size> -> <after-size>  (checksum match: <yes/no>)
+  target-aeh-engineer: <before-size> -> <after-size>  (checksum match: <yes/no>)
+
+AEH-practice check refreshed:
+  aeh-practice-check.sh: <before-size> -> <after-size>  (checksum match: <yes/no>; executable: <yes/no>)
+
 Harness master state: <harness HEAD SHA>
 Commit: <commit SHA in target repo>
 
-Personas that had drifted (size change observed): <list, or 'none'>
-Personas that were already in sync: <list>
+Artifacts that had drifted (size change observed): <list, or 'none'>
+Artifacts that were already in sync: <list>
 
 PROMPT COMPLETE -- refresh-base-personas
 ```
 
 ## Expected outcome
 
-All five engineering base personas in `docs/AE/personas/_base/` are byte-identical with `/workspace/aeh/templates/personas/`. Subsequent role-bound prompts in this target session load the latest persona behaviour.
+All five engineering base personas (`docs/AE/personas/_base/`), the two target-applied AEH roles (`docs/AE/roles/`), and the check script (`docs/AE/bin/aeh-practice-check.sh`, executable) are byte-identical with harness master. Subsequent role-bound prompts and `health` passes in this target session load the latest behaviour.
 
 ## Fallback
 
-- If `_base/` missing: halt and surface (step 1).
-- If any persona file copy fails: halt at the failed persona, surface details, leave subsequent personas untouched. Operator addresses the failure, then re-runs the retrofit which is idempotent.
+- If any snapshot directory is missing: halt and surface (step 1); create it before copying.
+- If any file copy fails: halt at the failed artifact, surface details, leave subsequent artifacts untouched. Operator addresses the failure, then re-runs the retrofit which is idempotent.
 - If `cmp` reports mismatch immediately after copy: halt with file-content diff; this indicates a copy error (rare) or an active write conflict.

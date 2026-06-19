@@ -386,7 +386,7 @@ If working on the harness itself:
 │   ├── resolve-target-owner.sh           # Per-target ownership marker helper (cross-container isolation)
 │   ├── resolve-scheduler-lock.sh         # Per-host scheduler lockfile path resolver
 │   ├── validate-personas.sh              # Structural validation + leak scan (staged/message/full modes)
-│   ├── aeh-practice-check.sh             # Deterministic AEH-practice checks (registry; target-aeh-reviewer runs it in a target)
+│   ├── aeh-practice-check.sh             # Deterministic AEH-practice checks (registry; source of truth -- delivered into a target at docs/AE/bin/ where target-aeh-reviewer runs it)
 │   └── .leakage-patterns.example         # Placeholder blocklist template (real list at .leakage-patterns is gitignored)
 ├── templates/
 │   ├── personas/
@@ -398,15 +398,15 @@ If working on the harness itself:
 │   │   ├── harness-reviewer.md            # Harness self-review persona (AEH-proper, detect)
 │   │   ├── aeh-engineer.md                # Harness engineering owner (AEH-proper, remediate)
 │   │   ├── target-orchestrator.md         # Pipeline coordinator persona (target-applied coordinator)
-│   │   ├── target-aeh-reviewer.md         # Target AEH-practice review (target-applied, detect; runs in target)
-│   │   ├── target-aeh-engineer.md         # Target AEH-practice remediation (target-applied, remediate; runs in target)
+│   │   ├── target-aeh-reviewer.md         # Target AEH-practice review (target-applied, detect; source of truth -- delivered into a target at docs/AE/roles/)
+│   │   ├── target-aeh-engineer.md         # Target AEH-practice remediation (target-applied, remediate; source of truth -- delivered into a target at docs/AE/roles/)
 │   │   └── strategist.md                  # Strategic advisor (optional, for external LLM sessions)
 │   ├── prompts/
 │   │   ├── regression-check.md.template   # Post-transformation functional regression check
 │   │   ├── orchestrator-batch-regime.md   # Regime 2 switchover prompt template
 │   │   ├── seed-harness-sync-marker.md.template  # Seed harness-sync-sha for pre-existing targets
 │   │   ├── seed-target-owner.md.template  # Seed .owner-container for pre-existing targets
-│   │   ├── refresh-base-personas.md.template  # Refresh all 6 base personas from harness master
+│   │   ├── refresh-base-personas.md.template  # Refresh AEH snapshots (5 base personas + 2 target-applied roles + check) from harness master
 │   │   ├── migrate-state-satellites.md.template  # Fold a legacy target's satellite state files into journal tags + dashboard
 │   │   └── openspec-close-out-retrofit.md.template  # Install OpenSpec close-out convention
 │   ├── scripts/

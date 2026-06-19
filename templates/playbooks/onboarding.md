@@ -187,6 +187,8 @@ Then jump straight to a condensed flow:
 
    Phase 2: Persona overlays (scaffolded with placeholders)
      3. Place AEH base persona templates -> docs/AE/personas/_base/ (5 files, inline-carried prompt)
+        + AEH-practice roles -> docs/AE/roles/ (target-aeh-reviewer, target-aeh-engineer)
+        + AEH-practice check  -> docs/AE/bin/aeh-practice-check.sh (executable)
      4. Create docs/AE/personas/archaeologist.md (header + Project Identity placeholder)
      5. Create docs/AE/personas/analyst.md       (header + Project Identity placeholder)
      6. Create docs/AE/personas/architect.md     (header + Project Identity placeholder)
@@ -209,7 +211,7 @@ Then jump straight to a condensed flow:
 
 9. **Phase 6 (execute): run the full Phase 6 sequence -- do NOT stop after skeleton prompts.** The short-circuit collapses reconnaissance and assessment, not execution. Tool setup is what makes the skeleton operational, so it must run on greenfield exactly as on brownfield.
 
-   a. **Skeleton prompts.** Generate the CLAUDE.md prompt and the five persona overlay prompts. Each overlay creates a file with the Persona Header Block and a single `## Project Identity` line: `TBD -- populated by analyst on first feature`. No `§.PROJECT` content beyond placeholders.
+   a. **Skeleton prompts.** Generate the CLAUDE.md prompt, the base-template-placement prompt (Phase 6a -- which now also places the two target-applied AEH roles into `docs/AE/roles/` and the check script into `docs/AE/bin/`), and the five persona overlay prompts. Each overlay creates a file with the Persona Header Block and a single `## Project Identity` line: `TBD -- populated by analyst on first feature`. No `§.PROJECT` content beyond placeholders.
 
    b. **Phase 6g (Standard SDLC Tools Setup) -- MANDATORY, do not skip.** Run the offer block verbatim from Phase 6g below. OpenSpec and context7 are default in-scope; the operator may opt out, but the offer presents installation as the default path:
       - **OpenSpec:** default scope. Present the opt-out confirmation block from Phase 6g; if operator does NOT opt out (silence / yes / continue), read `templates/tools/openspec-setup.md` and generate the setup prompt; insert it into the sequence before the regression check. Record the decision in `profile.md` under `## Specification Management`.
@@ -534,7 +536,8 @@ Phase 1: Foundation
 
 Phase 2: Persona overlays (docs/AE/personas/)
   4. Place AEH base persona templates -> docs/AE/personas/_base/
-     (5 files, inline-carried prompt)                           ~1 prompt
+     (5 files) + AEH-practice roles -> docs/AE/roles/ (2 files)
+     + AEH-practice check -> docs/AE/bin/ (executable), inline-carried prompt  ~1 prompt
   5-9. archaeologist / analyst / architect / developer / reviewer
        -- new where no equivalent exists; merge-and-refactor
        where existing role files exist                          ~1-5 prompts
@@ -597,7 +600,10 @@ The five engineering personas are: **archaeologist**, **analyst**, **architect**
 
 **When generating persona deliverables:**
 
-1. **Place the base templates.** Onboarding generates a base-template-placement prompt that creates `docs/AE/personas/_base/` in the target and writes the five AEH base persona templates (archaeologist, analyst, architect, developer, reviewer) into it. The prompt carries the base-template content inline -- the self-containment rule applies; the target session has no harness access. This is the foundation the overlays' headers point at; it runs in Phase 2, before the role-activation smoke test (Phase 4).
+1. **Place the base templates AND the AEH-practice infrastructure.** Onboarding generates a base-template-placement prompt that creates `docs/AE/personas/_base/` in the target and writes the five AEH base persona templates (archaeologist, analyst, architect, developer, reviewer) into it. The same prompt ALSO delivers the two target-applied AEH-practice roles and the deterministic check script, so they are reachable from a target session with zero harness access:
+   - `docs/AE/roles/target-aeh-reviewer.md` and `docs/AE/roles/target-aeh-engineer.md` -- the single-file AEH-practice roles (detect + remediate) that run IN the target. They live in `docs/AE/roles/`, a sibling of `_base/`, because they are single-file (no project overlay) -- `_base/` is reserved for the engineering base templates that overlays extend.
+   - `docs/AE/bin/aeh-practice-check.sh` -- the deterministic AEH-practice check the `target-aeh-reviewer` runs locally (`docs/AE/bin/aeh-practice-check.sh .`). Make it executable (`chmod +x`). It lives under `docs/AE/` to respect the Phase 6 scope boundary and the `docs/AE/`-only fence, and to avoid colliding with the target's own `bin/`.
+   The prompt carries ALL of this content inline -- the self-containment rule applies; the target session has no harness access. The harness (`templates/personas/target-aeh-reviewer.md`, `templates/personas/target-aeh-engineer.md`, `bin/aeh-practice-check.sh`) stays the source of truth; the target copies are snapshots, refreshed via the `refresh-base-personas` retrofit prompt. This is the foundation the overlays' headers point at and the infrastructure a `health` pass uses; it runs in Phase 2, before the role-activation smoke test (Phase 4).
 
 2. **Scaffold overlay files**, not monolithic personas. Each overlay must start with the Persona Header Block:
 

@@ -80,6 +80,8 @@ When no persona is active:
 - Follow CLAUDE.md rules only
 - Operate as a general assistant
 
+**AEH-practice roles (target-applied).** Two single-file roles maintain this project's AEH practice and run IN this tree: `target-aeh-reviewer` (detect, read-only -- drives `health`) and `target-aeh-engineer` (remediate, read-write). They load from `docs/AE/roles/<role>.md` (single-file -- no overlay), delivered by onboarding and refreshed from harness master. The deterministic AEH-practice check they use is `docs/AE/bin/aeh-practice-check.sh` (run `docs/AE/bin/aeh-practice-check.sh .` from the project root). These roles are typically activated by a dispatched prompt or the `health` command, not the interactive role picker above.
+
 ---
 
 ## Filesystem Scope
@@ -200,7 +202,9 @@ When no change proposal exists (ad-hoc work), specs in `openspec/specs/` are sti
 | File | Purpose |
 |---|---|
 | `CLAUDE.md` | This file -- project instructions for Claude |
-| `docs/AE/personas/` | Role-specific persona prompts |
+| `docs/AE/personas/` | Role-specific persona prompts (`_base/` = engineering base templates; overlays alongside) |
+| `docs/AE/roles/` | Target-applied AEH-practice roles (`target-aeh-reviewer`, `target-aeh-engineer`) -- single-file, harness snapshots |
+| `docs/AE/bin/aeh-practice-check.sh` | Deterministic AEH-practice check (run from project root) |
 | `docs/AE/discovery-log.md` | Developer findings that need routing to analyst/architect |
 | `openspec/specs/` | Specification documents (if OpenSpec configured) |
 | `openspec/changes/` | Change proposals with designs and tasks (if OpenSpec configured) |

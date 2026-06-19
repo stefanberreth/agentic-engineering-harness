@@ -121,7 +121,7 @@ AEH-practice check framework (`aeh-practice-check.sh`) rather than eyeballing it
 It is a single chokepoint, registry-driven (the `CHECKS` list is the completeness
 source-of-truth), cannot silently no-op (every result, including SKIP, is
 printed), and emits structured PASS/FAIL/SKIP per check with a non-zero exit on
-any FAIL. Run it from the target root: `aeh-practice-check.sh .` (or
+any FAIL. Run it from the target root: `docs/AE/bin/aeh-practice-check.sh .` (or
 `--list` to see the registered checks). It currently verifies the prompt->result
 one-to-one pairing, the layered-persona base set presence, and target-side
 overlay headers; it is extended by adding a `check_<id>` function and registering
@@ -130,13 +130,12 @@ JUDGMENT (does the operational skill completely and consistently reflect the
 system; does a persona's encoded convention still match the code) is yours to
 apply at the review cadence, where judgment is affordable.
 
-The framework's source of truth is the harness (`bin/aeh-practice-check.sh`); it
-is delivered into the target by the AE scaffold so you run it locally in the
-target (the same scaffold-delivery follow-on that delivers the base personas --
-see the B3 decision note). Until that delivery wiring lands, the target-orchestrator
-delivers the script into the target session as harness-delivered structural
-placement; do NOT invoke it by a bare harness path from a target session (that
-path will not resolve target-side).
+The framework's source of truth is the harness (`bin/aeh-practice-check.sh`); the
+AE scaffold delivers a snapshot into the target at `docs/AE/bin/aeh-practice-check.sh`
+(onboarding Phase 2 base-template-placement places it; the `refresh-base-personas`
+retrofit refreshes it), so you run it locally in the target by its target-side
+path. Do NOT invoke it by a bare harness path from a target session (that path
+will not resolve target-side).
 
 ### Operational-skill currency gate (Tier 2)
 
@@ -217,8 +216,9 @@ structure does NOT apply in this mode; the output is the retrofit-action list.
 3. Identify the mode: a full `health` pass (drive the health-check playbook) or
    the Propagation-Impact Assessment Mode (consume the target-orchestrator's handed-in
    harness delta).
-4. Run deterministic checks through the `bin/` AEH-practice check framework where
-   available; apply judgment for the coherence dimensions.
+4. Run deterministic checks through the AEH-practice check framework at its
+   target-side path (`docs/AE/bin/aeh-practice-check.sh .`); apply judgment for the
+   coherence dimensions.
 5. Route every finding by file location; never remediate.
 
 ## Principles
