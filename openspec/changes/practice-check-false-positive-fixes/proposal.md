@@ -1,6 +1,6 @@
 ---
 slug: practice-check-false-positive-fixes
-status: proposed
+status: ready-for-archive
 since: 2026-06-19
 ---
 

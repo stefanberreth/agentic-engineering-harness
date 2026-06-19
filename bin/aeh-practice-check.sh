@@ -80,11 +80,29 @@ check_prompt_result_pairing() {
   [ -d "$TARGET_PATH/docs/AE/reports" ] && rdirs="$rdirs $TARGET_PATH/docs/AE/reports"
   [ -d "$TARGET_PATH/docs/AE/results" ] && rdirs="$rdirs $TARGET_PATH/docs/AE/results"
 
+  # Optional pairing baseline cutoff. A target onboarded BEFORE the one-prompt-one-
+  # report convention should not FAIL forever on history that predates it (the
+  # convention is forward-looking; it does not want hundreds of fabricated reports).
+  # The marker docs/AE/.prompt-pairing-since holds the first NNN to evaluate
+  # (zero-padded). Prompts/results before it are excluded and the excluded span is
+  # reported EXPLICITLY (never silently truncated). No marker -> evaluate all.
+  local cutoff="" cutoff_num=0 excluded=0 cutoff_note=""
+  local marker="$TARGET_PATH/docs/AE/.prompt-pairing-since"
+  if [ -f "$marker" ]; then
+    cutoff="$(tr -d '[:space:]' < "$marker" 2>/dev/null)"
+    case "$cutoff" in
+      '') : ;;
+      *[!0-9]*) cutoff_note=" [pairing-since marker '$cutoff' is not an NNN prompt number -- ignored; evaluating all]"; cutoff="" ;;
+      *) cutoff_num=1 ;;
+    esac
+  fi
+
   local orphan_prompts="" orphan_results="" n
   # prompts -> results
   for f in "$pdir"/[0-9][0-9][0-9]-*.md; do
     [ -e "$f" ] || continue
     n="$(basename "$f")"; n="${n%%-*}"
+    if [ "$cutoff_num" = 1 ] && (( 10#$n < 10#$cutoff )); then excluded=$((excluded + 1)); continue; fi
     local found=0
     for rd in $rdirs; do
       for r in "$rd/$n"-*.md; do [ -e "$r" ] && found=1 && break; done
@@ -97,21 +115,25 @@ check_prompt_result_pairing() {
     for r in "$rd"/[0-9][0-9][0-9]-*.md; do
       [ -e "$r" ] || continue
       n="$(basename "$r")"; n="${n%%-*}"
+      if [ "$cutoff_num" = 1 ] && (( 10#$n < 10#$cutoff )); then continue; fi
       local found=0
       for p in "$pdir/$n"-*.md; do [ -e "$p" ] && found=1 && break; done
       [ "$found" = 0 ] && orphan_results="$orphan_results $n"
     done
   done
 
+  local exnote=""
+  [ "$excluded" -gt 0 ] && exnote=" ($excluded historical prompt(s) before cutoff $cutoff not evaluated)"
+
   if [ -z "$rdirs" ]; then
-    DETAIL="prompts present but no docs/AE/reports/ or docs/AE/results/ directory -- no result trail exists"
+    DETAIL="prompts present but no docs/AE/reports/ or docs/AE/results/ directory -- no result trail exists$exnote$cutoff_note"
     return 1
   fi
   if [ -n "$orphan_prompts" ] || [ -n "$orphan_results" ]; then
-    DETAIL="unpaired prompt(s):${orphan_prompts:- none}; unpaired result(s):${orphan_results:- none}"
+    DETAIL="unpaired prompt(s):${orphan_prompts:- none}; unpaired result(s):${orphan_results:- none}$exnote$cutoff_note"
     return 1
   fi
-  DETAIL="every prompt has a paired result and vice versa"
+  DETAIL="every prompt has a paired result and vice versa$exnote$cutoff_note"
   return 0
 }
 
@@ -204,15 +226,36 @@ check_permission_scope() {
     problems="$problems; whole-filesystem allow rule (Read/Edit/Write of / or /**; grants access outside the project)"
   fi
   # Secret literal in a rule -- a secret keyword immediately assigned a value.
-  if grep -Eiq '(password|passwd|secret|api[_-]?key|apikey|access[_-]?key|token)[^"]{0,24}=[^"=[:space:]]' $files 2>/dev/null; then
-    problems="$problems; possible secret literal in a permission rule (baseline: no secrets in settings)"
+  # Whitelist well-known local-only credentials bound to a loopback host (the
+  # universal local-dev database default is not a secret); the SAME literal bound
+  # to a non-loopback host still flags. A spurious "possible secret" hit is the
+  # worst failure mode -- it desensitises operators to the signal that matters.
+  local secret_lines real_secrets
+  secret_lines="$(grep -Eih '(password|passwd|secret|api[_-]?key|apikey|access[_-]?key|token)[^"]{0,24}=[^"=[:space:]]' $files 2>/dev/null || true)"
+  if [ -n "$secret_lines" ]; then
+    real_secrets="$(printf '%s\n' "$secret_lines" | while IFS= read -r line; do
+      lc="$(printf '%s' "$line" | tr 'A-Z' 'a-z')"
+      # Benign iff BOTH a loopback host AND a known local-default credential value.
+      if printf '%s' "$lc" | grep -Eq '(127\.0\.0\.1|localhost)' \
+         && printf '%s' "$lc" | grep -Eq '(pgpassword|postgres_password|password|passwd)=(postgres|password)'; then
+        continue
+      fi
+      printf '%s\n' "$line"
+    done)"
+    if [ -n "$real_secrets" ]; then
+      problems="$problems; possible secret literal in a permission rule (baseline: no secrets in settings)"
+    fi
   fi
-  # Deny list mandatory for an AEH-managed target (it has docs/AE/).
+  # Deny list mandatory for an AEH-managed target (it has docs/AE/). Detection is
+  # newline-tolerant: a normally pretty-printed "deny" array puts its first element
+  # on the line after "[", so we collapse newlines before matching (a single-line
+  # detector false-fails on every formatted config). The two-file union below
+  # already covers a deny list living only in settings.local.json.
   if [ -d "$TARGET_PATH/docs/AE" ]; then
     local has_deny=0 f
     for f in $files; do
-      # A "deny" key whose array is not immediately closed-empty.
-      if grep -Eq '"deny"[[:space:]]*:[[:space:]]*\[[[:space:]]*"' "$f" 2>/dev/null; then has_deny=1; break; fi
+      # A "deny" key whose array is not immediately closed-empty (newline-tolerant).
+      if tr '\n' ' ' < "$f" 2>/dev/null | grep -Eq '"deny"[[:space:]]*:[[:space:]]*\[[[:space:]]*"'; then has_deny=1; break; fi
     done
     [ "$has_deny" = 0 ] && problems="$problems; no non-empty deny list (baseline: deny list is mandatory -- block secrets, filesystem escape, harness isolation)"
   fi
