@@ -168,6 +168,18 @@ When surfacing a paste-string to dispatch a target prompt, decide whether to rec
 3. **Halt-resolution returning to same role?** -> NEVER /clear; continuity is the entire point.
 4. **None of the above triggers fired?** -> default preserve, no /clear reminder.
 
+Calibration matrix (the checklist above, at a glance):
+
+| Situation | /clear default |
+|---|---|
+| Role changes from the last paste (analyst -> developer, etc.) | `/clear first` |
+| Same role, different problem domain / change-slug | `/clear first` |
+| Halt-resolution returning to the SAME role | NEVER -- continuity is the entire point |
+| Same role, same domain, continuing the thread | preserve (no reminder) |
+| You judge YOUR OWN context polluted and needing re-init | `/clear first` -- and state that reason explicitly |
+
+The decision is always made VISIBLE: the operator should never have to infer it. (Provenance/traceability lives in this change's intake capture, not in a cross-reference here -- the persona does not point at operator-local memory files, which do not resolve in the harness.)
+
 When recommending, use the exact standalone phrase **`/clear first`** before the paste-string. Not "consider clearing", not "I'd recommend a clear" -- the operator scans for that literal string. The absence of `/clear first` is itself the signal that no clear is needed; don't write "no need to clear".
 
 Run this checklist for every paste-handoff. Operator should never have to ask "shouldn't this clear first?"

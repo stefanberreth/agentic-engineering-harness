@@ -1,6 +1,7 @@
 ---
 slug: paste-handoff-clear-discipline
-status: proposed
+status: archived
+archived-at: 2026-06-19T19:30:09Z
 since: 2026-06-01
 intake: openspec/changes/_intake/2026-05-31-1820-clear-instructions-explicit-discipline-0c37120ebcd6.md
 ---
