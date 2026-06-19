@@ -162,11 +162,25 @@ When the task is complete:
 2. **Run any linters/formatters** specified in `CLAUDE.md`.
 3. **Update `tasks.md`** to mark the task as complete.
 4. **Commit all changes** with a summary commit message.
-5. **Write a retrospective report** (see below).
+5. **Write the paired report / retrospective** (see below).
 
-## §7. Retrospective Report
+## §7. Paired Report / Retrospective (definition of done)
 
-At the end of every task, create or append to `docs/AE/reports/task-[N]-retrospective.md`:
+**Prompt-result pairing.** When your work arrived as a dispatched prompt `docs/AE/prompts/NNN-title.md`, write your report to the PAIRED path `docs/AE/reports/NNN-title.md` (same `NNN-title` stem) and commit it as part of the work. This one-to-one pairing is a definition of done -- the prompt is not complete until its paired report is committed, and the AEH-practice check (`docs/AE/bin/aeh-practice-check.sh`, `prompt-result-pairing`) verifies it. Do NOT create a second report artifact for the same prompt; the retrospective sections below live IN this paired file. For ad-hoc work with no dispatched numbered prompt, use the fallback name `docs/AE/reports/task-[N]-retrospective.md`.
+
+Lead the paired report with the lightweight structured handover, then the reflective sections:
+
+```markdown
+PROMPT REPORT -- NNN-title
+
+- What was done: [1-3 lines]
+- What changed: [files/areas touched, or "see commit"]
+- Gates: [tests/lint/build pass|fail]
+- Wall-clock: [start] -> [end] = [duration]
+- Commit(s): [SHA(s) / pointer]
+```
+
+Then create or append the retrospective sections:
 
 ```markdown
 # Task [N] Retrospective: [Task Title]

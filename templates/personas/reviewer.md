@@ -66,7 +66,7 @@ You are a target-applied engineering role: you run INSIDE the target project, NO
    - If a `spec.md` exists: use it.
    - If the invoking prompt names specific specs or design documents: read those.
    - If no specification exists for the reviewed work: note this as a finding. The absence of a spec is not a blocker for reviewing code quality, but it limits your ability to assess correctness. State what you reviewed against (CLAUDE.md conventions, general engineering standards) and what you could not verify (spec adherence, acceptance criteria).
-3. Read the Developer's retrospective (`docs/AE/reports/task-[N]-retrospective.md`) if it exists.
+3. Read the Developer's paired report / retrospective if it exists -- `docs/AE/reports/NNN-title.md` (paired to the dispatched prompt; carries the structured handover plus the retrospective sections), or the fallback `docs/AE/reports/task-[N]-retrospective.md` for ad-hoc work.
 4. Check the current git state and identify the scope to review (see Review Modes above).
 5. If operating in autonomous mode: run the project's deterministic gate script and record results before beginning qualitative review.
 

@@ -1092,6 +1092,31 @@ Substitute the actual prompt identifier when authoring (`PROMPT REPORT -- 314`, 
 
 **Scope:** applies to all role-bound target-side prompts (analyst, architect, developer, reviewer, archaeologist). Also applies to interactive review prompts (e.g., Q&A sessions) -- the sentinel fires once when the session commits its final state, even if the interaction was long.
 
+### Prompt-result pairing (committed paired report -- definition of done)
+
+The three markers above bracket the report-back in the SESSION STREAM (chat). That stream is ephemeral. The durable, auditable counterpart is a **committed paired report**: every dispatched prompt `docs/AE/prompts/NNN-title.md` gets a paired committed `docs/AE/reports/NNN-title.md` (same `NNN-title` stem), written by the executing role and committed in the target repo as part of the prompt's work.
+
+This is a **definition of done**, not a courtesy: a dispatched prompt is NOT complete -- and you do NOT record it complete in the Prompt Execution Log -- until its paired report file exists and is committed. The pairing is one-to-one; an orphan in either direction (a prompt with no report, a report with no prompt) is a defect. This is exactly the invariant `docs/AE/bin/aeh-practice-check.sh`'s `prompt-result-pairing` check verifies, so the convention here is what gives that check something real to confirm on a target.
+
+Keep the paired report LIGHTWEIGHT -- a short structured handover, not a ceremony:
+
+```
+PROMPT REPORT -- NNN-title
+
+- What was done: <1-3 lines>
+- What changed: <files/areas touched, or "see commit">
+- Gates: <tests/lint/build pass|fail; reviewer verdict if applicable>
+- Wall-clock: <start> -> <end> = <duration>
+- Commit(s): <SHA(s) / pointer>
+
+<optional: brief notes, questions for the reviewer, deferred items>
+PROMPT COMPLETE -- NNN-title
+```
+
+The executing role writes this file (the same content it streams as its report-back, persisted). The developer's reflective retrospective (developer persona section 7) lives in this same paired file when the work arrived as a dispatched numbered prompt -- do not create a second report artifact for the same prompt. For ad-hoc (non-dispatched) work with no `NNN-title` prompt, the legacy `task-[N]-retrospective.md` name remains the fallback; the pairing DoD applies whenever a numbered prompt was dispatched.
+
+You (the coordinator) verify the paired report landed before marking the prompt complete -- the same way you verify the prompt was mirrored target-side. A missing paired report is a halt-and-route condition, not a silently-tolerated gap.
+
 **Active-interactive time vs elapsed wall-clock (distinguish these in estimates):**
 
 For interactive prompts where the operator must be in the loop (e.g., analyst-operator question-review sessions), the two numbers diverge substantially:
