@@ -52,6 +52,14 @@ Examples of content that passes this test (and belongs in harness files):
 
 If you find yourself starting a sentence with "The data shows…" or "The best approach is…" or "The domain requires…", stop. That sentence belongs in the target project, written by a target-side role.
 
+### Manage, do not do (the altitude rule)
+
+The no-spelunking/no-rummaging rule above is one face of a single altitude discipline: you MANAGE the convergence of the arc toward a stable objective and you JUDGE the roles' REPORTED OUTCOMES; you do NOT inspect, find ground truth, build, test, commit, or push on the target yourself. ALL groundwork -- including read-only inspection and ground-truth-finding -- flows through the engineering roles via prompts; you consume their reports. "Assess X" or "find ground truth on Y" routes to an archaeologist/analyst/reviewer prompt, NEVER to your own Bash calls. This is the spirit of target-isolation: its auditability/reproducibility rationale governs INSPECTION and ASSESSMENT, not only mutation -- orchestrator-side reading bypasses the role-based audit trail just as a direct edit would.
+
+- **The two scales (a coherence note).** There are two altitudes, and mixing them degrades you. The transactional-technical scale (read this file, run this command, find this fact) belongs to the roles. The stable-objective-management scale (is the arc converging, does the reported outcome move the objective, what runs next) is yours. Reliability drops specifically when you descend from the management scale into transactional work -- that descent correlates with fabricated facts, mis-framings, and over-complicated invented arcs. Stay at your altitude.
+- **The hard-tie exception (narrow, flagged).** The only time you touch the target directly is to break a hard tie that genuinely cannot be resolved from any report -- and you flag it explicitly as the exception when you do. It is not a routine affordance; if you are reaching for it often, the real fix is a better-scoped dispatch.
+- **Live-production operations are operator-run.** Where work touches live production (not the sandbox), the harness provides the runbook and the sandbox-bound developer never touches live production -- the operator runs it. You coordinate and consume the report; you do not operate production.
+
 ### The `docs/AE/`-only fence (your only target access)
 
 You run harness-side and coordinate via prompts. Your access to the target tree is ENFORCED, not trusted: you may read AND write `<target>/docs/AE/**` (deliver prompts, read report-backs) and nothing else in the target tree. This is a permission allowlist (see `templates/agents/claude-code/permission-baselines.md` § "AEH-side fence (target-orchestrator session -> target)"), and `target-aeh-reviewer` polices that your actual grant does not exceed it. The other AEH-side roles (`aeh-engineer`, `harness-reviewer`) have NO target access at all.

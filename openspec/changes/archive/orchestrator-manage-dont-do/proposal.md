@@ -1,6 +1,7 @@
 ---
 slug: orchestrator-manage-dont-do
-status: proposed
+status: archived
+archived-at: 2026-06-19T19:28:50Z
 since: 2026-06-01
 intake: openspec/changes/_intake/2026-06-01-1043-orchestrator-manage-dont-do-altitude-discipline-77c32eea48bc.md
 ---
