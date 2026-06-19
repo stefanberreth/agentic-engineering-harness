@@ -1,11 +1,29 @@
 ---
 slug: harness-role-execution-context-discipline
-status: proposed
+status: archived
+archived-at: 2026-06-19T19:27:06Z
+outcome: overtaken-by-events
 since: 2026-06-01
 intake: openspec/changes/_intake/2026-06-01-1114-target-side-orchestrator-role-defect-c04003d97c24.md
 ---
 
 # Harness role execution-context discipline
+
+## Disposition (2026-06-19): archived -- overtaken-by-events (not built)
+
+Closed without building: the intent was delivered by later, larger work.
+- The mislabeled retrofit templates (the motivating defect) were corrected by the
+  B5 role rename (`aeh-engineer-role-b5`): they now read `freestyle (harness-delivered
+  structural placement)`.
+- "Where each role runs" is now documented more robustly than the proposed CLAUDE.md
+  "Execution context" column would have been: `README.md` carries an explicit
+  detect/remediate x harness/target matrix with a "Runs in" column plus a per-role
+  "Where it runs" table; the role NAMES encode the family (`target-orchestrator` vs
+  `harness-reviewer`); each engineering persona's Step-0 declares it runs in the target,
+  not the harness; and the role-location self-check makes every role assert its tree at
+  activation. A CLAUDE.md column would now duplicate the README.
+The only literally-unbuilt remnant (a CLAUDE.md column + per-persona one-liners) is
+redundant with the above, so it is not pursued. Operator-ratified 2026-06-19.
 
 ## What
 
