@@ -26,7 +26,7 @@ Read in this order, brief:
 - This file's sibling at `openspec/changes/_intake/` -- list the four captures and read their summaries (status frontmatter + Trigger + Insight sections):
   - `2026-05-31-1748-reviewer-prompt-commit-step-77c32eea48bc.md`
   - `2026-05-31-1846-orchestrator-modal-states-chain-fabric-77c32eea48bc.md`
-  - `2026-05-31-1910-chain-fabric-impl-comparison-with-hex-77c32eea48bc.md`
+  - `2026-05-31-1910-chain-fabric-impl-comparison-with-a-second-target-77c32eea48bc.md`
   - `2026-06-01-1114-target-side-orchestrator-role-defect-c04003d97c24.md` (added during Stream A dispatch -- retrofit prompt templates use `orchestrator (target-side)` role label that muddies the harness-side coordination role)
 - `templates/personas/orchestrator.md` (your own role definition; you'll be modifying scope/execution-context wording as part of the role-defect capture's fix if it is promoted).
 
