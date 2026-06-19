@@ -133,6 +133,8 @@ State is organised by function -- durable identity (`profile.md`), live dashboar
 
 Every prompt must include: header (target, directory, execute-in, role, prerequisites, phase), context for operator, the prompt text, expected outcome, and fallback instructions. **Critical rules:** prompts must be self-contained (no harness-side paths), deliverable content must be embedded inline, and modifications to existing instruction files must use merge-and-confirm (never silently overwrite).
 
+**Harness feedback (dogfooding).** Dispatched prompts (at minimum AEH-practice / retrofit / propagation prompts) carry a short "Harness feedback (dogfooding)" framing -- the AEH artifacts the agent loads and runs are UNDER TEST -- and a `HARNESS FEEDBACK` report-back field: report anything that did not land flawlessly (a dangling harness-path reference, a misfiring check, a role file that assumes something untrue in-target, an ambiguous step), keep it SEPARATE from target findings, STOP rather than silently work around a blocking harness defect, and treat "none -- landed as written" as a valid answer. The `target-orchestrator` harvests this field from every report-back and captures harness-level signals (operator-gated). Full mechanism: `templates/personas/target-orchestrator.md` § "Harness feedback (dogfooding) field" + § "Harness Capture".
+
 ---
 
 ## How This Project Is Used

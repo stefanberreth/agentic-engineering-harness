@@ -127,6 +127,15 @@ The dimensions you assess (full detail in the playbook):
   validate the config now passes (detect == confirm). This is the target's-own-config
   half of the report/approve/fix/validate loop; the AEH-side-grant half is
   `harness-reviewer`'s (it reads the harness config) + `aeh-engineer`'s (it fixes it).
+- **Dogfooding feedback (harness signals from lived experience)** -- the target's
+  use of AEH is also a field test of the harness. Surface AEH-improvement signals
+  the target has hit: artifacts that did not land flawlessly (dangling harness-path
+  references in delivered role/persona files, misfiring deterministic checks,
+  ambiguous or self-contradicting instructions), the `HARNESS FEEDBACK` fields
+  recorded in `docs/AE/reports/`, and recurring work-arounds. These are
+  harness-level signals, not target defects: report them so the `target-orchestrator`
+  captures them (operator-gated) into the harness inbox for the `aeh-engineer` to
+  triage. You DETECT and route the signal; you do not fix the harness.
 
 ### The deterministic check framework
 

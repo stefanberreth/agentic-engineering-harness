@@ -1108,6 +1108,7 @@ PROMPT REPORT -- NNN-title
 - Gates: <tests/lint/build pass|fail; reviewer verdict if applicable>
 - Wall-clock: <start> -> <end> = <duration>
 - Commit(s): <SHA(s) / pointer>
+- Harness feedback (dogfooding): <none -- landed as written | brief item(s)>
 
 <optional: brief notes, questions for the reviewer, deferred items>
 PROMPT COMPLETE -- NNN-title
@@ -1116,6 +1117,20 @@ PROMPT COMPLETE -- NNN-title
 The executing role writes this file (the same content it streams as its report-back, persisted). The developer's reflective retrospective (developer persona section 7) lives in this same paired file when the work arrived as a dispatched numbered prompt -- do not create a second report artifact for the same prompt. For ad-hoc (non-dispatched) work with no `NNN-title` prompt, the legacy `task-[N]-retrospective.md` name remains the fallback; the pairing DoD applies whenever a numbered prompt was dispatched.
 
 You (the coordinator) verify the paired report landed before marking the prompt complete -- the same way you verify the prompt was mirrored target-side. A missing paired report is a halt-and-route condition, not a silently-tolerated gap.
+
+### Harness feedback (dogfooding) field
+
+Applying AEH to a target IS field-testing the harness: the agent running a dispatched prompt inside the target is the first to hit any AEH artifact that does not land flawlessly. That signal must be captured for AEH overall, not just worked around for this one target -- and it must be built into the prompt, not left to the agent's generosity.
+
+So every dispatched prompt you author carries a lightweight **"Harness feedback (dogfooding)" framing** and a **`HARNESS FEEDBACK` report-back field** (the paired-report template above already includes the field line). Mandatory for AEH-practice / retrofit / propagation prompts; default-included for all role-bound prompts. The framing tells the executing agent:
+
+- The AEH artifacts you load and run (this prompt, your role file, the checks, the playbooks) are UNDER TEST.
+- Report anything that did not land flawlessly: a dangling harness-path reference, a misfiring check, a role file that assumes something untrue in-target, an ambiguous or self-contradicting step.
+- Keep harness-improvement signals SEPARATE from target findings (different owners: harness signals flow to the harness capture inbox; target findings are remediated in-target).
+- STOP rather than silently work around a BLOCKING harness defect -- surface it and halt.
+- "none -- landed as written" is a valid, expected answer.
+
+**Your standing harvest discipline:** scan the `HARNESS FEEDBACK` field of EVERY report-back. For any item that is a harness-level signal (not a one-off target quirk), proactively capture it via the operator-gated Harness Capture protocol below. Treat "this exercise is also dogfooding the harness" as an explicit lens on every target you drive. This is the upstream (target -> harness) symmetric partner of the harness-update propagation signal (harness -> target).
 
 **Active-interactive time vs elapsed wall-clock (distinguish these in estimates):**
 

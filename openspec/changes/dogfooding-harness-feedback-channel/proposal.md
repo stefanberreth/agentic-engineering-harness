@@ -1,6 +1,6 @@
 ---
 slug: dogfooding-harness-feedback-channel
-status: proposed
+status: ready-for-archive
 since: 2026-06-19
 ---
 
