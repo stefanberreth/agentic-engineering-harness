@@ -169,7 +169,7 @@ Then jump straight to a condensed flow:
    serena: TBD (codebase-dependent assessment in Phase 6g)
    ```
 
-   The `harness-sync-sha:` field records the harness commit SHA at the moment this target was onboarded; the target-orchestrator's session-init step compares it against current harness HEAD to detect upstream updates. See `templates/personas/target-orchestrator.md` § "Harness Update Propagation Signal".
+   The `harness-sync-sha:` field records the harness commit SHA at the moment this target was onboarded; the target-orchestrator's session-init step compares it against current harness HEAD to detect upstream updates. See `templates/personas/target-orchestrator.md` § "Harness Update Propagation Gate".
 
    Do NOT ask domain/stack/team questions -- those are explicitly out of scope for onboarding.
 
@@ -428,7 +428,7 @@ The live dashboard (`orchestrator-state.md`, carrying the `## Open Questions` se
 - Project name and path
 - Tech stack summary
 - Prompt delivery policy (default `direct`; do NOT ask -- see CLAUDE.md § "Selective exception: Direct Prompt Delivery (default)" for the rationale and the rare opt-out conditions)
-- `harness-sync-sha:` -- the harness commit SHA at onboarding time (`git -C /workspace/aeh rev-parse HEAD`). Enables the target-orchestrator's session-init harness-update detection. See `templates/personas/target-orchestrator.md` § "Harness Update Propagation Signal".
+- `harness-sync-sha:` -- the harness commit SHA at onboarding time (`git -C /workspace/aeh rev-parse HEAD`). Enables the target-orchestrator's session-init harness-update detection. See `templates/personas/target-orchestrator.md` § "Harness Update Propagation Gate".
 - Key structural features noted during reconnaissance
 - Existing setup summary (if applicable)
 

@@ -24,7 +24,7 @@ The refresh is directory-scoped, not artifact-scoped, because:
 - Pre-existing drift on artifacts not touched by the most recent update is silently corrected.
 - The cost of refreshing all vs one is negligible (a handful of file copies).
 
-The discipline is consistent with the broader propagation-signal philosophy: mechanism is a signal + action; operator approves; the `target-aeh-reviewer` scopes the Propagation-Impact; refresh actions are not minimally-scoped because the cost saving isn't worth the staleness risk.
+The discipline is consistent with the broader propagation philosophy: a stale target is upgraded via the one turnkey runbook the `UPGRADE REQUIRED` gate names (`templates/playbooks/upgrade.md`); this snapshot refresh is its Step 1. The operator approves; the `target-aeh-reviewer` scopes the Propagation-Impact at the runbook's Step 3; refresh actions are not minimally-scoped because the cost saving isn't worth the staleness risk.
 
 (Only the target-side artifacts are refreshed -- the five engineering personas, the two target-applied AEH roles, and the check script all RUN in the target. The coordinator and the harness-proper roles run in the harness root, so they are not placed in the target tree.)
 

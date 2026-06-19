@@ -57,7 +57,7 @@ Print the resulting `profile.md` contents (or the relevant snippet) for operator
 PROMPT REPORT
 - harness-sync-sha seeded: <SHA>
 - Location: <full path to profile.md>
-- Next target-orchestrator session-init will compare against current harness HEAD and surface the signal if the marker is behind.
+- Next target-orchestrator session-init will compare against current harness HEAD and surface the UPGRADE REQUIRED gate if the marker is behind.
 
 PROMPT COMPLETE -- seed-harness-sync-marker
 ```
@@ -66,10 +66,10 @@ PROMPT COMPLETE -- seed-harness-sync-marker
 
 `profile.md` carries a valid `harness-sync-sha:` line. Next target-orchestrator session-init detects the marker, runs the harness-update comparison, and either:
 - Surfaces nothing (marker == harness HEAD), or
-- Surfaces "Harness has advanced N commits since last sync. Say 'review changes' to dispatch a target-aeh-reviewer Propagation-Impact pass that scopes local impact."
+- Surfaces a prominent `UPGRADE REQUIRED` gate ("<slug> is N commits behind the harness ... To upgrade now: say 'upgrade'") pointing at the turnkey runbook `templates/playbooks/upgrade.md`.
 
 ## Fallback
 
-If `profile.md` does not exist, this target has not completed AEH onboarding. Halt and surface "profile.md missing -- this target needs onboarding before the propagation-signal mechanism is applicable."
+If `profile.md` does not exist, this target has not completed AEH onboarding. Halt and surface "profile.md missing -- this target needs onboarding before the propagation gate mechanism is applicable."
 
 If the harness path is not `/workspace/aeh/` (non-standard container setup), substitute the actual harness root path in Step 1 and document the substitution as a `[DECISION]` entry in `journal.md`.

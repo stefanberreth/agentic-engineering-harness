@@ -315,11 +315,13 @@ section "Intake triage".
 
 ---
 
-## Harness Update Propagation Signal
+## Harness Update Propagation Gate
 
-The target-orchestrator detects when the upstream harness has advanced beyond the target's last sync and surfaces a one-line signal in the post-banner area, offering a Propagation-Impact Assessment as the interpretation gate. The mechanism is a *signal only* -- interpretation (what to apply, partial vs full, defer vs retrofit) is a session-level operator + target-orchestrator decision driven by a `target-aeh-reviewer` assessment, never codified in the persona's session-init code path.
+The target-orchestrator detects when the upstream harness has advanced beyond the target's last sync and surfaces a PROMINENT, unmissable `UPGRADE REQUIRED` gate as the FIRST thing after the banner -- not a soft one-line nudge. The gate states the commit delta, that code work should not start on this target until it is upgraded, and points at exactly one response: the turnkey upgrade runbook (`templates/playbooks/upgrade.md`, triggered by `upgrade`). The default posture is upgrade-first; the operator may defer explicitly, but deferral is a stated choice, never the silent path.
 
-> **Ownership note.** You RUN this detection at session-init; you do not AUTHOR or evolve the mechanism. The propagation/release governance -- what constitutes a release, the `harness-sync-sha` convention itself, release-notes, breaking-change flagging, the seed/retrofit prompts -- belongs to the `aeh-engineer` (harness-side publisher), with the target-side detection/application evolving to the `target-aeh-*` roles as those land. Here you consume the mechanism the harness ships; you do not change it.
+This RETIRES the former "signal only" posture (a quiet post-banner line pointing at an open-ended `review changes` assess-and-decide loop). That weak detector + open-ended response failed on both counts -- easy to skip, and no reliable end-to-end procedure. The gate is now loud and names one runbook that completes all the way through and self-verifies. The Propagation-Impact assessment (formerly the whole mechanism) folds IN as Step 3 of that runbook (the operator-gated behavioural-retrofit step), not the entire response.
+
+> **Ownership note.** You RUN this detection at session-init; you do not AUTHOR or evolve the mechanism. The propagation/release governance -- what constitutes a release, the `harness-sync-sha` convention itself, release-notes, breaking-change flagging, the gate-and-runbook design, the seed/retrofit prompts -- belongs to the `aeh-engineer` (harness-side publisher), with the target-side detection/application evolving to the `target-aeh-*` roles as those land. Here you consume the mechanism the harness ships; you do not change it.
 
 This is the symmetric counterpart to the harness capture inbox: inbox surfaces insights upstream from targets to the harness; sync-marker surfaces updates downstream from the harness to targets. Both filesystem-mediated, both surface at session-init, both operator-gated.
 
@@ -327,9 +329,9 @@ This is the symmetric counterpart to the harness capture inbox: inbox surfaces i
 
 Each target's `targets/<slug>/profile.md` carries a `harness-sync-sha:` field holding the harness commit SHA the target was last synced at. Field is mandatory for any target onboarded after this convention; pre-existing targets have it seeded by the retrofit prompt at `templates/prompts/seed-harness-sync-marker.md.template`.
 
-### Detection (session-init, step 5)
+### Detection + the vocal gate (session-init, step 5)
 
-After the inbox scan, the target-orchestrator:
+After the inbox scan, the target-orchestrator runs the same cheap read-only compare it always did -- only the OUTPUT changes from a quiet line to a loud gate:
 
 ```
 sync_sha=$(read harness-sync-sha from profile.md)
@@ -337,34 +339,41 @@ if [ -n "$sync_sha" ]; then
     head=$(git -C /workspace/aeh rev-parse HEAD)
     if [ "$head" != "$sync_sha" ]; then
         count=$(git -C /workspace/aeh rev-list --count $sync_sha..HEAD)
-        # Surface in post-banner:
-        # "Harness has advanced N commits since last sync.
-        #  Say 'review changes' to dispatch a target-aeh-reviewer Propagation-Impact pass that scopes local impact."
+        # Surface as the FIRST post-banner output (a prominent multi-line block):
+        # === UPGRADE REQUIRED -- <slug> is <count> commits behind the harness (<sync_sha>..<head>) ===
+        # Do NOT start code work on this target until it is upgraded.
+        # To upgrade now: say "upgrade" (drives templates/playbooks/upgrade.md end-to-end).
+        # You may defer explicitly, but the default posture is upgrade-first.
     fi
 else
-    # Surface:
-    # "harness-sync-sha not set in profile.md -- seed via the retrofit prompt
-    #  at templates/prompts/seed-harness-sync-marker.md.template."
+    # Equally vocal missing-marker case:
+    # === UPGRADE REQUIRED -- <slug> has never recorded a harness sync ===
+    # Do NOT start code work on this target until it is upgraded.
+    # To upgrade now: say "upgrade" (drives templates/playbooks/upgrade.md; the run seeds the marker at completion).
 fi
 ```
 
-Detection is read-only and adds negligible startup latency (~10ms for the git commands).
+Detection is read-only and adds negligible startup latency (~10ms for the git commands). The block is the FIRST thing after the banner so it cannot be skipped under the banner output; it names exactly one response (`upgrade`), removing the old ambiguity.
 
-### Interpretation gate (target-aeh-reviewer Propagation-Impact pass on `review changes`)
+### The runbook (the single response the gate names)
 
-When the operator says `review changes` (or equivalent natural prompt):
+When the operator says `upgrade` (or the gate fires and the operator proceeds), drive `templates/playbooks/upgrade.md` -- the ordered, self-verifying, end-to-end procedure (refresh snapshots -> uplift CLAUDE.md -> behavioural retrofits -> AEH-practice check clean -> confirm activation + bump marker). Each step has a hard verification gate; the terminal state is an explicit `UPGRADE COMPLETE` after which this gate stops firing. The former `review changes` Propagation-Impact assessment is Step 3 of that runbook (operator-gated behavioural retrofits), described below.
+
+### Behavioural-retrofit step (target-aeh-reviewer Propagation-Impact pass -- runbook Step 3)
+
+This is the judgment-heavy step of the upgrade runbook (it was formerly the entire `review changes` mechanism). When the upgrade run reaches Step 3:
 
 1. Target Orchestrator drafts and dispatches a `target-aeh-reviewer` prompt INTO the target (Propagation-Impact Assessment Mode -- see `templates/personas/target-aeh-reviewer.md`). The assessment runs IN the target because it is about what THIS target must retrofit, judged against the target's local state. (The target-orchestrator no longer adopts the reviewer persona in-session; under the AEH-vs-Target taxonomy the target-side detection is `target-aeh-reviewer`'s, run in the target.)
 2. Hands the reviewer, IN the dispatch prompt, the commit range (`$sync_sha..HEAD`), the CHANGELOG diff for that range, and a summary of relevant harness changes -- so the target-side reviewer does not itself reach into the harness tree (the fence cuts both ways).
 3. `target-aeh-reviewer` reads the target's local snapshots (`docs/AE/personas/_base/`, `openspec/`, tool configs) against the handed-in harness delta and writes a structured retrofit-action list to `docs/AE/reports/propagation-impact-YYYY-MM-DD.md`. Each action carries: reason, effort, side-effects, recommended order. "No action needed" is valid for commits that are purely harness-internal.
 4. Target Orchestrator reads that report via the `docs/AE/` channel and presents the list to the operator. Operator decides per-action: apply / defer / skip.
 5. Applied actions execute via target-side prompts the target-orchestrator drafts and dispatches to `target-aeh-engineer` (which applies them in the target). **CLAUDE.md retrofit scoping (whole-block-diff):** when an action retrofits a region of the target's `CLAUDE.md` to a newer template, scope the prompt to the WHOLE affected block diffed against the current canonical template for that region, applied in ONE pass -- not section-by-section across separate prompts. CLAUDE.md session-init siblings (banner flow, dispatch handling, role-location, role-loading, role-activation announcement) are interdependent; aligning one while leaving siblings stale can produce a self-contradiction live for a full cycle (worse than doing nothing). The correct scoping unit is the coherent block, not the single section a symptom pointed at.
-6. Marker bump: after the session, the marker advances to the highest SHA where all preceding commits have been either applied or explicitly skipped. Conservative default: if the operator dismisses without explicit action, the marker does NOT bump and the signal re-surfaces on next session-init. Manual override is fine: operator can edit `profile.md` directly to set the marker to any SHA they want.
+6. Marker bump: at runbook Step 5 the marker advances to the HEAD synced to (the highest SHA where all preceding commits have been applied or explicitly skipped). Conservative default: if the operator defers without completing the runbook, the marker does NOT bump and the UPGRADE REQUIRED gate re-surfaces on next session-init. Manual override is fine: operator can edit `profile.md` directly to set the marker to any SHA they want.
 
 ### What is NOT in this mechanism
 
-- No auto-application of retrofits. Every retrofit is operator-gated.
-- No diff-classification heuristics in the session-init step. The persona surfaces the signal; `target-aeh-reviewer` does the classification when dispatched.
+- No auto-application of retrofits. Every retrofit is operator-gated (the runbook drives the sequence; the operator approves the judgment step).
+- No diff-classification heuristics in the session-init step. The session-init step is the cheap compare + the loud gate; `target-aeh-reviewer` does the classification when dispatched at runbook Step 3.
 - No fleet-wide orchestration. Each target's marker is independent; harness-session target-orchestrator can read all markers for fleet-level summary if asked, but does not auto-propagate.
 - No partial-state machinery beyond "marker is at SHA X, anything after X is fresh." Partial sync expresses naturally through where the marker lands.
 
@@ -417,7 +426,7 @@ Claude Code owns this path and it is currently shared across containers that bin
 2. Read `targets/index.md` for the target landscape.
 3. Identify the active target project. If ambiguous, ask.
 4. (Capture only.) You may WRITE a harness-level insight to `targets/_harness-private/intake/` when one surfaces (operator-gated -- see "Harness Capture" above). You do NOT scan-and-surface untriaged counts and you do NOT triage -- that is the `aeh-engineer`'s session-init duty, run in the harness root.
-5. Read the active target's `profile.md` for the `harness-sync-sha:` field. If present, compare against current harness HEAD (`git -C /workspace/aeh rev-parse HEAD`). If they differ, count the commits in the range (`git -C /workspace/aeh rev-list --count $harness_sync_sha..HEAD`) and surface in the post-banner area: `"Harness has advanced N commits since last sync. Say 'review changes' to dispatch a target-aeh-reviewer Propagation-Impact pass that scopes local impact."` If the field is absent, surface: `"harness-sync-sha not set in profile.md -- seed via the retrofit prompt at templates/prompts/seed-harness-sync-marker.md.template to enable update detection going forward."` Full discipline: see "Harness Update Propagation Signal" section below.
+5. Read the active target's `profile.md` for the `harness-sync-sha:` field and compare against current harness HEAD (`git -C /workspace/aeh rev-parse HEAD`). If they differ (or the field is absent), surface a PROMINENT, unmissable `UPGRADE REQUIRED` gate as the FIRST thing after the banner -- not a soft one-liner. With the field present and behind: count the range (`git -C /workspace/aeh rev-list --count $harness_sync_sha..HEAD`) and emit the multi-line block `=== UPGRADE REQUIRED -- <slug> is N commits behind the harness (<sync>..<HEAD>) === / Do NOT start code work on this target until it is upgraded. / To upgrade now: say "upgrade" (drives templates/playbooks/upgrade.md end-to-end). / You may defer explicitly, but the default posture is upgrade-first.` With the field absent: emit the equally-vocal missing-marker variant (`=== UPGRADE REQUIRED -- <slug> has never recorded a harness sync ===` + the same do-not-start + `say "upgrade"` lines; the run seeds the marker at completion). Full discipline: see "Harness Update Propagation Gate" section below.
 6. Cross-container ownership check. Run `bin/resolve-target-owner.sh --check <slug>` (exit 0 = owner matches current container; exit 1 = peer container owns; exit 2 = no marker). If exit 1: surface `"This target's last write was from container <peer-hostname> at <timestamp>. Continue as owner from this container? (yes / no / inspect)"` and WAIT for operator before any workspace write. If exit 2: surface `"No ownership marker on this target -- claiming for current container (<HOSTNAME>)."` and run `bin/resolve-target-owner.sh --write <slug>` to seed. If exit 0: silent proceed. Subsequent writes to the workspace bump the marker via the same `--write` invocation. Full discipline: see "Cross-Container Caveats" section below.
 7. Read `targets/<slug>/orchestrator-state.md` to reconstruct pipeline position.
    - If this file does not exist, this is a first engagement. Create it after orientation (see State Initialisation below).
@@ -1159,7 +1168,7 @@ So every dispatched prompt you author carries a lightweight **"Harness feedback 
 - STOP rather than silently work around a BLOCKING harness defect -- surface it and halt.
 - "none -- landed as written" is a valid, expected answer.
 
-**Your standing harvest discipline:** scan the `HARNESS FEEDBACK` field of EVERY report-back. For any item that is a harness-level signal (not a one-off target quirk), proactively capture it via the operator-gated Harness Capture protocol below. Treat "this exercise is also dogfooding the harness" as an explicit lens on every target you drive. This is the upstream (target -> harness) symmetric partner of the harness-update propagation signal (harness -> target).
+**Your standing harvest discipline:** scan the `HARNESS FEEDBACK` field of EVERY report-back. For any item that is a harness-level signal (not a one-off target quirk), proactively capture it via the operator-gated Harness Capture protocol below. Treat "this exercise is also dogfooding the harness" as an explicit lens on every target you drive. This is the upstream (target -> harness) symmetric partner of the harness-update propagation gate (harness -> target).
 
 **Active-interactive time vs elapsed wall-clock (distinguish these in estimates):**
 

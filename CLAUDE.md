@@ -187,7 +187,7 @@ When a conversation produces a new insight about how the harness should work, or
 - **Review intermediaries are local-only.** Findings/planning/scratch/retrospectives carrying real identifiers are `*.private.md` / `*.local.md`, never committed; a tracked intermediary is a Dimension-1 finding. (`gitignore != untrack`: use `git rm --cached <file>` then ignore.)
 - **OpenSpec for substantive harness changes.** Proposals under `openspec/changes/<slug>/` (trivial changes bypass with a `[trivial]`/`[hygiene]` prefix); authoring is target-detail-free (everything in `openspec/**` ships public). Detail: `openspec/project.md`.
 - **Cross-container isolation.** Parallel target-orchestrator sessions share this bind-mounted dir; per-target `.owner-container` markers gate writes (session-init checks them); per-host markers via `bin/resolve-*`. Full mechanism: `templates/personas/target-orchestrator.md` § "Cross-Container Caveats".
-- **Harness update propagation signal.** Each target's `profile.md` carries `harness-sync-sha:`; target-orchestrator session-init offers a "review changes" pass when behind. Full mechanism: `templates/personas/target-orchestrator.md` + `templates/personas/target-aeh-reviewer.md`.
+- **Harness update propagation gate.** Each target's `profile.md` carries `harness-sync-sha:`; when behind HEAD (or absent), target-orchestrator session-init surfaces a PROMINENT `UPGRADE REQUIRED` gate (not a soft signal) pointing at the single turnkey runbook (`upgrade` -> `templates/playbooks/upgrade.md`), which drives the stale target to current and self-verifies (aeh-practice-check clean + marker bumped). Full mechanism: `templates/personas/target-orchestrator.md` § "Harness Update Propagation Gate" + `templates/playbooks/upgrade.md` + `templates/personas/target-aeh-reviewer.md`.
 - **Harness capture inbox (private, universal).** Cross-session insights flow through `targets/_harness-private/intake/` (private, never published); capture is universal + ask-before-write; the `aeh-engineer` triages/promotes (public boundary enforced at promotion; the former public `openspec/changes/_intake/` path in old records means this relocated inbox). Full mechanism: `targets/_harness-private/intake/README.md`.
 
 ---
@@ -237,6 +237,7 @@ Playbooks are guided workflows stored in `templates/playbooks/`. When triggered,
 | `onboard` | `templates/playbooks/onboarding.md` | Assess and transform a new target project. Runs 7 phases: target selection, reconnaissance, assessment, report, planning, harness setup, implementation handoff. |
 | `health` | `templates/playbooks/health-check.md` | Run a recurring compliance check on an existing target. Produces a delta report comparing current state vs last assessment, detects persona drift and instruction leaks. |
 | `tools` | `templates/playbooks/tools.md` | Configure development tools for a target project. OpenSpec + Context7 are AEH-standard SDLC tools (default in-scope during onboarding, opt-out); Serena is genuinely optional (codebase-dependent). Detects existing tools, offers setup/removal, generates prompts. |
+| `upgrade` | `templates/playbooks/upgrade.md` | Bring a target whose AEH practice has fallen behind the harness all the way back to current, and prove it. The single turnkey runbook the `UPGRADE REQUIRED` propagation gate points at: refresh snapshots, uplift CLAUDE.md, apply behavioural retrofits, drive the AEH-practice check clean, bump the sync marker. Ordered, gated per step, self-verifying. |
 
 When a playbook is triggered, Claude must read the playbook file and follow its instructions exactly. The playbook governs tone, pacing, output format, and user interaction for the duration of the workflow.
 
@@ -353,6 +354,7 @@ These are natural language triggers the user can say at any time. They are NOT C
 | "onboard" or "onboard <path>" | Start the guided onboarding playbook for a new target project. Reads `templates/playbooks/onboarding.md` and follows it step-by-step. |
 | "health" or "health <slug>" | Run a health check on an existing target. Reads `templates/playbooks/health-check.md` and follows it step-by-step. |
 | "tools" or "tools <slug>" | Configure optional development tools for a target project. Reads `templates/playbooks/tools.md` and follows it step-by-step. |
+| "upgrade" or "upgrade <slug>" | Run the full harness-sync upgrade runbook on a target that has fallen behind the harness. Reads `templates/playbooks/upgrade.md` and follows it step-by-step. This is the response the `UPGRADE REQUIRED` propagation gate names. |
 
 ### Role behaviour
 
@@ -429,7 +431,8 @@ If working on the harness itself:
 │   ├── playbooks/
 │   │   ├── onboarding.md                  # Guided assessment + transformation workflow
 │   │   ├── health-check.md               # Recurring compliance check workflow
-│   │   └── tools.md                       # Optional development tool configuration
+│   │   ├── tools.md                       # Optional development tool configuration
+│   │   └── upgrade.md                      # Full harness-sync upgrade runbook (the propagation gate's response)
 │   ├── hooks/
 │   │   ├── README.md                      # Pre-commit / pre-push leak-scan install notes
 │   │   ├── pre-commit                     # Staged-content + commit-message leak scan

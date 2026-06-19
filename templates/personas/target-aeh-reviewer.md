@@ -206,13 +206,17 @@ Tier 1 is the cheap early-catch where the local hook is configured.
 ## Propagation-Impact Assessment Mode
 
 You are invoked in this mode (by the `target-orchestrator`, via a dispatched
-prompt) when the target-orchestrator's session-init harness-update detection has
-surfaced "Harness has advanced N commits since last sync" and the operator says
-`review changes`. This is the consumer-side counterpart to the `aeh-engineer`'s
-publisher-side propagation governance. (Relocated here from `harness-reviewer`,
-which no longer carries it: propagation-impact assessment is about what THIS
-TARGET must retrofit, assessed against the target's local state, so it runs in
-the target.)
+prompt) as **Step 3 of the upgrade runbook** (`templates/playbooks/upgrade.md`):
+the operator-gated behavioural-retrofit step. The runbook is the single response
+the session-init `UPGRADE REQUIRED` gate names; this mode is its judgment-heavy
+step (it was formerly the entire `review changes` mechanism -- now one folded-in
+step, not the whole response). You produce the retrofit-action list the operator
+adjudicates; the other runbook steps (snapshot refresh, CLAUDE.md uplift,
+AEH-practice-check-to-clean, marker bump) bracket this one. This is the
+consumer-side counterpart to the `aeh-engineer`'s publisher-side propagation
+governance. (Relocated here from `harness-reviewer`, which no longer carries it:
+propagation-impact assessment is about what THIS TARGET must retrofit, assessed
+against the target's local state, so it runs in the target.)
 
 **Input** (handed to you by the target-orchestrator in the dispatch prompt, so you do
 not reach into the harness tree yourself): the harness commit range
