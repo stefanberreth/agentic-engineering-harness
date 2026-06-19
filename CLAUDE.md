@@ -261,6 +261,8 @@ Valid roles: `analyst`, `archaeologist`, `architect`, `developer`, `reviewer`, `
 
 > **Marker-value back-compat (deprecation window).** The role formerly named `orchestrator` is now `target-orchestrator`. An existing persona marker (`.claude/persona` / `.claude/persona.$HOSTNAME`) still holding the legacy value `orchestrator` resolves to `target-orchestrator` -- session-init treats the legacy value as the new role and rewrites the marker to `target-orchestrator` on next write. Accept the legacy value silently for now; it will be retired in a later cleanup.
 
+> **Settled exception: the `orchestrator-state.md` / `orchestrator-batch-regime.md` filenames are deliberately kept (do NOT re-flag).** The B5 rename took the ROLE token `orchestrator` -> `target-orchestrator` everywhere, but two artifact FILENAMES retain the old token on purpose. This is a SETTLED decision (F4), not an oversight: `orchestrator-state.md` lives in the harness-side private workspace `targets/<slug>/`, NOT in the target tree, so the migration path the B1-B7 retrospective imagined (`target-aeh-engineer` applying the rename) does not exist -- that role is fenced to the target tree and cannot touch `targets/<slug>/`. A rename would instead require sweeping ~8 live files plus a bespoke harness-side retrofit across every existing target's private state file, for zero behavioural gain. The filename is a stable label, not a role assertion. Harness-reviewer subtraction-completeness / consistency passes should treat these two filenames as an accepted exception and not raise them as findings.
+
 ### AEH-vs-Target role taxonomy
 
 Every AEH role is either AEH-proper or target-applied, and the role's name says which:
