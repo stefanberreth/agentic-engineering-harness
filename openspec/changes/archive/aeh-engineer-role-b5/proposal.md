@@ -1,6 +1,7 @@
 ---
 slug: aeh-engineer-role-b5
-status: in-progress
+status: archived
+archived-at: 2026-06-19T18:47:51Z
 since: 2026-06-17
 parent: aeh-engineer-role
 build-step: B5

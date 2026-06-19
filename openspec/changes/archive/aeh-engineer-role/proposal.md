@@ -1,6 +1,7 @@
 ---
 slug: aeh-engineer-role
-status: accepted
+status: archived
+archived-at: 2026-06-19T18:47:51Z
 accepted-at: 2026-06-16
 accepted-by: operator (architecture approved in full; build B1-B7 cleared to proceed in future sessions)
 since: 2026-06-16

@@ -1,6 +1,7 @@
 ---
 slug: orchestrator-self-location-guard
 status: superseded
+archived-at: 2026-06-19T18:48:01Z
 superseded-by: aeh-engineer-role-b7
 superseded-at: 2026-06-17
 since: 2026-06-16

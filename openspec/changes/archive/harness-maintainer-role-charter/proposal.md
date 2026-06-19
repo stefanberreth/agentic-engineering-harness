@@ -1,6 +1,7 @@
 ---
 slug: harness-maintainer-role-charter
 status: superseded
+archived-at: 2026-06-19T18:48:01Z
 superseded-by: aeh-engineer-role
 superseded-at: 2026-06-16
 since: 2026-06-06

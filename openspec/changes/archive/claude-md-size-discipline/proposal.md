@@ -1,6 +1,7 @@
 ---
 slug: claude-md-size-discipline
-status: ready-for-archive
+status: archived
+archived-at: 2026-06-19T18:48:01Z
 since: 2026-06-01
 reconcile-with: orchestrator-state-consolidation, harness-maintainer-role-charter
 absorbs: claude-md-router-discipline-anti-bloat (intake 2026-06-19), claude-md-uplift-whole-block-diff (intake 2026-06-19)

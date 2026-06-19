@@ -1,6 +1,7 @@
 ---
 slug: intake-private-relocation
-status: accepted
+status: archived
+archived-at: 2026-06-19T18:47:51Z
 accepted-at: 2026-06-17
 accepted-by: operator (approved in full; migration executed same session)
 since: 2026-06-17
