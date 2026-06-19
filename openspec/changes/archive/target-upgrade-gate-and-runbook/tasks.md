@@ -60,3 +60,11 @@ Ordered. Each task names a mechanical completion signal.
 8. **Gates.** Publication gate (`--staged` + `--message`) passes; harness-reviewer
    bookend APPROVE / APPROVE-WITH-MINOR.
    - Signal: both green; ready for close-out.
+
+---
+
+All tasks complete. Publication gate PASS (--staged + --message). Harness-reviewer
+bookend: APPROVE-WITH-MINOR (M1 dangling onboarding.md section refs + M2 manifest
+omission both fixed in the same commit). Process/mechanism proposal -- no formal
+capability spec, so close-out applies steps 3-4 only (status archived + move).
+Archived 2026-06-19.

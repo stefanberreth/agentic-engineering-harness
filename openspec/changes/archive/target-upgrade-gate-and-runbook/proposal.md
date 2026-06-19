@@ -1,7 +1,8 @@
 ---
 slug: target-upgrade-gate-and-runbook
-status: proposed
+status: archived
 since: 2026-06-19
+archived-at: 2026-06-19
 ---
 
 # Vocal upgrade-required gate + turnkey full-upgrade runbook
