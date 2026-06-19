@@ -27,6 +27,7 @@ assert_check() {
     *"[PASS] $id"*) got=PASS ;;
     *"[FAIL] $id"*) got=FAIL ;;
     *"[SKIP] $id"*) got=SKIP ;;
+    *"[WARN] $id"*) got=WARN ;;
     *) got=MISSING ;;
   esac
   if [ "$got" != "$want" ]; then
@@ -97,6 +98,16 @@ assert_check "$F3" prompt-result-pairing FAIL "no cutoff marker -> historical or
 # 3a: marker at 003 -> only 003 evaluated -> PASS + explicit excluded-span note
 printf '003\n' > "$F3/docs/AE/.prompt-pairing-since"
 assert_check "$F3" prompt-result-pairing PASS "cutoff marker excludes pre-cutoff history" "before cutoff 003"
+
+# --- Fixture 4: CLAUDE.md size budget (router discipline) -- WARN over, PASS under
+F4="$TMP/f4-claude-md-size"
+mkdir -p "$F4/docs/AE"
+# under budget
+printf '# CLAUDE.md\n\nA lean router.\n' > "$F4/CLAUDE.md"
+assert_check "$F4" claude-md-size PASS "lean CLAUDE.md within budget"
+# over the line budget (>450 lines) -> WARN, not FAIL
+{ echo "# CLAUDE.md"; for i in $(seq 1 600); do echo "- rule line $i"; done; } > "$F4/CLAUDE.md"
+assert_check "$F4" claude-md-size WARN "oversized CLAUDE.md WARNs (does not FAIL)"
 
 echo ""
 if [ "$FAILS" -eq 0 ]; then

@@ -4,9 +4,10 @@
 # The single chokepoint the `target-aeh-reviewer` runs IN a target to verify the
 # AEH-method invariants that can be checked WITHOUT LLM judgment. Registry-driven
 # and extensible: each check is a `check_<id>` function listed in CHECKS. A check
-# returns 0=PASS, 1=FAIL, 2=SKIP (precondition genuinely absent), and sets DETAIL.
-# Every result -- including SKIP -- is printed, so the framework cannot silently
-# no-op (a skipped check is surfaced, never hidden). Expensive coherence JUDGMENT
+# returns 0=PASS, 1=FAIL, 2=SKIP (precondition genuinely absent), 3=WARN (a soft
+# budget/advisory signal that is surfaced but does NOT fail the run), and sets
+# DETAIL. Every result -- including SKIP and WARN -- is printed, so the framework
+# cannot silently no-op (a skipped or warned check is surfaced, never hidden). Expensive coherence JUDGMENT
 # (does the operational skill fully reflect the system; does an encoded convention
 # still match the code) is NOT here -- that is the reviewer's at the review
 # cadence. This script holds only the cheap, deterministic, every-pass invariants.
@@ -30,7 +31,7 @@ SCRIPT_NAME="$(basename "$0")"
 
 # --- The registry (the completeness source-of-truth) ------------------------
 # To add a check: write a `check_<id>` function below and append its id here.
-CHECKS="prompt-result-pairing role-activation-base overlay-header-target-side permission-scope"
+CHECKS="prompt-result-pairing role-activation-base overlay-header-target-side permission-scope claude-md-size"
 
 # --- Argument parsing -------------------------------------------------------
 
@@ -62,6 +63,7 @@ TARGET_PATH="$(cd "$TARGET_PATH" && pwd)"
 PASS_COUNT=0
 FAIL_COUNT=0
 SKIP_COUNT=0
+WARN_COUNT=0
 DETAIL=""
 
 # --- Checks -----------------------------------------------------------------
@@ -268,6 +270,30 @@ check_permission_scope() {
   return 0
 }
 
+# claude-md-size: the target's CLAUDE.md is a router, not a manual -- it is read in
+# full every session before a role/task is chosen, so size taxes every session. This
+# is a SOFT budget (WARN, not FAIL): size alone is a crude signal; the real control
+# is the reviewer's router-discipline judgment dimension. WARN above the budget so the
+# operator notices accumulation; never block on it.
+CLAUDE_MD_CHAR_BUDGET=40000
+CLAUDE_MD_LINE_BUDGET=450
+check_claude_md_size() {
+  local f="$TARGET_PATH/CLAUDE.md"
+  if [ ! -f "$f" ]; then
+    DETAIL="no CLAUDE.md at target root"
+    return 2
+  fi
+  local chars lines
+  chars="$(wc -c < "$f" | tr -d ' ')"
+  lines="$(wc -l < "$f" | tr -d ' ')"
+  if [ "$chars" -gt "$CLAUDE_MD_CHAR_BUDGET" ] || [ "$lines" -gt "$CLAUDE_MD_LINE_BUDGET" ]; then
+    DETAIL="CLAUDE.md is ${chars} chars / ${lines} lines (soft budget ${CLAUDE_MD_CHAR_BUDGET} chars / ${CLAUDE_MD_LINE_BUDGET} lines) -- apply router discipline: push role/task-specific detail to its owning home with a one-line pointer"
+    return 3
+  fi
+  DETAIL="CLAUDE.md is ${chars} chars / ${lines} lines (within soft budget)"
+  return 0
+}
+
 # --- Runner -----------------------------------------------------------------
 
 fn_for() { echo "check_$(echo "$1" | tr '-' '_')"; }
@@ -294,15 +320,16 @@ for cid in $CHECKS; do
     0) echo "  [PASS] $cid -- $DETAIL"; PASS_COUNT=$((PASS_COUNT + 1)) ;;
     1) echo "  [FAIL] $cid -- $DETAIL"; FAIL_COUNT=$((FAIL_COUNT + 1)) ;;
     2) echo "  [SKIP] $cid -- $DETAIL"; SKIP_COUNT=$((SKIP_COUNT + 1)) ;;
+    3) echo "  [WARN] $cid -- $DETAIL"; WARN_COUNT=$((WARN_COUNT + 1)) ;;
     *) echo "  [FAIL] $cid -- check returned unexpected code $rc (framework error)"; FAIL_COUNT=$((FAIL_COUNT + 1)) ;;
   esac
 done
 
 echo ""
 echo "=== Summary ==="
-echo "  PASS: $PASS_COUNT   FAIL: $FAIL_COUNT   SKIP: $SKIP_COUNT   (of $ran registered)"
+echo "  PASS: $PASS_COUNT   FAIL: $FAIL_COUNT   WARN: $WARN_COUNT   SKIP: $SKIP_COUNT   (of $ran registered)"
 
-if [ "$PASS_COUNT" = 0 ] && [ "$FAIL_COUNT" = 0 ]; then
+if [ "$PASS_COUNT" = 0 ] && [ "$FAIL_COUNT" = 0 ] && [ "$WARN_COUNT" = 0 ]; then
   echo "  NOTE: every check skipped -- nothing was actually verified for this target."
 fi
 

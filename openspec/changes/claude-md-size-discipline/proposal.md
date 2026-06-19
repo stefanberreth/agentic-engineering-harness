@@ -1,6 +1,6 @@
 ---
 slug: claude-md-size-discipline
-status: proposed
+status: ready-for-archive
 since: 2026-06-01
 reconcile-with: orchestrator-state-consolidation, harness-maintainer-role-charter
 absorbs: claude-md-router-discipline-anti-bloat (intake 2026-06-19), claude-md-uplift-whole-block-diff (intake 2026-06-19)
@@ -23,6 +23,16 @@ a new parallel tree cuts against the same single-source-of-truth invariant this 
 now enforces. Extraction targets a rule's EXISTING owning home (its persona / playbook /
 openspec spec / docs reference), not a new bespoke tree. The `<30k` figure becomes a soft
 budget, not a hard gate (size alone is a crude signal; see below).
+
+**Candidate correction (F2 interaction).** The capture listed "the full role-location
+3-part signature" as a compression candidate. It is NOT: F2 settled that the full
+signature lives in exactly TWO canonical places (the harness `CLAUDE.md` + the target
+template) BY DESIGN -- the fence forbids a target-facing persona citing the harness
+`CLAUDE.md`, so the signature cannot collapse to a single pointer. The role-location
+signature is therefore deliberately RETAINED in `CLAUDE.md`; compressing it would
+re-break F2. The safe, high-value candidate is the aeh-engineer-only Harness Maintenance
+Discipline section (already fully mirrored in the `aeh-engineer` persona) + the
+cross-container / propagation bullets within it.
 
 **Reframe -- "CLAUDE.md is a router, not a manual."** The discriminating test is NOT
 length but: *does every session need this BEFORE it knows its role/task?* If yes it stays
@@ -127,9 +137,12 @@ In scope:
 - **Compress in place (fix):** extract role/task-specific inlined content to its EXISTING
   owning home (persona / playbook / openspec spec / docs reference) via
   extract-to-home -> wire-a-resolvable-pointer -> confirm-the-consumer-loads-it. NO new
-  `docs/harness-rules/` tree. First candidates: the full Harness Maintenance Discipline
-  (aeh-engineer-only), the full role-location 3-part signature, the duplicated
-  cross-container + propagation mechanics.
+  `docs/harness-rules/` tree. First candidate (built): the aeh-engineer-only Harness
+  Maintenance Discipline section (already fully mirrored in the `aeh-engineer` persona),
+  compressed in place to one-sentence-rule + pointer bullet shape, including the
+  cross-container + propagation bullets. The role-location 3-part signature is NOT a
+  candidate -- F2 deliberately keeps it in CLAUDE.md (see the candidate-correction note
+  above).
 - **Retain durable bits:** the `- **Topic.** One-sentence rule. Detail: <pointer>.`
   bullet-shape discipline for future rules; the harness-reviewer pointer-resolution check.
 - **Detect:** (1) a deterministic CLAUDE.md size/line-budget WARN check -- harness-side in

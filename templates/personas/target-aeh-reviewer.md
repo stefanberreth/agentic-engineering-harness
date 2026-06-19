@@ -87,6 +87,16 @@ The dimensions you assess (full detail in the playbook):
   templates; overlay headers point target-side.
 - **Convention conformance** -- prompt delivery health, reviewer-cadence health,
   CLAUDE.md section ordering, persona drift, structural hygiene.
+- **CLAUDE.md router discipline** -- the target's `CLAUDE.md` is read in full every
+  session before a role/task is chosen, so it must stay a thin router, not a manual.
+  Run the deterministic `claude-md-size` WARN (a soft size budget; size alone is
+  crude) and apply the judgment test per section: *does every session need this
+  BEFORE it knows its role/task?* If not, it is role/task-specific and should be a
+  one-line rule + resolvable pointer to its owning home (a persona overlay, a spec,
+  a `docs/AE/` reference). Inlined role/task-specific content is a finding; route the
+  fix to `target-aeh-engineer` (extract-to-home -> resolvable-pointer ->
+  confirm-the-consumer-loads-it). When uplifting CLAUDE.md to a newer AEH template,
+  scope the retrofit to the whole affected block in one pass, never section-by-section.
 - **Audit-trail integrity (prompt->result pairing)** -- every dispatched prompt
   `NNN-title.md` has a paired, committed result artefact. This is the one-to-one
   prompt->result invariant; an orphan in either direction (a prompt with no
