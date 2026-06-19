@@ -30,7 +30,7 @@ SCRIPT_NAME="$(basename "$0")"
 
 # --- The registry (the completeness source-of-truth) ------------------------
 # To add a check: write a `check_<id>` function below and append its id here.
-CHECKS="prompt-result-pairing role-activation-base overlay-header-target-side"
+CHECKS="prompt-result-pairing role-activation-base overlay-header-target-side permission-scope"
 
 # --- Argument parsing -------------------------------------------------------
 
@@ -171,6 +171,57 @@ check_overlay_header_target_side() {
     return 1
   fi
   DETAIL="all overlay base headers point target-side"
+  return 0
+}
+
+# permission-scope: the target's own Claude Code permission config
+# (.claude/settings.json + .local) holds no DETERMINISTIC compliance violation --
+# no bypass mode, no whole-filesystem-escape allow rule, no secret literal in a
+# rule, and (for an AEH-managed target) a non-empty deny list. Judgment cases
+# (allow-rule sprawl, whether a specific harness-isolation deny path is right) stay
+# the reviewer's narrative -- this check holds only the deterministic cases. On a
+# FAIL, the target-aeh-reviewer reports the exact rule change (citing
+# permission-baselines.md); target-aeh-engineer applies it on approval; then this
+# same check is re-run to validate (detect == confirm).
+check_permission_scope() {
+  local sj="$TARGET_PATH/.claude/settings.json"
+  local sl="$TARGET_PATH/.claude/settings.local.json"
+  local files=""
+  [ -f "$sj" ] && files="$files $sj"
+  [ -f "$sl" ] && files="$files $sl"
+  if [ -z "$files" ]; then
+    DETAIL="no .claude/settings.json or settings.local.json (target permissions not configured here)"
+    return 2
+  fi
+
+  local problems=""
+  # Bypass mode -- disables the permission system wholesale.
+  if grep -Eq '"defaultMode"[[:space:]]*:[[:space:]]*"bypassPermissions"' $files 2>/dev/null; then
+    problems="$problems; defaultMode=bypassPermissions (bypasses the permission system; baseline forbids it)"
+  fi
+  # Whole-filesystem escape -- an allow rule over the filesystem root.
+  if grep -Eq '"(Read|Edit|Write)\((//?\*\*|/)\)"' $files 2>/dev/null; then
+    problems="$problems; whole-filesystem allow rule (Read/Edit/Write of / or /**; grants access outside the project)"
+  fi
+  # Secret literal in a rule -- a secret keyword immediately assigned a value.
+  if grep -Eiq '(password|passwd|secret|api[_-]?key|apikey|access[_-]?key|token)[^"]{0,24}=[^"=[:space:]]' $files 2>/dev/null; then
+    problems="$problems; possible secret literal in a permission rule (baseline: no secrets in settings)"
+  fi
+  # Deny list mandatory for an AEH-managed target (it has docs/AE/).
+  if [ -d "$TARGET_PATH/docs/AE" ]; then
+    local has_deny=0 f
+    for f in $files; do
+      # A "deny" key whose array is not immediately closed-empty.
+      if grep -Eq '"deny"[[:space:]]*:[[:space:]]*\[[[:space:]]*"' "$f" 2>/dev/null; then has_deny=1; break; fi
+    done
+    [ "$has_deny" = 0 ] && problems="$problems; no non-empty deny list (baseline: deny list is mandatory -- block secrets, filesystem escape, harness isolation)"
+  fi
+
+  if [ -n "$problems" ]; then
+    DETAIL="deterministic permission violation(s):${problems#; }"
+    return 1
+  fi
+  DETAIL="no deterministic permission violation (bypass / filesystem-escape / secret-literal / missing-deny)"
   return 0
 }
 

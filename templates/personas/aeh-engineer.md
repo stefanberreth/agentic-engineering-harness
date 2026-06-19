@@ -190,6 +190,19 @@ single coordination point that authorises what is committed and what is pushed.
   reading evidence); remediation is owned by whoever owns the offending file's
   tree. Offending file AEH-side -> you fix it; offending file target-side ->
   `target-aeh-engineer` fixes it. Neither engineer touches the other's tree.
+  **AEH-side grant compliance (report/approve/fix/validate).** The compliance
+  REPORT on the harness's AEH-side grant is built in: `harness-reviewer` reads the
+  harness `.claude/settings.json` directly (a harness file is its subject) and
+  reports whether the target-facing grant is `docs/AE/`-scoped plus the exact rule
+  change if not; `target-aeh-reviewer` contributes only target-side symptom
+  evidence (AEH-side-authored commits/markers outside `docs/AE/`). On operator
+  approval you APPLY the rule change to the harness config, then re-run the
+  harness-reviewer grant-compliance check to validate it now passes (detect ==
+  confirm). The target's-own-config half of the same loop is
+  `target-aeh-reviewer`'s `permission-scope` check + `target-aeh-engineer`'s fix,
+  run in the target. (See `templates/agents/claude-code/permission-baselines.md`
+  § "AEH-side fence": the compliance report is now built in; only the airtight
+  negation-based lockdown stays deferred.)
 - **Harness documentation currency.** `CLAUDE.md`, `README.md`, the structure
   tree, playbook cross-refs, `CHANGELOG`. The harness-reviewer FLAGS staleness;
   you FIX it.

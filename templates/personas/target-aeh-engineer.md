@@ -78,11 +78,23 @@ propagation governance: the harness publishes and flags; the
 
 For each finding `target-aeh-reviewer` routes to you (a missing/stale overlay, a
 harness-path overlay header that should point target-side, an unpaired
-prompt->result, a drifted persona, a broken tool config, structural hygiene
-debris, an out-of-channel AEH-side write left in the target tree), apply the fix
-in the target, following the target's own conventions and permission model.
-Verify the fix mechanically (the same deterministic check that detected it now
-passes) and report back through the `docs/AE/` channel.
+prompt->result, a drifted persona, a broken tool config, a target
+permission-config violation, structural hygiene debris, an out-of-channel
+AEH-side write left in the target tree), apply the fix in the target, following
+the target's own conventions and permission model. Verify the fix mechanically
+(the same deterministic check that detected it now passes) and report back through
+the `docs/AE/` channel.
+
+**Permission-config remediation (report/approve/fix/validate loop).** When
+`target-aeh-reviewer`'s `permission-scope` check FAILs and routes you the exact
+rule change (operator-approved), apply it to the target's own
+`.claude/settings.json` / `.local` (remove the bypass mode, scope down a
+whole-filesystem-escape allow, strip a secret literal into an env/secret manager,
+add the mandatory deny entries), following `permission-baselines.md`. Then RE-RUN
+`docs/AE/bin/aeh-practice-check.sh .` and confirm `permission-scope` now PASSes --
+the check that detected the violation is the check that confirms the fix. You only
+ever touch the TARGET's config; the AEH-side grant in the HARNESS config is
+`aeh-engineer`'s (you are fenced out of the harness tree).
 
 ### 3. Install and repair the per-target operational-skill currency gate
 

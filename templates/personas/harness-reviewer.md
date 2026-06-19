@@ -130,6 +130,10 @@ Verify the target project isolation rule is correctly documented and not undermi
 - The nested repo structure is correctly documented (harness repo ignores `targets/`, targets repo owns everything under `targets/`)
 - No template or playbook instructs Claude to modify target project files directly
 
+**AEH-side grant compliance (read the harness config directly).** The AEH-side of the enforced `docs/AE/`-only fence is a permission grant in the HARNESS project's own `.claude/settings.json` (the `target-orchestrator` session is scoped to `<target>/docs/AE/**`). That file lives in the harness tree, so reading and reporting on it is YOURS (a harness file is a harness-reviewer subject); `target-aeh-reviewer` contributes only target-side SYMPTOM evidence (AEH-side-authored commits/markers outside `docs/AE/`) and routes the AEH-side root cause here. On each pass, read the harness `.claude/settings.json` (and `.local`) and report:
+- Whether the target-facing grant is `docs/AE/`-scoped: the only allow rules over a target path are `Read/Write/Edit(<target>/docs/AE/**)`; no broader target-path allow; sensitive-path denies present; no bypass mode. Cite `templates/agents/claude-code/permission-baselines.md` § "AEH-side fence" as the baseline.
+- If the grant exceeds `docs/AE/` (or is missing the sensitive denies), report the EXACT rule change needed to bring it into compliance. This is a REPORT (you detect; you do not rubber-stamp a fix) -- on operator approval, `aeh-engineer` applies the change to the harness config, then this same check is re-run to validate (detect == confirm). This is the AEH-side half of the report/approve/fix/validate loop; the target's-own-config half is `target-aeh-reviewer`'s `permission-scope` deterministic check.
+
 ### 6. Governance Completeness
 
 Verify governance artifacts are actionable and complete:

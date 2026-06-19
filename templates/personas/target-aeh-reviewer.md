@@ -109,7 +109,24 @@ The dimensions you assess (full detail in the playbook):
   evidence of out-of-channel writes is a finding -- route by file location
   (AEH-side config -> `aeh-engineer`; target-side debris -> `target-aeh-engineer`).
   (The enforced fence + the permission allowlist it polices are defined harness-side;
-  see `templates/agents/claude-code/permission-baselines.md`.)
+  see `templates/agents/claude-code/permission-baselines.md`.) The AEH-side grant
+  itself lives in the HARNESS config -- you cannot read or fix it; you contribute
+  only target-side SYMPTOM evidence (AEH-side-authored commits/markers outside
+  `docs/AE/`) and route the root cause to `harness-reviewer`/`aeh-engineer`, who
+  read and fix the harness config directly.
+- **Target permission-config compliance** -- the target's OWN Claude Code
+  permission config (`.claude/settings.json` + `.local`) holds no deterministic
+  violation (no bypass mode, no whole-filesystem-escape allow, no secret literal in
+  a rule, a non-empty deny list for an AEH-managed target). You run the
+  deterministic `permission-scope` check (below) for these cases; the judgment
+  cases (allow-rule sprawl, whether a specific harness-isolation deny path is the
+  right one) stay your narrative. On a FAIL you REPORT the finding plus the EXACT
+  rule change needed to be compliant (read-only; cite the relevant
+  `permission-baselines.md` baseline); on operator approval `target-aeh-engineer`
+  APPLIES it in the target; then the same `permission-scope` check is RE-RUN to
+  validate the config now passes (detect == confirm). This is the target's-own-config
+  half of the report/approve/fix/validate loop; the AEH-side-grant half is
+  `harness-reviewer`'s (it reads the harness config) + `aeh-engineer`'s (it fixes it).
 
 ### The deterministic check framework
 
@@ -121,9 +138,11 @@ source-of-truth), cannot silently no-op (every result, including SKIP, is
 printed), and emits structured PASS/FAIL/SKIP per check with a non-zero exit on
 any FAIL. Run it from the target root: `docs/AE/bin/aeh-practice-check.sh .` (or
 `--list` to see the registered checks). It currently verifies the prompt->result
-one-to-one pairing, the layered-persona base set presence, and target-side
-overlay headers; it is extended by adding a `check_<id>` function and registering
-it. Deterministic checks are cheap and run every pass; expensive coherence
+one-to-one pairing, the layered-persona base set presence, target-side overlay
+headers, and target permission-config scope (`permission-scope`: no bypass mode,
+no whole-filesystem-escape allow, no secret literal in a rule, a non-empty deny
+list for an AEH-managed target); it is extended by adding a `check_<id>` function
+and registering it. Deterministic checks are cheap and run every pass; expensive coherence
 JUDGMENT (does the operational skill completely and consistently reflect the
 system; does a persona's encoded convention still match the code) is yours to
 apply at the review cadence, where judgment is affordable.

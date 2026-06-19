@@ -251,19 +251,36 @@ allow is the only grant, and anything else target-side falls to the default
 `ask` posture (it cannot be written silently). The explicit deny rules harden the
 sensitive areas (secrets, git internals) against an accidental allow.
 
-> **Design call (B6, for operator ratification) -- the airtight "deny everything
-> else target-side" shape is DEFERRED.** Deny takes precedence over allow (see
-> `permissions.md`), so a blanket `Deny(Read(/abs/path/to/target/**))` would also
-> kill the `docs/AE/**` allow -- you cannot express "allow docs/AE, deny the rest"
-> as one allow + one blanket deny. The enforceable shape shipped here is
+> **Design call (B6, updated by F5) -- the compliance REPORT is built in; only the
+> airtight negation-based lockdown stays deferred.** Deny takes precedence over
+> allow (see `permissions.md`), so a blanket `Deny(Read(/abs/path/to/target/**))`
+> would also kill the `docs/AE/**` allow -- you cannot express "allow docs/AE, deny
+> the rest" as one allow + one blanket deny. The enforceable shape shipped here is
 > **allow `docs/AE/**` + specific sensitive-path denies + default-`ask` for the
-> remainder** -- which prevents silent out-of-channel writes and is what
-> `target-aeh-reviewer` polices (it flags an EFFECTIVE grant exceeding `docs/AE/`,
-> regardless of how it is expressed). A fully-locked-down, negation-based
-> expression needs the Claude Code permission-schema / repo-owner conversation and
-> is deferred with the rest of the concrete propagation/permission mechanism.
-> Until then: the allowlist above + the reviewer's fence-policing dimension are
-> the enforcement.
+> remainder** -- which prevents silent out-of-channel writes.
+>
+> **What F5 added (no longer deferred): permission-config compliance reporting,
+> split by which tree the config lives in, each following report -> operator-approve
+> -> fix -> revalidate.**
+> - *Target's own config* (`<target>/.claude/settings.json` + `.local`): the
+>   deterministic cases are checked by `bin/aeh-practice-check.sh`'s
+>   `permission-scope` check (no bypass mode, no whole-filesystem-escape allow, no
+>   secret literal in a rule, a non-empty deny list for an AEH-managed target).
+>   `target-aeh-reviewer` reports the finding + the exact rule change (read-only,
+>   citing this baseline) and keeps the judgment cases (sprawl) as narrative;
+>   `target-aeh-engineer` applies the change on approval; the same check is re-run
+>   to validate.
+> - *AEH-side grant* (this harness project's `.claude/settings.json`):
+>   `harness-reviewer` reads it directly (a harness file) and reports whether the
+>   grant is `docs/AE/`-scoped + any change needed; `target-aeh-reviewer`
+>   contributes only target-side SYMPTOM evidence; `aeh-engineer` applies the fix on
+>   approval and re-runs the check to validate.
+>
+> What remains DEFERRED is only the fully-locked-down, negation-based EXPRESSION of
+> the fence (one allow + one blanket deny), which needs the Claude Code
+> permission-schema / repo-owner conversation. The enforcement today is: the
+> allowlist above + the `permission-scope` deterministic check + the two reviewers'
+> reporting + the two engineers' approved-fix-then-revalidate loop.
 
 ---
 
