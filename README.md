@@ -176,6 +176,18 @@ claude
 
 Then say `onboard /path/to/your/project`. The harness reads your project, runs the assessment, produces the ranked report, generates a transformation plan, and scaffolds the agentic structure. The assessment is read-only; nothing in your project changes without your explicit consent.
 
+## Staying current (adopting updates)
+
+The harness evolves. Each onboarded project records the harness commit it last synced to (`harness-sync-sha` in its `targets/<slug>/profile.md`), so adopting updates is a guided, per-project step -- not a guess.
+
+1. **Pull the harness.** In the harness directory: `git pull`. This updates the templates, personas, playbooks, and `bin/` tooling; it does not touch any of your projects.
+2. **Let the harness tell you what changed.** Open a harness session as `target-orchestrator` for a project. Session-init compares that project's `harness-sync-sha` against the new harness HEAD and, if it is behind, surfaces "harness advanced N commits" and offers a `review changes` pass.
+3. **Review the impact.** Say `review changes`. The harness dispatches a `target-aeh-reviewer` Propagation-Impact assessment **into that project's session**, which writes a retrofit-action list to `docs/AE/reports/propagation-impact-<date>.md` -- what to apply, the effort, and what is purely harness-internal (no action).
+4. **Apply, per your approval.** Approve the actions you want; `target-aeh-engineer` applies them in the project (typically: refresh the base-persona / role / check-script snapshots from harness master). Then it bumps `harness-sync-sha` to cover the applied (and any explicitly-skipped) commits.
+5. **Confirm it's in place.** Run the project's deterministic check from its root -- `docs/AE/bin/aeh-practice-check.sh .` -- and/or say `health`. PASS/SKIP across the registered checks means the update landed cleanly.
+
+**If something is missing** (e.g. a project predates a convention -- no `harness-sync-sha`, no `docs/AE/roles/`, no `docs/AE/bin/`): seed the marker with the `seed-harness-sync-marker` retrofit, and run the onboarding Phase-2 base-template-placement (or the broadened `refresh-base-personas` retrofit) to deliver the current snapshots. The `health` check names exactly what is absent, so the gap is always visible rather than silent. Re-run the check after applying; it is the same check that detected the gap, so a PASS is your confirmation.
+
 ## Where things live
 
 ### In your project (after AEH onboarding)
