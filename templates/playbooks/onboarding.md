@@ -926,6 +926,8 @@ Before Phase 7 handoff, dispatch ONE trivial role-bound prompt (any one engineer
 
 If either file fails to load, onboarding is NOT complete. Fix the placement and re-run the gate. This is gate-first applied to onboarding itself: no 'onboarding complete' without a gate that proves the outcome 'roles can activate.'
 
+As a cheap companion check that the AEH-practice infrastructure delivered in Phase 2 is reachable target-side (the two target-applied AEH roles and the check script), confirm `docs/AE/roles/target-aeh-reviewer.md`, `docs/AE/roles/target-aeh-engineer.md`, and an executable `docs/AE/bin/aeh-practice-check.sh` are present, and run `docs/AE/bin/aeh-practice-check.sh .` once (it should execute with zero harness access; SKIPs on a fresh skeleton are expected and fine). A missing file or a script that cannot run is a placement defect to fix before declaring onboarding complete.
+
 ### 6j. Standard-Tool Verification Completion Gate
 
 Onboarding MUST NOT be declared complete until each standard SDLC tool is either **proven working** or **explicitly opted out via a `[DECISION]` journal entry**. A `profile.md` line that says `configured` is a claim, not proof -- the gate requires functional evidence (or a recorded deliberate opt-out). This closes the failure mode where a tool is "set up" in the plan but never actually functions, and nobody notices until a developer prompt needs it.

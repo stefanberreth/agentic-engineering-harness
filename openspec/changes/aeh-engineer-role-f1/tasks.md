@@ -24,5 +24,5 @@ Mechanical completion signal in brackets per task.
    [signal: `grep -q 'docs/AE/roles' templates/project/CLAUDE.md.template`]
 8. [x] CHANGELOG [Unreleased] entry.
    [signal: `grep -q 'F1' CHANGELOG.md` or delivery-wiring entry present]
-9. [ ] Validator passes; publication gate (`--staged` + `--message`); commit; no push.
+9. [x] Validator passes; publication gate (`--staged` + `--message`); commit; no push.
    [signal: validator exit 0; both gate invocations exit 0; commit landed locally]

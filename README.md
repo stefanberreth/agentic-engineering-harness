@@ -82,7 +82,12 @@ AEH defines five engineering roles plus a set of coordinating and harness-mainte
 | **Developer** | Test-driven implementation against the architect's tasks. | No code without a governing spec. Spec references in tests. Change-slug references in commits. |
 | **Reviewer** | Quality gate against proposal + design + spec deltas. | Spec traceability check is blocking and runs first; missing spec is automatic FAIL. Evidence required for every verdict. |
 
-The coordinating roles:
+The coordinating and AEH-practice roles follow a simple **detect / remediate x harness / target** matrix: a *reviewer* role detects (read-only) and an *engineer* role remediates (read-write), once for the harness itself and once for a target's AEH adoption, with a coordinator driving the target pipeline. The name says which tree a role touches -- a role with "target" in its name runs in (and writes) the target; the others run in the harness:
+
+| | Detect (read-only) | Remediate (read-write) | Runs in |
+|---|---|---|---|
+| **Harness itself** | Harness Reviewer | AEH Engineer | harness session |
+| **A target's AEH practice** | Target AEH Reviewer | Target AEH Engineer | target session |
 
 | Role | Where it runs | Job |
 |---|---|---|
@@ -99,7 +104,7 @@ The standard engineering loop is **Analyst -> Architect -> Developer -> Reviewer
 <img src="https://gitlab.com/stefanberreth/agentic-engineering-harness/-/raw/main/docs/Images/Screenshot%202026-05-04%20at%2015.04.52.png" alt="The prompt-execution loop: the target-orchestrator issues a mandate, the agent executes against the workspace (text, code, files), returns a report, and the target-orchestrator decides whether to correct and iterate or advance." width="720">
 </div>
 
-Two sessions, two scopes. The harness session manages the pipeline (state, prompts, cadence, chain composition). Your project's own session executes the prompts and modifies the code. Most teams keep them separate for the audit trail and predictable permission boundaries; collapsing them works too where the audit trail is not a priority. The default keeps them separate.
+Two sessions, two scopes, an enforced boundary. The harness session manages the pipeline (state, prompts, cadence, chain composition). Your project's own session executes the prompts and modifies the code. The boundary between them is not a convention you are trusted to honour -- it is enforced. The harness-side roles are fenced out of your project tree entirely, with exactly one allowlisted exception: the Target Orchestrator may read and write only `docs/AE/**` (the prompt-delivery and report-back channel) and nothing else in your tree. That fence is a permission allowlist, and the Target AEH Reviewer polices it. The result is that the audit trail and the permission boundaries hold by construction. Most teams keep the two sessions separate for exactly this reason; collapsing them works too where the audit trail is not a priority. The default keeps them separate.
 
 ## Operation modes
 
@@ -177,9 +182,11 @@ Then say `onboard /path/to/your/project`. The harness reads your project, runs t
 
 - `CLAUDE.md` -- Claude-Code-specific instructions for your project's session
 - `AGENTS.md` -- cross-tool agent config (read by other coding-agent runtimes too)
-- `docs/AE/personas/<role>.md` -- your project-specific overlays for each role; encode conventions, hard boundaries, domain knowledge
+- `docs/AE/personas/_base/<role>.md` -- the five engineering base templates (harness snapshots); `docs/AE/personas/<role>.md` -- your project-specific overlays for each role; encode conventions, hard boundaries, domain knowledge
+- `docs/AE/roles/` -- the two target-applied AEH-practice roles (Target AEH Reviewer + Target AEH Engineer), delivered as snapshots so they load in your project session with no harness access
+- `docs/AE/bin/aeh-practice-check.sh` -- the deterministic AEH-practice check the Target AEH Reviewer runs locally (`docs/AE/bin/aeh-practice-check.sh .`)
 - `docs/AE/prompts/` -- the handover point: AEH writes prompts directly into your project tree (this is the default; the harness target-orchestrator never asks you to copy prompts in by hand) and your project's session reads and executes them via a single-line paste: `Read and execute docs/AE/prompts/NNN-title.md`
-- `docs/AE/reports/` -- target-side reports (verdicts, halt reports, retrospectives)
+- `docs/AE/reports/` -- target-side reports: per-prompt paired reports (`NNN-title.md`, one per dispatched prompt), verdicts, halt reports, retrospectives
 - `docs/AE/reviews/` -- reviewer outputs
 - `openspec/project.md` -- project conventions (slug naming, status vocabulary)
 - `openspec/specs/baseline-*.md` -- verified ground truth from the Archaeologist
