@@ -1,7 +1,8 @@
 ---
 slug: harness-claude-md-consolidation
-status: proposed
+status: archived
 since: 2026-06-21
+archived-at: 2026-06-21
 ---
 
 # Harness CLAUDE.md consolidation round (under the size budget)
