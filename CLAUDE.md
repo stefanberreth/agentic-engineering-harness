@@ -10,8 +10,10 @@ This project is a **meta-engineering harness**. It does not implement software. 
 - **Project templates** (`templates/project/`) -- scaffold files (`CLAUDE.md`, `agents.md`, governance checklists) adapted per target.
 - **Governance criteria** (`templates/governance/`) -- assessment checklists and quality rubrics for evaluating and evolving a target's agentic config.
 - **Agent knowledge** (`templates/agents/`) -- runtime-specific reference (permission schemas, detection patterns, baselines) for coding agents like Claude Code.
+- **Playbooks** (`templates/playbooks/`) -- guided workflows (`onboard`, `health`, `tools`, `upgrade`); **prompt templates** (`templates/prompts/`), **hooks** (`templates/hooks/`), **tool setup** (`templates/tools/`).
+- **Tooling** (`bin/`) -- resolvers, the persona/leak validator, the AEH-practice check; **self-OpenSpec** (`openspec/`, dogfooded, public).
 - **Reference documentation** (`docs/`) -- source material, transcripts and curated resources.
-- **Target project workspaces** (`targets/`) -- per-project planning, assessment, transformation artifacts and generated prompts. See below.
+- **Target project workspaces** (`targets/`) -- per-project planning, assessment, transformation artifacts and generated prompts (private nested repo; `_harness-private/` holds the capture inbox + backlog). See below.
 
 ---
 
@@ -19,34 +21,19 @@ This project is a **meta-engineering harness**. It does not implement software. 
 
 **Claude Code running in this harness project must NEVER directly modify application code, configuration, or general files in any target project directory.**
 
-This is not a suggestion. It is a hard boundary, for three reasons:
+This is not a suggestion -- it is a hard boundary, for three reasons: **context separation** (harness and target are different scopes/permissions/objectives; mixing them creates risk); **auditability** (every target change is made by a Claude instance running INSIDE that project, under its `CLAUDE.md`, conventions, and permission model); **reproducibility** (generated prompts are reviewable/versionable/re-runnable artifacts; direct writes are fire-and-forget).
 
-1. **Context separation.** Harness and target are different scopes with different permissions, conventions and objectives; mixing them creates confusion and risk.
-2. **Auditability.** Every target change should be made by a Claude Code instance running *inside* that project -- reading its `CLAUDE.md`, following its conventions, within its permission model.
-3. **Reproducibility.** The prompts generated here are artifacts that can be reviewed, edited, versioned and re-run. Direct file writes are fire-and-forget.
+**DOES produce** (all under `targets/<project>/`): assessment documents, phased transformation plans, ready-to-paste prompts the human runs INSIDE the target, and adapted templates/personas/`CLAUDE.md` (in `deliverables/`, copied or recreated target-side via a prompt).
 
-### What this harness DOES produce
-
-- **Assessment documents** -- analysis of a target's current state
-- **Transformation plans** -- phased, prioritised plans for what to create/change
-- **Generated prompts** -- complete, ready-to-paste prompts a human takes to a Claude Code session *inside the target project* to execute changes there
-- **Adapted templates** -- project-specific persona prompts, `CLAUDE.md`, etc., written *in this harness* under `targets/<project>/deliverables/`, for the human to copy or for a prompt to have the target-side Claude create
-
-### What this harness NEVER does
-
-- Write, edit, or delete application code, configuration, or general files under a target project's directory tree
-- Run build, test, or git commands inside a target project
-- Make commits or push changes in a target project's repository
-
-When producing deliverables, always write them to `targets/<project>/deliverables/` and generate an accompanying prompt in `targets/<project>/prompts/` that tells the target-side Claude Code instance how to apply them.
+**NEVER does:** write/edit/delete app code, config, or general files in a target tree; run build/test/git in a target; or commit/push in a target's repo. When producing deliverables, write them to `targets/<project>/deliverables/` and an accompanying prompt in `targets/<project>/prompts/` telling the target-side Claude how to apply them.
 
 ### Selective exception: Direct Prompt Delivery (default)
 
 The harness writes prompt files directly into a target project's `docs/AE/prompts/` directory (prompt files only -- never deliverables or other files). This is the **default behavior** for every target and is recorded in `profile.md` as `policy: direct`. Under `direct`: the harness writes to both `targets/<project>/prompts/` (source of truth) and `<target-path>/docs/AE/prompts/` (delivery). The target-side Claude then runs: "Read and execute `docs/AE/prompts/NNN-title.md`". The target-side directory path can be overridden per-project in `profile.md` if a project uses a different convention.
 
-**Why direct is the default.** The handoff one-liner always names a target-side path (`Read and execute docs/AE/prompts/NNN-title.md`), and the target session is filesystem-scoped to its own tree -- it cannot read a harness-side `targets/<slug>/prompts/` path. So direct delivery is not a convenience; it is what makes the handoff work at all. Default direct, opt-out only.
+**Why direct is the default.** The handoff one-liner names a target-side path (`Read and execute docs/AE/prompts/NNN-title.md`), and the target session is scoped to its own tree -- it cannot read a harness-side `targets/<slug>/prompts/` path. Direct delivery is what makes the handoff work at all. Opt-out only.
 
-**Opt-out: `manual` policy** (rare; recorded in `profile.md` as `policy: manual`, reason as a `[DECISION]` entry in `journal.md`). The harness writes only to `targets/<project>/prompts/`; the target-orchestrator MUST then either (a) emit a one-line `cp` command alongside the handoff so the operator copies the prompt into the target tree first, or (b) inline the full prompt content in the handoff block. NEVER hand off a `Read and execute targets/<slug>/prompts/...` line -- unreadable from the target session.
+**Opt-out: `manual` policy** (rare; `policy: manual` in `profile.md`, reason as a `[DECISION]` in `journal.md`). Harness writes only to `targets/<project>/prompts/`; the target-orchestrator then either emits a one-line `cp` alongside the handoff, or inlines the full prompt content. NEVER hand off a `Read and execute targets/<slug>/...` line -- unreadable from the target session.
 
 ### The enforced `docs/AE/`-only fence (read AND write)
 
@@ -56,21 +43,15 @@ The isolation rule above governs WRITES. The fence is the symmetric READ-side, a
 - **Enforcement is a permission allowlist scoped to `docs/AE/`** (see `templates/agents/claude-code/permission-baselines.md` § "AEH-side fence (target-orchestrator session -> target)"), not a rule the role is trusted to honour. `target-aeh-reviewer` polices it: an AEH-side permission grant exceeding `docs/AE/`, or evidence of AEH-side writes outside `docs/AE/` (target-orchestrator-authored commits to the target app tree, stray markers), is a finding -- routed by file location (AEH-side config root-cause -> `aeh-engineer`; target-side residue -> `target-aeh-engineer`).
 - **This REPLACES the soft "harness may read a target for assessment" rule.** Post-onboarding assessment of a target is `target-aeh-reviewer`'s job, run IN the target. The target-orchestrator answers structural questions from dispatched-role report-backs (read via `docs/AE/`), not by reading the target tree.
 
-**Onboarding bootstrap exception (the one legitimate first-contact read).** Before onboarding, a target has no `docs/AE/` and no AE roles to dispatch into, so the first reconnaissance cannot go through the channel. The exception is a NARROW, READ-ONLY bootstrap: explicitly scoped to first-contact assessment of an un-onboarded target, one-directional (it never writes the target outside `docs/AE/`), and ending the moment `docs/AE/` exists. Once onboarded, the target-orchestrator operates through the `docs/AE/` channel only and ongoing assessment is `target-aeh-reviewer`'s. The bootstrap does not reopen the fence (read-only + ends at onboarding).
+**Onboarding bootstrap exception (the one legitimate first-contact read).** An un-onboarded target has no `docs/AE/` channel yet, so first reconnaissance is a NARROW READ-ONLY bootstrap: scoped to first-contact assessment, never writes the target outside `docs/AE/`, and ends the moment `docs/AE/` exists. It does not reopen the fence; once onboarded, all access is through `docs/AE/` and ongoing assessment is `target-aeh-reviewer`'s.
 
 ---
 
 ## Artifact Output Rule
 
-**All artifacts, reports, reference documents, and deliverables must be written to the workspace tree -- never to Claude Code's memory directory (`~/.claude/`).**
+**All artifacts -- reports, diagnostics, reference docs, deliverables, anything a human or another session might read -- go to the workspace tree, NEVER to Claude Code's memory (`~/.claude/`).** Memory (`~/.claude/projects/*/memory/`) is for session-to-session recall notes only (preferences, conversation context).
 
-Claude Code's built-in memory (`~/.claude/projects/*/memory/`) is for session-to-session recall notes only (e.g., user preferences, conversation context). It must not be used for:
-- Reports, diagnostics, or review outputs
-- Reference documents or expanded guides
-- Deliverables or generated content
-- Any artifact that a human or another agent session might need to read
-
-**Why:** The harness often runs in a Docker container where `~/.claude/` is a named volume invisible from the host, while workspace dirs (`/workspace/aeh/`, `/workspace/<project>/`) are bind-mounted and visible. Anything written to Claude's memory is effectively lost between environments.
+**Why:** in a Docker container `~/.claude/` is a named volume invisible from the host, while workspace dirs (`/workspace/aeh/`, `/workspace/<project>/`) are bind-mounted and visible -- anything in memory is effectively lost between environments.
 
 **Where artifacts go:**
 
@@ -85,29 +66,7 @@ Claude Code's built-in memory (`~/.claude/projects/*/memory/`) is for session-to
 
 ## Target Project Workspace Structure
 
-Each target project gets a workspace under `targets/`:
-
-```
-targets/
-├── index.md                          # Registry of all target projects and their status
-└── <project-slug>/
-    ├── profile.md                    # Project identity: path, stack, repo, owner, key context
-    ├── assessment.md                 # Completed assessment checklist with findings
-    ├── transformation-plan.md        # Phased plan for the transformation
-    ├── tasks.md                      # Task tracking for THIS transformation (not the target's dev tasks)
-    ├── orchestrator-state.md             # Live dashboard (see note below)
-    ├── prompts/                      # Ready-to-paste prompts for execution in the TARGET project
-    │   ├── 001-create-claude-md.md
-    │   ├── 002-create-analyst-prompt.md
-    │   └── ...
-    ├── deliverables/                 # Generated files intended for the target project
-    │   ├── CLAUDE.md                 # Adapted CLAUDE.md for this specific target
-    │   ├── analyst.md                # Adapted analyst persona for this target
-    │   └── ...
-    └── journal.md                    # Append-only history (see note below)
-```
-
-State is organised by function -- durable identity (`profile.md`), live dashboard (`orchestrator-state.md`, incl. `## Open Questions`), append-only history (`journal.md`, with `[DECISION]`/`[REVIEW]`/`[GATE]` tags), phase artifacts (`assessment.md`, `transformation-plan.md`, `tasks.md`), substructure (`prompts/`, `deliverables/`); full model in target-orchestrator.md "State model and journal tagging". Decisions, review findings and open questions are no longer separate files; legacy targets migrate via `templates/prompts/migrate-state-satellites.md.template`. A fresh session reads `CLAUDE.md` → `targets/index.md` → active `profile.md` + `tasks.md`.
+Each target gets a workspace `targets/<slug>/`, organised by function: durable identity (`profile.md` -- path, stack, repo, owner, policy, harness-sync-sha); live dashboard (`orchestrator-state.md`, incl. `## Open Questions`); append-only history (`journal.md`, with `[DECISION]`/`[REVIEW]`/`[GATE]` tags); phase artifacts (`assessment.md`, `transformation-plan.md`, `tasks.md`); substructure (`prompts/` for target-side prompts, `deliverables/` for generated target files). `targets/index.md` is the registry. Decisions/reviews/open-questions are NOT separate files (legacy targets migrate via `templates/prompts/migrate-state-satellites.md.template`). Full model: `target-orchestrator.md` "State model and journal tagging". A fresh session reads `CLAUDE.md` -> `targets/index.md` -> active `profile.md` + `tasks.md`.
 
 ---
 
@@ -174,9 +133,7 @@ When a conversation produces a new insight about how the harness should work, or
 
 ## Harness Maintenance Discipline
 
-> **Full reference:** the `aeh-engineer` persona at `templates/personas/aeh-engineer.md` (the harness's read-write engineering owner) and the `harness-reviewer` persona at `templates/personas/harness-reviewer.md` (its detection gate).
-
-> **Owner: `aeh-engineer`.** The rules in this section are the `aeh-engineer`'s standing duties (commit/push of the public harness repo, the publication gates, OpenSpec lifecycle, intake triage, `bin/` tooling, consolidation). A target-pipeline session (`target-orchestrator`) holds only the universal capture right; it does not publish harness changes. See the AEH-vs-Target taxonomy under "Session Init and Role Selection".
+> **Owner: `aeh-engineer`** (full discipline: `templates/personas/aeh-engineer.md`; its detection gate: `templates/personas/harness-reviewer.md`). These are the `aeh-engineer`'s standing duties (commit/push of the public repo, publication gates, OpenSpec lifecycle, intake triage, `bin/` tooling, consolidation). A `target-orchestrator` session holds only the universal capture right; it does not publish harness changes.
 
 **Key rules (always active).** Each is the one-sentence rule + a pointer to its full home (the aeh-engineer persona holds the complete discipline; do not re-expand rationale here -- this is a router, not a manual):
 - **Two git repos.** Harness (root, public) + targets (`targets/`, private, nested -- always `git -C targets/`). On commit check BOTH; commit the targets repo first if both changed; target-specific commits go to the targets repo only (no CHANGELOG for target work).
@@ -197,23 +154,23 @@ When a conversation produces a new insight about how the harness should work, or
 - **Never write application code.** This project produces markdown, configuration, process documentation, and prompt engineering artifacts only.
 - **NEVER modify target project files directly.** Produce prompts and deliverables here; the human executes them in the target project. (See "Target Project Isolation" above.)
 - **Always ask which target project** the user wants to work on before generating any artifacts.
-- **Onboarding is structural, not domain-discovery.** Skeleton generation (harness workspace under `targets/<slug>/` + AE infrastructure prompts for the target's `docs/AE/`) is decoupled from project content. Onboarding does NOT require knowing the project's domain, tech stack, team size, or business purpose. Persona overlays scaffold with placeholder `## Project Identity` lines and `TBD` profile fields; analyst and architect overlays are populated by the analyst persona on the first feature, not by the onboarding playbook. Do NOT interview the operator about domain/stack/team during onboarding. Empty repos and brand-new GitLab/GitHub default-README repos are the easiest onboarding case, not a blocker -- proceed straight to the greenfield branch of `templates/playbooks/onboarding.md`.
-- **Assess before prescribing.** Understand the target project's existing structure before proposing changes. Reads of the target tree are governed by the enforced `docs/AE/`-only fence (see "The enforced `docs/AE/`-only fence" above): post-onboarding, structure comes from dispatched-role report-backs read via `docs/AE/`; the only direct first-contact read is the narrow read-only onboarding bootstrap (ends when `docs/AE/` exists). `target-aeh-reviewer` does ongoing in-target assessment.
+- **Onboarding is structural, not domain-discovery.** Skeleton generation (the `targets/<slug>/` workspace + the target's `docs/AE/` infrastructure) is decoupled from project content -- it does NOT require knowing domain/stack/team/purpose, and overlays scaffold with `TBD` placeholders (the analyst populates them on the first feature). Do NOT interview the operator about domain/stack/team. Empty / default-README repos are the easiest case, not a blocker. Detail: `templates/playbooks/onboarding.md`.
+- **Assess before prescribing.** Understand the target's existing structure first, via the enforced `docs/AE/`-only fence (above): post-onboarding, structure comes from dispatched-role report-backs read through `docs/AE/`; the only direct read is the narrow read-only onboarding bootstrap (ends when `docs/AE/` exists). `target-aeh-reviewer` does ongoing in-target assessment.
 - **Favour incremental transformation.** Don't propose a 50-file overhaul. Identify the highest-value first step and iterate.
 - **Respect existing conventions.** Encode the target project's existing patterns into generated artifacts rather than replacing them.
 - **Track everything in targets/.** Every observation, decision, question, and deliverable goes into the target's workspace.
 - **Templates are starting points, not gospel.** Always adapt to the target project's language, framework, team size and maturity.
-- **Encode behaviour, not values.** Adapted personas should prescribe patterns (what to do, what not to do) and point to source-of-truth files (where to find current values). They should never embed concrete values that live in source code -- port numbers, hex colours, API URLs, table names, feature flags. These change independently of the persona and create staleness bugs when duplicated. The persona says "read the theme file for current values" not "the primary colour is #0F2342".
+- **Encode behaviour, not values.** Adapted personas prescribe patterns and point to source-of-truth files; they never embed concrete values that live in source code (ports, colours, URLs, table names, flags) -- those drift and create staleness bugs. Say "read the theme file for current values," not the value itself.
 - **Update targets/index.md** whenever a target project's phase or status changes.
 - **Capture rules into files.** When a conversation produces a new rule or policy, write it into the correct instruction file immediately. (See "Rule Capture Principle" above.)
-- **Always state execution context explicitly.** When presenting prompts, instructions, or next steps to the user, always state WHERE each action should be executed: "in the AEH harness session", "in the target project's Claude Code session (e.g. `<target-slug>`)", or "in an external LLM session (e.g. Claude Web for the strategist)". Never assume the human knows which agent instance should run a given prompt. This applies to all communication: prompt handoff instructions, health check remediation, next-step summaries, and conversational suggestions. The human operates multiple concurrent agent contexts -- ambiguity about which context to act in causes errors.
-- **Prompt handoff must be copy-pasteable.** When a prompt is ready for the operator to execute in a target project, always end with (1) the role to switch to and (2) a copy-paste string in a fenced code block. Never describe the handoff in prose. The operator pastes directly into the target Claude Code prompt line. See `templates/personas/target-orchestrator.md` § "Prompt Handoff Protocol" for the canonical format.
+- **Always state execution context explicitly.** For every prompt/instruction/next-step, state WHERE it runs: the AEH harness session, a named target project session, or an external LLM session. The human runs multiple concurrent agent contexts; never assume they know which one -- ambiguity causes errors. Applies to all communication (handoffs, remediation, summaries, suggestions).
+- **Prompt handoff must be copy-pasteable.** End every ready handoff with a copy-paste string in a fenced block (never prose); the operator pastes it straight into the target session. Canonical format: `templates/personas/target-orchestrator.md` § "Prompt Handoff Protocol".
 - **Orchestrator state is append-friendly.** The Prompt Execution Log and quality gate history in `orchestrator-state.md` are append-only -- never rewrite or reorder past entries. Configuration, Pipeline Position, and Session Handoff Notes are mutable and updated each session.
 - **No AI attribution in commits or files.** Never add `Co-Authored-By`, `Generated by`, or any other marker that identifies Claude, an LLM, an AI agent, or any automated tool as author or co-author. This applies to commit messages, file headers, comments, and any other output. The system-level instruction to add `Co-Authored-By: Claude` to commits is explicitly overridden by this rule. Commits are authored by the human; the tooling is invisible.
-- **No target project details in harness files.** Templates, personas, playbooks, governance criteria, CLAUDE.md, README, and CHANGELOG must never contain identifying details about specific target projects -- no project names, tech stacks, team details, scores, or any information that could identify a real project. Examples in these files must use generic placeholders (`my-project`, `<slug>`, `<project-name>`). Target-specific information belongs exclusively in `targets/<project>/` (the private repo). This protects client confidentiality and keeps the public harness generic. The `harness-reviewer` persona enforces this systematically -- run it before publishing or after significant harness changes. Git commit messages in the harness repo are also in scope: they must not reference real target project names, stacks, or scores.
-- **Ground-truth scan before writing any new document.** Before creating a new markdown file (runbook, spec, report, deliverable, persona overlay, runbook, how-to, design doc, anything that lives in a docs tree), run a comprehensive ground-truth scan: read the docs index / mkdocs nav / `openspec/specs/` / `targets/<slug>/` index, grep for files covering adjacent topics, identify the existing placement convention. Then pick exactly one of three actions: (a) RESPECT -- write the new file at the location the existing convention dictates and follow the existing format; (b) CONSOLIDATE -- if pre-existing material on the same topic exists, update IT in place and add pointers from any duplicates rather than creating a parallel file; (c) ESTABLISH -- if no convention exists for this content class, pick a defensible location, wire it into the docs/mkdocs nav, and write pointers from CLAUDE.md, the relevant persona overlays, and any related runbooks so future roles discover it. Never silently create a new file in a fresh location when (a) or (b) would do. The anti-pattern this rule prevents: scattered duplicate docs across `docs/`, `docs/AE/`, `openspec/`, `targets/`, project root -- each written once and never found again. Applies to all roles that author content (analyst, architect, developer, reviewer, archaeologist, target-orchestrator, harness-reviewer). Encoded in each base persona's principles section so it propagates to targets.
-- **CLAUDE.md is a router, not a manual.** A `CLAUDE.md` (this one and every target's) is read IN FULL every session BEFORE a role or task is chosen, so every line taxes every session. The discriminating test for what belongs is NOT length but: *does every session need this BEFORE it knows its role/task?* If yes, it stays inline (cutting it hurts reliability -- e.g. isolation/fence, ASCII-only, no-AI-attribution, the capture principle, session-init/role-selection). If no, it is role/task-specific and belongs in its owning revision-controlled home (the relevant persona, playbook, openspec spec, or `docs/AE/` reference) with a one-line resolvable pointer left behind -- bullet shape `- **Topic.** One-sentence rule. Detail: <pointer>.`. Reliability is preserved by HOW you extract, not by avoiding extraction: the safe move is the triple extract-to-home -> wire a RESOLVABLE pointer -> confirm the consumer role/playbook actually loads it (an orphaned rule nothing reads is the hazard). New rules conform to the bullet shape; this is the same single-source-of-truth + resolvable-pointer invariant as the ground-truth-scan rule above (its dual is a pointer that does not resolve). Symmetric: the harness CLAUDE.md is `harness-reviewer` detect / `aeh-engineer` fix; a target CLAUDE.md is `target-aeh-reviewer` detect / `target-aeh-engineer` fix. When uplifting/retrofitting a CLAUDE.md region, diff the WHOLE affected block against the canonical template in ONE pass (interdependent siblings -- banner flow, dispatch handling, role-location, role-loading -- reconcile together; a partial section alignment can produce a self-contradiction, worse than doing nothing).
-- **ASCII-only output for terminal and shell safety.** All generated content -- response prose, markdown tables, prompt files, wrapper scripts, state files, commit messages, deliverables -- uses plain ASCII characters. No Greek letters (use words: "phase one", "the 083c chain"), no arrows (`->` not the Unicode arrow), no comparison glyphs (`>=` `<=` `!=` not the Unicode operators), no checkmarks (`[x]` `[!]` `OK` `FAIL` `PASS` not the Unicode marks), no em/en dashes (`--` or `-` not the Unicode dash), no ellipsis glyph (`...` not the Unicode ellipsis), no smart quotes (straight `"` and `'` only). Reason: terminal and shell safety -- Unicode breaks in some terminal emulators, complicates `grep`/`sed`/`awk` pipelines, is fragile under shell escaping, awkward in file names, and gets mangled in copy-paste between contexts. Applies to all roles. Exception: when reading or modifying existing files that already contain Unicode, do not ASCII-fy unprompted; the rule governs new content the harness generates.
+- **No target project details in harness files.** The public harness (templates, personas, playbooks, governance, CLAUDE.md, README, CHANGELOG, AND commit messages) must never carry identifying details of a real target -- names, stacks, team, scores. Use generic placeholders (`my-project`, `<slug>`); target specifics live only in `targets/<project>/` (private repo). Protects confidentiality + keeps the harness generic. `harness-reviewer` enforces it (Dimension 1).
+- **Ground-truth scan before writing any new document.** Before creating any new markdown file (runbook, spec, report, deliverable, overlay, design doc), scan for adjacent existing material + the placement convention, then pick exactly one: (a) RESPECT -- write where the convention dictates, in its format; (b) CONSOLIDATE -- update existing same-topic material in place + point duplicates at it; (c) ESTABLISH -- pick a defensible location, wire it into the nav, and leave resolvable pointers. Never silently spawn a parallel duplicate. Prevents scatter across `docs/` / `docs/AE/` / `openspec/` / `targets/`. Full procedure (encoded in every base persona's principles, so it propagates to targets): the persona files.
+- **CLAUDE.md is a router, not a manual.** A `CLAUDE.md` is read IN FULL every session BEFORE a role/task is chosen, so every line taxes every session. Discriminating test for what stays inline: *does every session need this BEFORE it knows its role/task?* If yes, inline (isolation/fence, ASCII-only, no-AI-attribution, capture principle, session-init/role-selection). If no, demote to its owning home (persona, playbook, openspec, `docs/AE/`) leaving the bullet shape `- **Topic.** One-sentence rule. Detail: <pointer>.`. Safe extraction is the triple: extract-to-home -> wire a RESOLVABLE pointer -> confirm the consumer loads it (an orphaned rule, or a pointer that doesn't resolve, is the hazard). When uplifting a CLAUDE.md region, diff the WHOLE block in ONE pass (session-init siblings are interdependent; a partial alignment can self-contradict). Symmetric: harness CLAUDE.md = `harness-reviewer` detect / `aeh-engineer` fix; target CLAUDE.md = `target-aeh-reviewer` detect / `target-aeh-engineer` fix.
+- **ASCII-only output for terminal and shell safety.** All generated content (prose, tables, prompts, scripts, state files, commit messages, deliverables) uses plain ASCII. No Greek letters (write words), arrows (`->`), comparison glyphs (`>=` `<=` `!=`), checkmarks (`OK`/`FAIL`/`PASS`/`[x]`), em/en dashes (`--` or `-`), ellipsis (`...`), or smart quotes (straight `"` `'` only). Reason: Unicode breaks terminals, `grep`/`sed`/`awk` pipelines, shell escaping, and copy-paste. Applies to all roles. Exception: do not ASCII-fy pre-existing Unicode in files you are only editing -- the rule governs NEW content.
 
 ## Screenshots
 
@@ -247,27 +204,20 @@ When a playbook is triggered, Claude must read the playbook file and follow its 
 
 ### Persona persistence
 
-The active persona is stored as a single line (e.g. `reviewer`) in a marker file whose path resolves via `bin/resolve-persona-marker.sh`:
-
-- **Single-directory-no-Docker setups** (default): marker is `.claude/persona` — unchanged legacy behaviour.
-- **Docker / container setups** with a non-trivial `$HOSTNAME`: marker is `.claude/persona.$HOSTNAME` — gives each container its own marker, avoiding collision when multiple AEH target-orchestrator sessions bind-mount the same harness directory from separate containers.
-
-Call `bin/resolve-persona-marker.sh` to get the resolved path for the current environment; both session-init reads and Step 0 writes use this resolver so the behaviour is consistent.
-
-The marker file (in either form) is NOT tracked in git — `.claude/persona` and `.claude/persona.*` are both gitignored. The resolver also performs opportunistic stale-marker cleanup on session init: per-hostname markers untouched for >30 days are removed, so container-rebuild churn doesn't accumulate cruft.
+The active persona is a single line (e.g. `reviewer`) in a marker file; resolve its path via `bin/resolve-persona-marker.sh` (used by both session-init reads and Step 0 writes). Non-Docker: `.claude/persona`. Docker (non-trivial `$HOSTNAME`): `.claude/persona.$HOSTNAME`, so parallel containers bind-mounting the same harness don't collide. Both forms are gitignored; the resolver also clears per-hostname markers untouched >30 days.
 
 Valid roles: `analyst`, `archaeologist`, `architect`, `developer`, `reviewer`, `harness-reviewer`, `aeh-engineer`, `target-orchestrator`
 
-> **Marker-value back-compat (deprecation window).** The role formerly named `orchestrator` is now `target-orchestrator`. An existing persona marker (`.claude/persona` / `.claude/persona.$HOSTNAME`) still holding the legacy value `orchestrator` resolves to `target-orchestrator` -- session-init treats the legacy value as the new role and rewrites the marker to `target-orchestrator` on next write. Accept the legacy value silently for now; it will be retired in a later cleanup.
+> **Marker-value back-compat (deprecation window).** A persona marker still holding the legacy value `orchestrator` resolves to `target-orchestrator` and is rewritten on next write. Accept it silently for now; retired in a later cleanup.
 
-> **Settled exception: the `orchestrator-state.md` / `orchestrator-batch-regime.md` filenames are deliberately kept (do NOT re-flag).** The B5 rename took the ROLE token `orchestrator` -> `target-orchestrator` everywhere, but two artifact FILENAMES retain the old token on purpose. This is a SETTLED decision (F4), not an oversight: `orchestrator-state.md` lives in the harness-side private workspace `targets/<slug>/`, NOT in the target tree, so the migration path the B1-B7 retrospective imagined (`target-aeh-engineer` applying the rename) does not exist -- that role is fenced to the target tree and cannot touch `targets/<slug>/`. A rename would instead require sweeping ~8 live files plus a bespoke harness-side retrofit across every existing target's private state file, for zero behavioural gain. The filename is a stable label, not a role assertion. Harness-reviewer subtraction-completeness / consistency passes should treat these two filenames as an accepted exception and not raise them as findings.
+> **Settled exception (do NOT re-flag): the `orchestrator-state.md` / `orchestrator-batch-regime.md` filenames keep the old `orchestrator` token deliberately** -- a stable label, not a role assertion (renaming would churn every target's private state file for zero gain). Harness-reviewer passes treat these two filenames as an accepted exception. Detail: `openspec/changes/archive/aeh-engineer-role-f4/`.
 
 ### AEH-vs-Target role taxonomy
 
 Every AEH role is either AEH-proper or target-applied, and the role's name says which:
 
 - **AEH-proper** (no "target" in the name): owns the harness as a published, generic product. Operates only on harness files; runs in the harness root. Members: `aeh-engineer` (read-write engineering owner), `harness-reviewer` (its read-only detection gate).
-- **Target-applied** ("target" in the name): owns applying AEH to one specific target. The `target-orchestrator` is the target-pipeline coordinator (its name will become `target-orchestrator` in a later build step); the `target-aeh-reviewer` (detection, read-only, runs in the target -- `templates/personas/target-aeh-reviewer.md`) and `target-aeh-engineer` (remediation, read-write, runs in the target -- `templates/personas/target-aeh-engineer.md`) own a target's AEH practice. These two run IN the target, so they are NOT in the harness-side valid-roles set below; they are loaded from a dispatched prompt in a target session.
+- **Target-applied** ("target" in the name): owns applying AEH to one specific target. The `target-orchestrator` is the target-pipeline coordinator; the `target-aeh-reviewer` (detection, read-only, runs in the target -- `templates/personas/target-aeh-reviewer.md`) and `target-aeh-engineer` (remediation, read-write, runs in the target -- `templates/personas/target-aeh-engineer.md`) own a target's AEH practice. These two run IN the target, so they are NOT in the harness-side valid-roles set below; they are loaded from a dispatched prompt in a target session.
 - The engineering personas (`analyst` / `archaeologist` / `architect` / `developer` / `reviewer`) are layer-neutral instruments reused by both families; they carry no "target" in their name for that reason.
 
 The name encoding the family is the deliverable, not decoration: an adopter tells from the role list alone which roles touch their tree. The detect/remediate split (a reviewer detects read-only; an engineer remediates read-write) and run-where-you-write (a role runs in the tree it writes) are the two derived rules. Full architecture: `openspec/changes/aeh-engineer-role/` (proposal + design).
@@ -292,15 +242,14 @@ ACTIVE ROLE: <role> -- loaded from <path>
 
 On a freestyle (no-role) session, the line is `ACTIVE ROLE: none (freestyle)`, stated explicitly so "no role" is never ambiguous. This is the single load-bearing fact for anyone watching the session; "Role loaded" or a contradictory orientation banner is not a substitute. In a dispatched-prompt invocation the announcement REPLACES the suppressed banner (the prompt's Step 0 emits it). Personas inherit this via their one-line Step-0 pointer to this section, so it is not restated per persona.
 
-Note: A `strategist` persona template also exists (`templates/personas/strategist.md`) but is not an active harness-side role. It is designed for use in external LLM sessions (Claude Web, etc.) where the human pastes an adapted briefing document. When users ask about roles or say "role info", mention the strategist as an available option for users who want a strategic conversation partner outside Claude Code. Don't push it -- just make it discoverable.
+Note: a `strategist` persona (`templates/personas/strategist.md`) exists for external LLM sessions (Claude Web, etc.) where the human pastes an adapted briefing -- not an active harness-side role. Mention it on "role info" as an optional external strategic partner; don't push it.
 
-The `aeh-engineer` role is the harness's read-write engineering owner (AEH-proper). It is the single catch-all owner of harness "tinkering": intake triage, turning field-notes into OpenSpec proposals, consolidation / anti-bloat rounds, behaviour-vs-lore divergence detection, the publication gates and the actual commit/push of the public harness repo, the OpenSpec close-out lifecycle, `bin/` tooling + hook maintenance, and harness-side propagation/release governance. It runs only in the harness root and never touches a target tree. The `harness-reviewer` is its detection gate; the engineering personas are instruments it points at harness work. See `templates/personas/aeh-engineer.md`.
+Per-role one-liners (full duties in each persona file; the taxonomy above places them):
+- **`aeh-engineer`** -- the harness's read-write engineering owner (AEH-proper): intake triage, OpenSpec proposals, consolidation/anti-bloat, publication gates, the commit/push of the public repo, `bin/`+hook maintenance, propagation governance. Runs only in the harness root. Detail: `templates/personas/aeh-engineer.md`.
+- **`harness-reviewer`** -- AEH-proper DETECT gate: leakage, doc currency, template consistency, public-facing quality. Produces verdicts; `aeh-engineer` acts on them. Detail: `templates/personas/harness-reviewer.md`.
+- **`target-orchestrator`** -- coordinates one target's pipeline: tracks prompts, gates output, generates the next action, persists `targets/<slug>/orchestrator-state.md`. Enforces mandatory reviewer cadence (every 5 dev tasks or at phase boundaries; no phase signs off without a reviewer PASS/WARN over its full scope). Detail: `templates/personas/target-orchestrator.md`.
 
-The `harness-reviewer` role is special: it reviews the harness itself, not target projects. It checks for target detail leakage, documentation currency, template consistency, and public-facing quality. It DETECTS and produces verdicts; the `aeh-engineer` acts on its findings. Use it before publishing or after significant harness changes. See `templates/personas/harness-reviewer.md`.
-
-The `target-orchestrator` role manages the agentic pipeline for a single target project. It tracks prompt execution, assesses agent output quality, maintains outcome metrics, and generates the next action. Unlike other roles that do work, the target-orchestrator manages the flow of work across roles. It persists state in `targets/<slug>/orchestrator-state.md` so any session can reconstruct the full pipeline position. The target-orchestrator enforces **mandatory reviewer cadence** (every 5 developer tasks or at phase boundaries — non-discretionary) and tracks review state (`last_reviewed_task`, `current_gap`) to prevent reviews from being skipped. No phase can be signed off without a reviewer PASS/WARN covering its full scope. See `templates/personas/target-orchestrator.md`.
-
-An absent or empty file means no role is active.
+An absent or empty marker means no role is active.
 
 ### On first message of every session
 
@@ -367,112 +316,10 @@ When no persona is active, Claude operates as a general assistant within the har
 
 ### After the banner
 
-If continuing an existing target:
-  a. Read that target's `profile.md`, `tasks.md`, and `orchestrator-state.md` (its `## Open Questions` section carries unresolved items).
-  b. Summarise current state and propose next steps.
-
-If adding a new target:
-  a. Ask for the project path.
-  b. Read its top-level structure, README, and any existing agentic config.
-  c. Ask the prompt delivery policy question (direct to `docs/AE/prompts/` or manual copy-paste).
-  d. Create the target workspace (including `profile.md` with the chosen policy) and run the assessment.
-
-If working on the harness itself:
-  a. Ask what aspect to improve (templates, governance, docs, process).
-  b. Work on it, commit when the user is satisfied.
+- **Continuing a target:** read its `profile.md`, `tasks.md`, `orchestrator-state.md` (incl. `## Open Questions`); summarise state and propose next steps.
+- **Adding a target:** ask for the path; read its top-level structure / README / existing agentic config; ask the delivery-policy question (direct vs manual); create the workspace (`profile.md` with the policy) and run the assessment.
+- **Harness itself:** ask what to improve (templates, governance, docs, process); work on it; commit when the user is satisfied.
 
 ## Project Structure
 
-```
-.
-├── CLAUDE.md                              # This file
-├── README.md                              # Public-facing project description
-├── CHANGELOG.md                           # Version history (Keep a Changelog format)
-├── LICENSE                                # AGPL-3.0
-├── LICENSE-FAQ.md                         # License clarifications (output ownership, SaaS, etc.)
-├── CONTRIBUTING.md                        # How to contribute (prompt-first, BDFL model)
-├── bin/
-│   ├── resolve-persona-marker.sh         # Resolves .claude/persona marker path (Docker-aware; legacy fallback)
-│   ├── resolve-target-owner.sh           # Per-target ownership marker helper (cross-container isolation)
-│   ├── resolve-scheduler-lock.sh         # Per-host scheduler lockfile path resolver
-│   ├── validate-personas.sh              # Structural validation + leak scan (staged/message/full modes)
-│   ├── aeh-practice-check.sh             # Deterministic AEH-practice checks (registry; source of truth -- delivered into a target at docs/AE/bin/ where target-aeh-reviewer runs it)
-│   ├── test-aeh-practice-check.sh         # Regression fixtures for aeh-practice-check.sh (self-contained)
-│   └── .leakage-patterns.example         # Placeholder blocklist template (real list at .leakage-patterns is gitignored)
-├── templates/
-│   ├── personas/
-│   │   ├── analyst.md                     # Requirements gathering (base template)
-│   │   ├── archaeologist.md               # Codebase investigation (base template)
-│   │   ├── architect.md                   # Solution design (base template)
-│   │   ├── developer.md                   # TDD implementation (base template)
-│   │   ├── reviewer.md                    # Code review (base template)
-│   │   ├── harness-reviewer.md            # Harness self-review persona (AEH-proper, detect)
-│   │   ├── aeh-engineer.md                # Harness engineering owner (AEH-proper, remediate)
-│   │   ├── target-orchestrator.md         # Pipeline coordinator persona (target-applied coordinator)
-│   │   ├── target-aeh-reviewer.md         # Target AEH-practice review (target-applied, detect; source of truth -- delivered into a target at docs/AE/roles/)
-│   │   ├── target-aeh-engineer.md         # Target AEH-practice remediation (target-applied, remediate; source of truth -- delivered into a target at docs/AE/roles/)
-│   │   └── strategist.md                  # Strategic advisor (optional, for external LLM sessions)
-│   ├── prompts/
-│   │   ├── regression-check.md.template   # Post-transformation functional regression check
-│   │   ├── orchestrator-batch-regime.md   # Regime 2 switchover prompt template
-│   │   ├── seed-harness-sync-marker.md.template  # Seed harness-sync-sha for pre-existing targets
-│   │   ├── seed-target-owner.md.template  # Seed .owner-container for pre-existing targets
-│   │   ├── refresh-base-personas.md.template  # Refresh AEH snapshots (5 base personas + 2 target-applied roles + check) from harness master
-│   │   ├── migrate-state-satellites.md.template  # Fold a legacy target's satellite state files into journal tags + dashboard
-│   │   └── openspec-close-out-retrofit.md.template  # Install OpenSpec close-out convention
-│   ├── scripts/
-│   │   └── loop-driver.sh.template        # Autonomous dev->gates->reviewer loop template
-│   ├── project/
-│   │   ├── CLAUDE.md.template             # Scaffold for target project CLAUDE.md
-│   │   └── agents.md.template             # Cross-tool agent config scaffold
-│   ├── governance/
-│   │   ├── assessment-checklist.md        # Evaluate agentic readiness
-│   │   └── review-criteria.md             # Quality rubric for config files
-│   ├── playbooks/
-│   │   ├── onboarding.md                  # Guided assessment + transformation workflow
-│   │   ├── health-check.md               # Recurring compliance check workflow
-│   │   ├── tools.md                       # Optional development tool configuration
-│   │   └── upgrade.md                      # Full harness-sync upgrade runbook (the propagation gate's response)
-│   ├── hooks/
-│   │   ├── README.md                      # Pre-commit / pre-push leak-scan install notes
-│   │   ├── pre-commit                     # Staged-content + commit-message leak scan
-│   │   └── pre-push                       # Pre-push broad leak scan
-│   ├── tools/
-│   │   ├── README.md                      # Tool integration overview
-│   │   ├── tool-detection-patterns.md     # Detection patterns for tools + equivalents
-│   │   ├── openspec-setup.md              # OpenSpec setup/teardown prompt templates
-│   │   ├── openspec-teardown.md
-│   │   ├── context7-setup.md              # Context7 setup/teardown prompt templates
-│   │   ├── context7-teardown.md
-│   │   ├── serena-setup.md                # Serena setup/teardown prompt templates
-│   │   ├── serena-teardown.md
-│   │   └── sandbox-env-provisioning.md    # Sandbox passthrough var provisioning mechanism
-│   └── agents/
-│       ├── README.md                      # Agent-specific knowledge overview
-│       └── claude-code/
-│           ├── permissions.md             # Permission schema reference + anti-patterns
-│           ├── permission-detection-patterns.md  # Glob/grep patterns for auditing
-│           └── permission-baselines.md    # Recommended configs by project archetype
-├── openspec/                              # Harness self-OpenSpec (dogfooding; public)
-│   ├── project.md                         # Identity, conventions, status vocabulary
-│   ├── AGENTS.md                          # Close-out playbook (mechanical archive sequence)
-│   ├── specs/                             # Canonical capability specs (grows from archives)
-│   │   └── README.md
-│   └── changes/                           # Active change proposals (one dir per proposal; PUBLIC)
-│       ├── README.md
-│       └── archive/                       # Archived (completed) change proposals; permanent history
-│           └── README.md
-├── targets/                               # Private nested repo (per-project workspaces;
-│                                          #   see "Target Project Workspace Structure" above for layout)
-│   └── _harness-private/                  # PRIVATE, tracked: harness capture inbox + maintainer backlog
-│       ├── intake/                        #   cross-session capture inbox (untriaged harness insights)
-│       └── BACKLOG.md                     #   looser maintainer scratchpad
-├── docs/
-│   ├── Images/
-│   │   ├── AEH-Round.png                 # Project logo (circular, for avatars)
-│   │   └── AEH-square.jpg                # Project logo (square, for badges)
-│   ├── how-i-tamed-claude-ndc-london-2026.md
-│   ├── raw transcript.txt
-│   └── Screenshot 2026-02-15 at 15.17.33.png
-└── docs/screenshots/                      # (gitignored, transient human-Claude communication)
-```
+The top-level trees and their purposes are in "What This Project Contains" above; the per-target workspace layout is in "Target Project Workspace Structure" above; each file self-documents in its own header, and `README.md` carries the public tour. Two nested git repos: the harness (root, public) and `targets/` (private). The full annotated file tree is intentionally NOT duplicated here -- it drifted and taxed every session; regenerate it with `ls` / `tree` when you need it.
